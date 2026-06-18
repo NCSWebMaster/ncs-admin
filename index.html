@@ -830,11 +830,9 @@ async function loadStaffAccess() {
     return;
   }
   list.innerHTML = data.map(s => `
-    <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <span class="role-badge ${s.role}" style="margin-left:0;align-self:flex-start;">${getRoleLabel(s.role)}</span>
-        <span style="font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);">${s.email}</span>
-      </div>
+    <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+      <span class="role-badge ${s.role}" style="margin-left:0;display:inline-block;margin-bottom:8px;">${getRoleLabel(s.role)}</span>
+      <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);margin:0 0 12px;">${s.email}</p>
       <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
     </div>`).join('');
 }
