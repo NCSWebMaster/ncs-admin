@@ -205,11 +205,14 @@
   <!-- GREETING & VERSE -->
   <div class="admin-greeting" id="adminGreeting">
     <div class="greeting-text">
+      <span class="role-badge" id="adminRoleBadge" style="margin-left:0;margin-bottom:8px;display:inline-block;font-size:0.8rem;padding:5px 16px;"></span>
       <h2 id="greetingTitle">Good morning!</h2>
-      <p class="admin-user">Signed in as <span id="adminUserEmail"></span><span class="role-badge" id="adminRoleBadge"></span></p>
+      <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
-    <button class="signout-btn" id="signOutBtn">Sign Out</button>
-    <button class="reset-btn" id="resetYearBtn" style="display:none;">🎓 Start New School Year</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button class="signout-btn" id="signOutBtn">Sign Out</button>
+      <button class="reset-btn" id="resetYearBtn" style="display:none;">🎓 Start New School Year</button>
+    </div>
   </div>
 
   <div class="verse-card" id="verseCard">
@@ -219,19 +222,19 @@
 
   <!-- STATS DASHBOARD -->
   <div class="stats-dashboard" id="statsDashboard">
-    <div class="stat-box">
+    <div class="stat-box" id="statBoxFamilies">
       <div class="stat-box-number" id="statFamilies">—</div>
       <div class="stat-box-label">Enrolled Families</div>
     </div>
-    <div class="stat-box">
+    <div class="stat-box" id="statBoxVolSlots">
       <div class="stat-box-number" id="statVolSlots">—</div>
       <div class="stat-box-label">Open Vol. Slots</div>
     </div>
-    <div class="stat-box">
+    <div class="stat-box" id="statBoxNewsletters">
       <div class="stat-box-number" id="statNewsletters">—</div>
       <div class="stat-box-label">Newsletters Sent</div>
     </div>
-    <div class="stat-box highlight">
+    <div class="stat-box highlight" id="statBoxNextNight">
       <div class="stat-box-number" id="statNextNight">—</div>
       <div class="stat-box-label">Next Info Night</div>
     </div>
@@ -610,6 +613,7 @@ function showToast(msg, duration = 3000) {
 let currentRole = null;
 let currentSession = null;
 let resendCooldownTimer = null;
+let mfaInitiated = false;
 
 function showOnly(screenId) {
   ['loginScreen','mfaScreen','notAuthorizedScreen','adminDashboard'].forEach(id => {
@@ -672,6 +676,8 @@ function startResendCooldown() {
 }
 
 async function beginMfaChallenge(email) {
+  if (mfaInitiated) return;
+  mfaInitiated = true;
   document.getElementById('mfaError').textContent = '';
   document.getElementById('mfaCodeInput').value = '';
   document.getElementById('mfaSubtext').textContent = `We sent a 6-digit code to ${email}. Enter it below to continue.`;
@@ -735,19 +741,23 @@ function applyRolePermissions() {
   const isSuperAdmin = currentRole === 'super_admin';
   const isAdmissions = currentRole === 'admissions_committee';
 
-  // Super admin only
   document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
   document.getElementById('staffAccessTabBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
 
-  // Hide all tabs for admissions committee except Info Nights
   if (isAdmissions) {
+    // Hide irrelevant stat boxes — only Families + Next Info Night
+    document.getElementById('statBoxVolSlots').style.display = 'none';
+    document.getElementById('statBoxNewsletters').style.display = 'none';
+    // Make remaining two boxes fill the row
+    document.getElementById('statsDashboard').style.gridTemplateColumns = '1fr 1fr';
+
+    // Hide all tabs except Info Nights
     ['newsletter','families','yearly','volunteer'].forEach(tab => {
       const btn = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
       const panel = document.getElementById(`panel-${tab}`);
       if (btn) btn.style.display = 'none';
       if (panel) panel.style.display = 'none';
     });
-    // Activate Info Nights tab
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     const infoTab = document.querySelector('.admin-tab[data-tab="infonights"]');
@@ -780,6 +790,7 @@ sb.auth.onAuthStateChange((event, session) => {
   } else {
     currentRole = null;
     currentSession = null;
+    mfaInitiated = false;
     showOnly('loginScreen');
   }
 });
@@ -819,14 +830,12 @@ async function loadStaffAccess() {
     return;
   }
   list.innerHTML = data.map(s => `
-    <div class="event-row">
-      <div class="event-row-info">
-        <strong>${s.email}</strong>
-        <span class="role-badge ${s.role}" style="margin-left:0;">${getRoleLabel(s.role)}</span>
+    <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <span class="role-badge ${s.role}" style="margin-left:0;align-self:flex-start;">${getRoleLabel(s.role)}</span>
+        <span style="font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);">${s.email}</span>
       </div>
-      <div class="event-row-actions">
-        <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
-      </div>
+      <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
     </div>`).join('');
 }
 
