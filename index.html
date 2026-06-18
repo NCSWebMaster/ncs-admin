@@ -591,6 +591,7 @@
 <script src="shared.js"></script>
 <script>
 const SUPABASE_URL = 'https://eqgzfrzokhowpedderrb.supabase.co';
+const ADMIN_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') || window.location.origin + '/';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxZ3pmcnpva2hvd3BlZGRlcnJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjU4ODIsImV4cCI6MjA5NzIwMTg4Mn0.r94X0ZGSdAO_vtd4dXQKmjdVFtPZ7wSpYeUVzPAkjJo';
 // Resend API key stored securely in Supabase vault — not exposed here
 const FROM_EMAIL = 'office@northridgecommunityschool.com';
@@ -756,7 +757,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 document.getElementById('googleSignIn').addEventListener('click', async () => {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL } });
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
