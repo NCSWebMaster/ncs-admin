@@ -29,6 +29,7 @@
   .role-badge{ display:inline-block; padding:3px 12px; border-radius:20px; font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-left:8px; }
   .role-badge.super_admin{ background:#fdf6f2; color:var(--bronze); border:1px solid var(--bronze); }
   .role-badge.staff{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
+  .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
   .google-btn{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; padding:14px 28px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); cursor:pointer; transition:box-shadow 0.2s; }
   .google-btn:hover{ box-shadow:0 4px 14px rgba(0,0,0,0.1); }
   .google-btn img{ width:24px; }
@@ -506,6 +507,7 @@
           <label>Role</label>
           <select id="staff-role">
             <option value="staff">Staff</option>
+            <option value="admissions_committee">Admissions Committee</option>
             <option value="super_admin">Super Admin</option>
           </select>
         </div>
@@ -731,15 +733,41 @@ async function checkRoleAndContinue(session) {
 
 function applyRolePermissions() {
   const isSuperAdmin = currentRole === 'super_admin';
+  const isAdmissions = currentRole === 'admissions_committee';
+
+  // Super admin only
   document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
   document.getElementById('staffAccessTabBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
+
+  // Hide all tabs for admissions committee except Info Nights
+  if (isAdmissions) {
+    ['newsletter','families','yearly','volunteer'].forEach(tab => {
+      const btn = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
+      const panel = document.getElementById(`panel-${tab}`);
+      if (btn) btn.style.display = 'none';
+      if (panel) panel.style.display = 'none';
+    });
+    // Activate Info Nights tab
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    const infoTab = document.querySelector('.admin-tab[data-tab="infonights"]');
+    const infoPanel = document.getElementById('panel-infonights');
+    if (infoTab) infoTab.classList.add('active');
+    if (infoPanel) infoPanel.classList.add('active');
+  }
+}
+
+function getRoleLabel(role) {
+  if (role === 'super_admin') return 'Super Admin';
+  if (role === 'admissions_committee') return 'Admissions Committee';
+  return 'Staff';
 }
 
 function enterDashboard() {
   showOnly('adminDashboard');
   document.getElementById('adminUserEmail').textContent = currentSession.user.email;
   const badge = document.getElementById('adminRoleBadge');
-  badge.textContent = currentRole === 'super_admin' ? 'Super Admin' : 'Staff';
+  badge.textContent = getRoleLabel(currentRole);
   badge.className = 'role-badge ' + currentRole;
   applyRolePermissions();
   loadAll();
@@ -794,7 +822,7 @@ async function loadStaffAccess() {
     <div class="event-row">
       <div class="event-row-info">
         <strong>${s.email}</strong>
-        <span class="role-badge ${s.role}" style="margin-left:0;">${s.role === 'super_admin' ? 'Super Admin' : 'Staff'}</span>
+        <span class="role-badge ${s.role}" style="margin-left:0;">${getRoleLabel(s.role)}</span>
       </div>
       <div class="event-row-actions">
         <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
