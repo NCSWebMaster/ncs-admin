@@ -637,7 +637,7 @@ async function sendMfaCode(email) {
   const { error: sendError } = await sb.rpc('send_email_via_resend', {
     to_email: email,
     subject: 'Your NCS Admin Verification Code',
-    from_email: 'webmaster@northridgecommunityschool.com',
+    from_email: 'NCS Admin <webmaster@northridgecommunityschool.com>',
     html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
       <h2 style="color:#C8102E;text-align:center;">Your Admin Verification Code</h2>
