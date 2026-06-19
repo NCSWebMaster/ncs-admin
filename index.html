@@ -34,6 +34,12 @@
   .role-badge.super_admin{ background:#fdf6f2; color:var(--bronze); border:1px solid var(--bronze); }
   .role-badge.staff{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
   .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
+  .role-badge.teacher{ background:#fdf4ff; color:#9333ea; border:1px solid #9333ea; }
+  .section-menu-trigger{ display:flex; align-items:center; gap:8px; width:100%; max-width:320px; padding:13px 18px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.92rem; color:var(--ink); cursor:pointer; transition:border-color 0.2s; }
+  .section-menu-trigger:hover{ border-color:var(--red); }
+  .section-menu-dropdown{ position:absolute; top:calc(100% + 8px); left:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:50; min-width:260px; max-width:90vw; }
+  .section-menu-dropdown .admin-tab{ display:block; width:100%; text-align:left; margin-bottom:4px; }
+  .section-menu-dropdown .admin-tab:last-child{ margin-bottom:0; }
   .google-btn{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; padding:14px 28px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); cursor:pointer; transition:box-shadow 0.2s; }
   .google-btn:hover{ box-shadow:0 4px 14px rgba(0,0,0,0.1); }
   .google-btn img{ width:24px; }
@@ -298,13 +304,20 @@
     </div>
   </div>
 
-  <div class="admin-tabs">
-    <button class="admin-tab active" data-tab="newsletter">📰 Newsletter</button>
-    <button class="admin-tab" data-tab="families">👨‍👩‍👧 Family Emails</button>
-    <button class="admin-tab" data-tab="yearly">📆 Year at a Glance</button>
-    <button class="admin-tab" data-tab="infonights">📣 Info Nights</button>
-    <button class="admin-tab" data-tab="volunteer">🙋 Volunteer Slots</button>
-    <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
+  <div style="position:relative;margin-bottom:32px;">
+    <button id="sectionMenuBtn" class="section-menu-trigger">
+      <span id="sectionMenuLabel">📰 Newsletter</span>
+      <span style="margin-left:auto;">▾</span>
+    </button>
+    <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
+      <button class="admin-tab active" data-tab="newsletter">📰 Newsletter</button>
+      <button class="admin-tab" data-tab="families">👨‍👩‍👧 Family Emails</button>
+      <button class="admin-tab" data-tab="yearly">📆 Year at a Glance</button>
+      <button class="admin-tab" data-tab="infonights">📣 Info Nights</button>
+      <button class="admin-tab" data-tab="volunteer">🙋 Volunteer Slots</button>
+      <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
+      <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;">🗂️ Gradebook</button>
+    </div>
   </div>
 
   <!-- NEWSLETTER PANEL -->
@@ -384,15 +397,18 @@
   <!-- FAMILY EMAILS PANEL -->
   <div class="admin-panel" id="panel-families">
     <div class="admin-form">
-      <h3>Add Family Email</h3>
+      <h3>Enroll Family</h3>
       <div class="form-row">
         <div class="form-group">
           <label>Parent/Guardian Name</label>
           <input type="text" id="fam-name" placeholder="e.g. John Smith">
-          <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin-top:10px;">
-            <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
-            New Family (first time at NCS)
-          </label>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
+              <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
+              New Family
+            </label>
+            <button type="button" id="famNewInfoBtn" title="What does this do?" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #c9a876;background:#fdf6f2;color:#a8865f;font-family:Georgia,serif;font-size:0.75rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">i</button>
+          </div>
         </div>
         <div class="form-group">
           <label>Email Address</label>
@@ -404,9 +420,14 @@
           <label># of Students</label>
           <input type="number" id="fam-students" min="1" value="1" style="max-width:120px;">
         </div>
+        <div class="form-group">
+          <label>Assigned Teacher</label>
+          <select id="fam-teacher">
+            <option value="">— Not Assigned —</option>
+          </select>
+        </div>
       </div>
-      <p style="font-size:0.8rem;color:#9a8b84;margin:-6px 0 14px;">Unchecked = returning family. This changes the wording of the welcome email they receive.</p>
-      <button class="save-btn" id="saveFamiliy">Add Family</button>
+      <button class="save-btn" id="saveFamiliy">Enroll Family</button>
     </div>
     <div class="events-list">
       <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
@@ -590,6 +611,7 @@
           <select id="staff-role">
             <option value="staff">Staff</option>
             <option value="admissions_committee">Admissions Committee</option>
+            <option value="teacher">Teacher</option>
             <option value="super_admin">Super Admin</option>
           </select>
         </div>
@@ -602,6 +624,18 @@
     <div class="events-list">
       <h3>Authorized Staff <span class="family-count" id="staffCount"></span></h3>
       <div id="staffAccessList"></div>
+    </div>
+  </div>
+
+  <!-- GRADEBOOK PANEL (teacher only — placeholder for future build) -->
+  <div class="admin-panel" id="panel-gradebook">
+    <div class="admin-form" style="text-align:center;padding:48px 24px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🗂️</div>
+      <h3 style="margin-bottom:8px;">Gradebook Coming Soon</h3>
+      <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
+        This is where you'll see students assigned to your class and manage their grades.
+        Students get assigned to you automatically when the office enrolls their family.
+      </p>
     </div>
   </div>
 
@@ -935,39 +969,54 @@ async function checkRoleAndContinue(session) {
   showMfaChoice();
 }
 
+const ROLE_TABS = {
+  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess'],
+  staff: ['newsletter','families','yearly','infonights','volunteer'],
+  admissions_committee: ['infonights'],
+  teacher: ['gradebook']
+};
+const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook'];
+
 function applyRolePermissions() {
   const isSuperAdmin = currentRole === 'super_admin';
+  const isTeacher = currentRole === 'teacher';
   const isAdmissions = currentRole === 'admissions_committee';
 
   document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'block' : 'none';
-  document.getElementById('staffAccessTabBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
 
-  if (isAdmissions) {
-    // Hide irrelevant stat boxes — only Families + Next Info Night
-    document.getElementById('statBoxVolSlots').style.display = 'none';
-    document.getElementById('statBoxNewsletters').style.display = 'none';
-    // Make remaining two boxes fill the row
-    document.getElementById('statsDashboard').style.gridTemplateColumns = '1fr 1fr';
+  const visibleTabs = ROLE_TABS[currentRole] || ROLE_TABS.staff;
+  ALL_TABS.forEach(tab => {
+    const btn = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
+    if (btn) btn.style.display = visibleTabs.includes(tab) ? 'block' : 'none';
+  });
 
-    // Hide all tabs except Info Nights
-    ['newsletter','families','yearly','volunteer'].forEach(tab => {
-      const btn = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
-      const panel = document.getElementById(`panel-${tab}`);
-      if (btn) btn.style.display = 'none';
-      if (panel) panel.style.display = 'none';
-    });
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-    const infoTab = document.querySelector('.admin-tab[data-tab="infonights"]');
-    const infoPanel = document.getElementById('panel-infonights');
-    if (infoTab) infoTab.classList.add('active');
-    if (infoPanel) infoPanel.classList.add('active');
+  // Activate the first available tab for this role and sync the dropdown label
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  const firstTab = visibleTabs[0];
+  const firstBtn = document.querySelector(`.admin-tab[data-tab="${firstTab}"]`);
+  const firstPanel = document.getElementById('panel-' + firstTab);
+  if (firstBtn) {
+    firstBtn.classList.add('active');
+    document.getElementById('sectionMenuLabel').textContent = firstBtn.textContent;
+  }
+  if (firstPanel) firstPanel.classList.add('active');
+
+  // Stat dashboard adjustments per role
+  if (isTeacher) {
+    document.getElementById('statsDashboard').style.display = 'none';
+  } else {
+    document.getElementById('statsDashboard').style.display = '';
+    document.getElementById('statBoxVolSlots').style.display = isAdmissions ? 'none' : '';
+    document.getElementById('statBoxNewsletters').style.display = isAdmissions ? 'none' : '';
+    document.getElementById('statsDashboard').style.gridTemplateColumns = isAdmissions ? '1fr 1fr' : '';
   }
 }
 
 function getRoleLabel(role) {
   if (role === 'super_admin') return 'Super Admin';
   if (role === 'admissions_committee') return 'Admissions Committee';
+  if (role === 'teacher') return 'Teacher';
   return 'Staff';
 }
 
@@ -1107,6 +1156,7 @@ async function loadStaffAccess() {
         <select id="edit-role-${s.id}" style="width:100%;padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;margin-bottom:10px;">
           <option value="staff" ${s.role === 'staff' ? 'selected' : ''}>Staff</option>
           <option value="admissions_committee" ${s.role === 'admissions_committee' ? 'selected' : ''}>Admissions Committee</option>
+          <option value="teacher" ${s.role === 'teacher' ? 'selected' : ''}>Teacher</option>
           <option value="super_admin" ${s.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
         </select>
         <div style="display:flex;gap:8px;">
@@ -1224,6 +1274,7 @@ function loadAll() {
   loadVolSlots();
   loadVolSignups();
   loadGreetingAndStats();
+  loadTeacherOptions();
 }
 
 // ── GREETING, VERSE & STATS ───────────────────────────────────
@@ -1328,7 +1379,22 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    document.getElementById('sectionMenuLabel').textContent = tab.textContent;
+    document.getElementById('sectionMenuDropdown').style.display = 'none';
   });
+});
+
+document.getElementById('sectionMenuBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const menu = document.getElementById('sectionMenuDropdown');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+});
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('sectionMenuDropdown');
+  const btn = document.getElementById('sectionMenuBtn');
+  if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
+    menu.style.display = 'none';
+  }
 });
 
 // ── NEWSLETTER ───────────────────────────────────────────────
@@ -1506,9 +1572,24 @@ async function loadFamilies() {
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
         <span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.email}</span>
         <span style="font-size:0.85rem;color:#6b5e58;">🎓 ${f.student_count || 1} student${(f.student_count || 1) === 1 ? '' : 's'}</span>
+        ${f.assigned_teacher_email ? `<span style="font-size:0.85rem;color:#6b5e58;">👩‍🏫 ${f.assigned_teacher_email}</span>` : ''}
         <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       </div>
     </div>`).join('');
+}
+
+document.getElementById('famNewInfoBtn').addEventListener('click', () => {
+  showToast('Unchecked = returning family. This changes the wording of the welcome email they receive.', 5500);
+});
+
+async function loadTeacherOptions() {
+  const select = document.getElementById('fam-teacher');
+  if (!select) return;
+  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').eq('role', 'teacher').order('first_name');
+  const current = select.value;
+  select.innerHTML = '<option value="">— Not Assigned —</option>' +
+    (data || []).map(t => `<option value="${t.email}">${[t.first_name, t.last_name].filter(Boolean).join(' ') || t.email}</option>`).join('');
+  select.value = current;
 }
 
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
@@ -1516,19 +1597,21 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const email = document.getElementById('fam-email').value.trim();
   const studentCount = parseInt(document.getElementById('fam-students').value, 10) || 1;
   const isNewFamily = document.getElementById('fam-new').checked;
+  const assignedTeacher = document.getElementById('fam-teacher').value || null;
   if (!name || !email) { showToast('Please enter both name and email'); return; }
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
-  btn.textContent = 'Adding...';
-  const { error } = await sb.from('family_emails').insert({ name, email, student_count: studentCount, is_new_family: isNewFamily });
+  btn.textContent = 'Enrolling...';
+  const { error } = await sb.from('family_emails').insert({ name, email, student_count: studentCount, is_new_family: isNewFamily, assigned_teacher_email: assignedTeacher });
   btn.disabled = false;
-  btn.textContent = 'Add Family';
+  btn.textContent = 'Enroll Family';
   if (error) { showToast('Error: ' + error.message); return; }
   document.getElementById('fam-name').value = '';
   document.getElementById('fam-email').value = '';
   document.getElementById('fam-students').value = '1';
   document.getElementById('fam-new').checked = false;
-  showToast('✅ Family added and welcome email sent!', 4000);
+  document.getElementById('fam-teacher').value = '';
+  showToast('✅ Family enrolled and welcome email sent!', 4000);
   loadFamilies();
 });
 
