@@ -849,13 +849,74 @@ async function loadStaffAccess() {
     return;
   }
   list.innerHTML = data.map(s => `
-    <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+    <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;" id="staff-card-${s.id}">
       <span class="role-badge ${s.role}" style="margin-left:0;display:inline-block;margin-bottom:8px;">${getRoleLabel(s.role)}</span>
-      ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : ''}
-      <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
-      <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
+
+      <!-- VIEW MODE -->
+      <div id="staff-view-${s.id}">
+        ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : '<p style="font-family:\'Trebuchet MS\',sans-serif;font-size:0.88rem;color:#aaa;font-style:italic;margin:0 0 2px;">No name on file</p>'}
+        <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
+        <div style="display:flex;gap:8px;">
+          <button class="view-btn" onclick="showStaffEdit(${s.id}, '${s.first_name || ''}', '${s.last_name || ''}')">Edit</button>
+          <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
+        </div>
+      </div>
+
+      <!-- EDIT MODE -->
+      <div id="staff-edit-${s.id}" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <input type="text" id="edit-first-${s.id}" value="${s.first_name || ''}" placeholder="First name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
+          <input type="text" id="edit-last-${s.id}" value="${s.last_name || ''}" placeholder="Last name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
+        </div>
+        <select id="edit-role-${s.id}" style="width:100%;padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;margin-bottom:10px;">
+          <option value="staff" ${s.role === 'staff' ? 'selected' : ''}>Staff</option>
+          <option value="admissions_committee" ${s.role === 'admissions_committee' ? 'selected' : ''}>Admissions Committee</option>
+          <option value="super_admin" ${s.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+        </select>
+        <div style="display:flex;gap:8px;">
+          <button class="save-btn" style="padding:8px 18px;font-size:0.85rem;" onclick="saveStaffName(${s.id})">Save</button>
+          <button class="signout-btn" style="padding:8px 18px;font-size:0.85rem;" onclick="cancelStaffEdit(${s.id})">Cancel</button>
+        </div>
+      </div>
     </div>`).join('');
 }
+
+window.showStaffEdit = (id, firstName, lastName) => {
+  document.getElementById(`staff-view-${id}`).style.display = 'none';
+  document.getElementById(`staff-edit-${id}`).style.display = 'block';
+  document.getElementById(`edit-first-${id}`).focus();
+};
+
+window.cancelStaffEdit = (id) => {
+  document.getElementById(`staff-view-${id}`).style.display = 'block';
+  document.getElementById(`staff-edit-${id}`).style.display = 'none';
+};
+
+window.saveStaffName = async (id) => {
+  const firstName = document.getElementById(`edit-first-${id}`).value.trim();
+  const lastName = document.getElementById(`edit-last-${id}`).value.trim();
+  const role = document.getElementById(`edit-role-${id}`).value;
+  const btn = document.querySelector(`#staff-edit-${id} .save-btn`);
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  const { error } = await sb.from('staff_roles').update({
+    first_name: firstName || null,
+    last_name: lastName || null,
+    role
+  }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Save'; return; }
+
+  // Update greeting if this is the current user
+  if (currentSession && firstName) {
+    const { data } = await sb.from('staff_roles').select('email').eq('id', id).maybeSingle();
+    if (data && data.email === currentSession.user.email) {
+      currentSession._staffName = firstName;
+    }
+  }
+
+  showToast('✅ Staff member updated');
+  loadStaffAccess();
+};
 
 document.getElementById('saveStaffRole').addEventListener('click', async () => {
   const firstName = document.getElementById('staff-first').value.trim();
