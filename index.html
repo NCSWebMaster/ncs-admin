@@ -697,8 +697,8 @@
     </div>
     <div class="events-list">
       <h3>Authorized Staff <span class="family-count" id="staffCount"></span></h3>
-      <div style="margin-bottom:14px;">
-        <select id="staffFilterRole" style="max-width:260px;">
+      <div style="margin-bottom:20px;">
+        <select id="staffFilterRole" style="width:100%;max-width:400px;padding:14px 16px;border:2px solid var(--grey-line);border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;transition:border-color 0.2s;">
           <option value="">All Roles</option>
         </select>
       </div>
@@ -1071,7 +1071,7 @@ function hasRole(r) {
 }
 
 const ROLE_TABS = {
-  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess'],
+  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess','boardmember'],
   staff: ['newsletter','families','yearly','infonights','volunteer'],
   admissions_committee: ['infonights'],
   teacher: ['gradebook'],
