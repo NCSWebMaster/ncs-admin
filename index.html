@@ -94,9 +94,19 @@
   .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
   .form-row.single{ grid-template-columns:1fr; }
   .form-group{ display:flex; flex-direction:column; gap:6px; }
-  .student-row{ background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; padding:16px; margin-bottom:12px; }
-  .student-row-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-  .student-row-header span{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:var(--bronze); }
+  .person-section{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:16px; overflow:hidden; }
+  .person-section-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fdf6f2; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; color:var(--ink); user-select:none; }
+  .person-section-body{ padding:16px; background:#fff; }
+  .person-section.collapsed .person-section-body{ display:none; }
+  .person-toggle-icon{ transition:transform 0.2s; color:var(--bronze); }
+  .person-section.collapsed .person-toggle-icon{ transform:rotate(-90deg); }
+  .student-row{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+  .student-row-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fdf6f2; cursor:pointer; user-select:none; }
+  .student-row-header span.student-row-title{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .student-row-body{ padding:16px; background:#fff; }
+  .student-row.collapsed .student-row-body{ display:none; }
+  .student-row.collapsed .student-toggle-icon{ transform:rotate(-90deg); }
+  .student-toggle-icon{ transition:transform 0.2s; color:var(--bronze); }
   .student-row-remove{ background:none; border:none; color:#c0392b; font-size:0.78rem; cursor:pointer; font-family:'Trebuchet MS',sans-serif; padding:2px 6px; }
   .form-group label{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); }
   .form-group input, .form-group select, .form-group textarea{ padding:10px 14px; border:1px solid var(--grey-line); border-radius:6px; font-family:Georgia,serif; font-size:0.95rem; color:var(--ink); background:#fff; transition:border-color 0.2s; }
@@ -404,31 +414,77 @@
   <div class="admin-panel" id="panel-families">
     <div class="admin-form">
       <h3>Enroll Family</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Parent/Guardian Name</label>
-          <input type="text" id="fam-name" placeholder="e.g. John Smith">
-          <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
-            <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
-              <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
-              New Family
-            </label>
-            <button type="button" id="famNewInfoBtn" title="What does this do?" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #c9a876;background:#fdf6f2;color:#a8865f;font-family:Georgia,serif;font-size:0.75rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">i</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="fam-email" placeholder="e.g. parent@email.com">
-        </div>
+
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
+          <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
+          New Family
+        </label>
+        <button type="button" id="famNewInfoBtn" title="What does this do?" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #c9a876;background:#fdf6f2;color:#a8865f;font-family:Georgia,serif;font-size:0.75rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">i</button>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Second Email <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional — other parent can sign in too)</span></label>
-          <input type="email" id="fam-email-2" placeholder="e.g. otherparent@email.com">
+
+      <!-- FATHER -->
+      <div class="person-section" id="father-section">
+        <div class="person-section-header" onclick="togglePersonSection('father-section')">
+          <span>👨 Father</span>
+          <span class="person-toggle-icon">▾</span>
+        </div>
+        <div class="person-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="father-name" placeholder="e.g. John Smith">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="father-email" placeholder="e.g. john@email.com">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="father-phone" placeholder="e.g. (818) 555-1234">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="father-dob">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style="margin:24px 0 12px;display:flex;align-items:center;justify-content:space-between;">
+      <!-- MOTHER -->
+      <div class="person-section" id="mother-section">
+        <div class="person-section-header" onclick="togglePersonSection('mother-section')">
+          <span>👩 Mother</span>
+          <span class="person-toggle-icon">▾</span>
+        </div>
+        <div class="person-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="mother-name" placeholder="e.g. Jane Smith">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="mother-email" placeholder="e.g. jane@email.com">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="mother-phone" placeholder="e.g. (818) 555-1234">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="mother-dob">
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:#9a8b84;margin:-8px 0 20px;">At least one parent's email is required — that's what they'll use to sign in.</p>
+
+      <div style="margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;">
         <label style="margin:0;">Students</label>
         <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add Another Student</button>
       </div>
@@ -1663,23 +1719,41 @@ async function loadFamilies() {
     const kidsHTML = kids.length > 0
       ? kids.map(s => `
           <div style="font-size:0.85rem;color:#6b5e58;background:#fff;border:1px solid var(--grey-line);border-radius:6px;padding:6px 12px;">
-            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
+            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.dob ? ' · DOB ' + s.dob : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
           </div>`).join('')
       : '<span style="font-size:0.85rem;color:#aaa;font-style:italic;">No students added</span>';
+
+    const parentBlock = (label, icon, name, email, phone, dob) => {
+      if (!name && !email && !phone && !dob) return '';
+      return `
+        <div style="font-size:0.85rem;color:#6b5e58;display:flex;flex-direction:column;gap:2px;">
+          <strong style="color:var(--ink);">${icon} ${label}${name ? ': ' + name : ''}</strong>
+          ${email ? `<span>📧 ${email}</span>` : ''}
+          ${phone ? `<span>📱 ${phone}</span>` : ''}
+          ${dob ? `<span>🎂 ${dob}</span>` : ''}
+        </div>`;
+    };
+
+    const resendButtons = `
+      ${f.father_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.father_email}', '${f.father_name || f.name}', '${f.access_code}')">Resend to Father</button>` : ''}
+      ${f.mother_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.mother_email}', '${f.mother_name || f.name}', '${f.access_code}')">Resend to Mother</button>` : ''}
+      ${(!f.father_email && !f.mother_email) ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.email}', '${f.name}', '${f.access_code}')">Resend Code</button>` : ''}
+    `;
+
     return `
-    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
         <div class="event-row-actions">
-          <button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.email}', '${f.name}', '${f.access_code}')">Resend Code</button>
+          ${resendButtons}
           <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
         </div>
       </div>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.email}</span>
-        ${f.second_email ? `<span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.second_email}</span>` : ''}
-        <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
+        ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
+        ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
+      <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
   }).join('');
@@ -1704,6 +1778,10 @@ async function loadTeacherOptions() {
   });
 }
 
+window.togglePersonSection = (id) => {
+  document.getElementById(id).classList.toggle('collapsed');
+};
+
 let studentRowCounter = 0;
 function addStudentRow() {
   studentRowCounter++;
@@ -1713,38 +1791,53 @@ function addStudentRow() {
   div.className = 'student-row';
   div.id = `student-row-${id}`;
   div.innerHTML = `
-    <div class="student-row-header">
-      <span>Student</span>
-      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id})">✕ Remove</button>
+    <div class="student-row-header" onclick="toggleStudentRow(${id}, event)">
+      <span class="student-row-title"><span class="student-toggle-icon">▾</span> 🎓 Student</span>
+      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id}, event)">✕ Remove</button>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>First Name</label>
-        <input type="text" class="student-first" placeholder="e.g. Phoebe">
+    <div class="student-row-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" class="student-first" placeholder="e.g. Phoebe">
+        </div>
+        <div class="form-group">
+          <label>Last Name <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
+          <input type="text" class="student-last" placeholder="e.g. Sample">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Last Name <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
-        <input type="text" class="student-last" placeholder="e.g. Sample">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" class="student-dob">
+        </div>
+        <div class="form-group">
+          <label>Grade</label>
+          <select class="student-grade">
+            <option value="">— Select Grade —</option>
+            ${GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Grade</label>
-        <select class="student-grade">
-          <option value="">— Select Grade —</option>
-          ${GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Assigned Teacher</label>
-        <select class="student-teacher-select">${teacherOptionsCache}</select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigned Teacher</label>
+          <select class="student-teacher-select">${teacherOptionsCache}</select>
+        </div>
       </div>
     </div>`;
   container.appendChild(div);
   updateRemoveButtonsVisibility();
 }
 
-window.removeStudentRow = (id) => {
+window.toggleStudentRow = (id, e) => {
+  if (e) e.stopPropagation();
+  const row = document.getElementById(`student-row-${id}`);
+  if (row) row.classList.toggle('collapsed');
+};
+
+window.removeStudentRow = (id, e) => {
+  if (e) e.stopPropagation();
   const row = document.getElementById(`student-row-${id}`);
   if (row) row.remove();
   updateRemoveButtonsVisibility();
@@ -1819,27 +1912,53 @@ document.getElementById('studentRowsContainer').addEventListener('change', saveE
 document.getElementById('addStudentRowBtn').addEventListener('click', () => setTimeout(saveEnrollDraft, 0));
 
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
-  const name = document.getElementById('fam-name').value.trim();
-  const email = document.getElementById('fam-email').value.trim();
-  const email2 = document.getElementById('fam-email-2').value.trim();
+  const fatherName = document.getElementById('father-name').value.trim();
+  const fatherEmail = document.getElementById('father-email').value.trim();
+  const fatherPhone = document.getElementById('father-phone').value.trim();
+  const fatherDob = document.getElementById('father-dob').value || null;
+  const motherName = document.getElementById('mother-name').value.trim();
+  const motherEmail = document.getElementById('mother-email').value.trim();
+  const motherPhone = document.getElementById('mother-phone').value.trim();
+  const motherDob = document.getElementById('mother-dob').value || null;
   const isNewFamily = document.getElementById('fam-new').checked;
 
   const studentRows = Array.from(document.querySelectorAll('.student-row')).map(row => ({
     first_name: row.querySelector('.student-first').value.trim(),
     last_name: row.querySelector('.student-last').value.trim(),
+    dob: row.querySelector('.student-dob').value || null,
     grade: row.querySelector('.student-grade').value || null,
     assigned_teacher_email: row.querySelector('.student-teacher-select').value || null
   })).filter(s => s.first_name);
 
-  if (!name || !email) { showToast('Please enter both name and email'); return; }
+  if (!fatherEmail && !motherEmail) { showToast('Please enter at least one parent email (Father or Mother)'); return; }
   if (studentRows.length === 0) { showToast('Please enter at least one student\'s first name'); return; }
 
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
   btn.textContent = 'Enrolling...';
 
+  // email/second_email remain the columns that drive login + welcome email + volunteer signup matching —
+  // whichever parent email is provided becomes the primary, the other (if both given) becomes secondary.
+  const primaryEmail = fatherEmail || motherEmail;
+  const secondaryEmail = (fatherEmail && motherEmail) ? motherEmail : null;
+  const displayName = [fatherName, motherName].filter(Boolean).join(' & ') || 'Family';
+
   const { data: famData, error } = await sb.from('family_emails')
-    .insert({ name, email, second_email: email2 || null, student_count: studentRows.length, is_new_family: isNewFamily })
+    .insert({
+      name: displayName,
+      email: primaryEmail,
+      second_email: secondaryEmail,
+      father_name: fatherName || null,
+      father_email: fatherEmail || null,
+      father_phone: fatherPhone || null,
+      father_dob: fatherDob,
+      mother_name: motherName || null,
+      mother_email: motherEmail || null,
+      mother_phone: motherPhone || null,
+      mother_dob: motherDob,
+      student_count: studentRows.length,
+      is_new_family: isNewFamily
+    })
     .select()
     .single();
 
@@ -1853,9 +1972,9 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   btn.textContent = 'Enroll Family';
   if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
 
-  document.getElementById('fam-name').value = '';
-  document.getElementById('fam-email').value = '';
-  document.getElementById('fam-email-2').value = '';
+  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
   document.getElementById('fam-new').checked = false;
   document.getElementById('studentRowsContainer').innerHTML = '';
   addStudentRow();
@@ -2220,15 +2339,21 @@ async function printFamilies() {
   const rows = data.map((f, i) => {
     const kids = f.students || [];
     const kidsLine = kids.length > 0
-      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}`).join(' &nbsp;·&nbsp; ')
+      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}${s.dob ? ' — DOB ' + s.dob : ''}`).join(' &nbsp;·&nbsp; ')
       : 'No students on file';
+    const parentLine = (label, name, email, phone) =>
+      (name || email || phone) ? `${label}: ${[name, email, phone].filter(Boolean).join(', ')}` : '';
+    const parentsLine = [
+      parentLine('Father', f.father_name, f.father_email, f.father_phone),
+      parentLine('Mother', f.mother_name, f.mother_email, f.mother_phone)
+    ].filter(Boolean).join(' &nbsp;·&nbsp; ') || `${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}`;
     return `
     <div class="print-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
       <div style="display:flex;justify-content:space-between;width:100%;">
         <strong>${i + 1}. ${f.name}</strong>
         <span>${kids.length} student${kids.length === 1 ? '' : 's'}</span>
       </div>
-      <span style="font-size:0.85rem;">${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}</span>
+      <span style="font-size:0.85rem;">${parentsLine}</span>
       <span style="font-size:0.85rem;color:#6b5e58;">${kidsLine}</span>
     </div>`;
   }).join('');
