@@ -35,6 +35,7 @@
   .role-badge.staff{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
   .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
   .role-badge.teacher{ background:#fdf4ff; color:#9333ea; border:1px solid #9333ea; }
+  .role-badge.board_member{ background:#eff6ff; color:#1d4ed8; border:1px solid #1d4ed8; }
   .section-menu-trigger{ display:flex; align-items:center; gap:8px; width:100%; padding:13px 18px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.92rem; color:var(--ink); cursor:pointer; transition:border-color 0.2s; }
   .section-menu-trigger:hover{ border-color:var(--red); }
   .section-menu-dropdown{ position:absolute; top:calc(100% + 8px); left:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:50; min-width:260px; max-width:90vw; }
@@ -93,9 +94,19 @@
   .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
   .form-row.single{ grid-template-columns:1fr; }
   .form-group{ display:flex; flex-direction:column; gap:6px; }
-  .student-row{ background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; padding:16px; margin-bottom:12px; }
-  .student-row-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-  .student-row-header span{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:var(--bronze); }
+  .person-section{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:16px; overflow:hidden; }
+  .person-section-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fdf6f2; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; color:var(--ink); user-select:none; }
+  .person-section-body{ padding:16px; background:#fff; }
+  .person-section.collapsed .person-section-body{ display:none; }
+  .person-toggle-icon{ transition:transform 0.2s; color:var(--bronze); }
+  .person-section.collapsed .person-toggle-icon{ transform:rotate(-90deg); }
+  .student-row{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+  .student-row-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fdf6f2; cursor:pointer; user-select:none; }
+  .student-row-header span.student-row-title{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .student-row-body{ padding:16px; background:#fff; }
+  .student-row.collapsed .student-row-body{ display:none; }
+  .student-row.collapsed .student-toggle-icon{ transform:rotate(-90deg); }
+  .student-toggle-icon{ transition:transform 0.2s; color:var(--bronze); }
   .student-row-remove{ background:none; border:none; color:#c0392b; font-size:0.78rem; cursor:pointer; font-family:'Trebuchet MS',sans-serif; padding:2px 6px; }
   .form-group label{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); }
   .form-group input, .form-group select, .form-group textarea{ padding:10px 14px; border:1px solid var(--grey-line); border-radius:6px; font-family:Georgia,serif; font-size:0.95rem; color:var(--ink); background:#fff; transition:border-color 0.2s; }
@@ -268,7 +279,7 @@
   <!-- GREETING & VERSE -->
   <div class="admin-greeting" id="adminGreeting">
     <div class="greeting-text">
-      <span class="role-badge" id="adminRoleBadge" style="margin-left:0;margin-bottom:8px;display:inline-block;font-size:0.8rem;padding:5px 16px;"></span>
+      <div id="adminRoleBadge" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <h2 id="greetingTitle">Good morning!</h2>
       <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
@@ -321,6 +332,7 @@
       <button class="admin-tab" data-tab="volunteer">🙋 Volunteer Slots</button>
       <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
       <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;">🗂️ Gradebook</button>
+      <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;">📋 Board Member</button>
     </div>
   </div>
 
@@ -402,31 +414,77 @@
   <div class="admin-panel" id="panel-families">
     <div class="admin-form">
       <h3>Enroll Family</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Parent/Guardian Name</label>
-          <input type="text" id="fam-name" placeholder="e.g. John Smith">
-          <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
-            <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
-              <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
-              New Family
-            </label>
-            <button type="button" id="famNewInfoBtn" title="What does this do?" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #c9a876;background:#fdf6f2;color:#a8865f;font-family:Georgia,serif;font-size:0.75rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">i</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="fam-email" placeholder="e.g. parent@email.com">
-        </div>
+
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
+          <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
+          New Family
+        </label>
+        <button type="button" id="famNewInfoBtn" title="What does this do?" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #c9a876;background:#fdf6f2;color:#a8865f;font-family:Georgia,serif;font-size:0.75rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">i</button>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Second Email <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional — other parent can sign in too)</span></label>
-          <input type="email" id="fam-email-2" placeholder="e.g. otherparent@email.com">
+
+      <!-- FATHER -->
+      <div class="person-section" id="father-section">
+        <div class="person-section-header" onclick="togglePersonSection('father-section')">
+          <span>👨 Father</span>
+          <span class="person-toggle-icon">▾</span>
+        </div>
+        <div class="person-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="father-name" placeholder="e.g. John Smith">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="father-email" placeholder="e.g. john@email.com">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="father-phone" placeholder="e.g. (818) 555-1234">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="father-dob">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style="margin:24px 0 12px;display:flex;align-items:center;justify-content:space-between;">
+      <!-- MOTHER -->
+      <div class="person-section" id="mother-section">
+        <div class="person-section-header" onclick="togglePersonSection('mother-section')">
+          <span>👩 Mother</span>
+          <span class="person-toggle-icon">▾</span>
+        </div>
+        <div class="person-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="mother-name" placeholder="e.g. Jane Smith">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="mother-email" placeholder="e.g. jane@email.com">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="mother-phone" placeholder="e.g. (818) 555-1234">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="mother-dob">
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:#9a8b84;margin:-8px 0 20px;">At least one parent's email is required — that's what they'll use to sign in.</p>
+
+      <div style="margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;">
         <label style="margin:0;">Students</label>
         <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add Another Student</button>
       </div>
@@ -612,22 +670,38 @@
           <input type="email" id="staff-email" placeholder="e.g. teacher@gmail.com">
         </div>
         <div class="form-group">
-          <label>Role</label>
-          <select id="staff-role">
-            <option value="staff">Staff</option>
-            <option value="admissions_committee">Admissions Committee</option>
-            <option value="teacher">Teacher</option>
-            <option value="super_admin">Super Admin</option>
-          </select>
+          <label>Roles <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(select one or more)</span></label>
+          <div id="staff-roles-checkboxes" style="display:flex;flex-direction:column;gap:9px;padding-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
+              <input type="checkbox" class="role-checkbox" value="staff"> Staff
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
+              <input type="checkbox" class="role-checkbox" value="admissions_committee"> Admissions Committee
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
+              <input type="checkbox" class="role-checkbox" value="teacher"> Teacher
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
+              <input type="checkbox" class="role-checkbox" value="board_member"> Board Member
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
+              <input type="checkbox" class="role-checkbox" value="super_admin"> Super Admin
+            </label>
+          </div>
         </div>
       </div>
       <button class="save-btn" id="saveStaffRole">Grant Access</button>
       <p style="font-size:0.82rem;color:#aaa;margin-top:10px;">
-        Staff can manage newsletters, families, schedules, info nights, and volunteer slots. Super Admins can additionally manage staff access and start a new school year.
+        A person can hold more than one role — e.g. a teacher who also helps with newsletters and family enrollment. Super Admins can additionally manage staff access and start a new school year.
       </p>
     </div>
     <div class="events-list">
       <h3>Authorized Staff <span class="family-count" id="staffCount"></span></h3>
+      <div style="margin-bottom:14px;">
+        <select id="staffFilterRole" style="max-width:260px;">
+          <option value="">All Roles</option>
+        </select>
+      </div>
       <div id="staffAccessList"></div>
     </div>
   </div>
@@ -640,6 +714,17 @@
       <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
         This is where you'll see students assigned to your class and manage their grades.
         Students get assigned to you automatically when the office enrolls their family.
+      </p>
+    </div>
+  </div>
+
+  <!-- BOARD MEMBER PANEL (placeholder — Google Drive integration coming) -->
+  <div class="admin-panel" id="panel-boardmember">
+    <div class="admin-form" style="text-align:center;padding:48px 24px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
+      <h3 style="margin-bottom:8px;">Board Resources Coming Soon</h3>
+      <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
+        This is where board members will browse, upload, and manage files from the NCS Google Drive board folders.
       </p>
     </div>
   </div>
@@ -728,7 +813,7 @@ function showToast(msg, duration = 3000) {
 }
 
 // ── AUTH, MFA & ROLES ────────────────────────────────────────
-let currentRole = null;
+let currentRoles = [];
 let currentSession = null;
 let pendingFactorId = null;
 
@@ -955,13 +1040,20 @@ async function verifyTotpCode() {
 
 async function checkRoleAndContinue(session) {
   currentSession = session;
-  const { data, error } = await sb.from('staff_roles').select('role, first_name, last_name').eq('email', session.user.email).maybeSingle();
+  const { data, error } = await sb.from('staff_roles').select('roles, first_name, last_name').eq('email', session.user.email).maybeSingle();
   if (error || !data) {
-    currentRole = null;
+    currentRoles = [];
+    console.error('checkRoleAndContinue error:', error, 'data:', data);
+    const msgEl = document.querySelector('#notAuthorizedScreen p');
+    if (msgEl) {
+      msgEl.textContent = error
+        ? `There was a problem checking your access: ${error.message}`
+        : `Your account isn't on the NCS admin staff list. Contact a Super Admin to be granted access, or sign out and try a different account.`;
+    }
     showOnly('notAuthorizedScreen');
     return;
   }
-  currentRole = data.role;
+  currentRoles = data.roles || [];
   currentSession._staffName = data.first_name || null;
 
   const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -974,22 +1066,34 @@ async function checkRoleAndContinue(session) {
   showMfaChoice();
 }
 
+function hasRole(r) {
+  return Array.isArray(currentRoles) && currentRoles.includes(r);
+}
+
 const ROLE_TABS = {
   super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess'],
   staff: ['newsletter','families','yearly','infonights','volunteer'],
   admissions_committee: ['infonights'],
-  teacher: ['gradebook']
+  teacher: ['gradebook'],
+  board_member: ['newsletter','families','yearly','infonights','volunteer','boardmember']
 };
-const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook'];
+const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook','boardmember'];
+
+function getVisibleTabsForRoles(roles) {
+  const set = new Set();
+  (roles || []).forEach(r => (ROLE_TABS[r] || []).forEach(t => set.add(t)));
+  if (set.size === 0) ROLE_TABS.staff.forEach(t => set.add(t)); // safety fallback
+  return ALL_TABS.filter(t => set.has(t));
+}
 
 function applyRolePermissions() {
-  const isSuperAdmin = currentRole === 'super_admin';
-  const isTeacher = currentRole === 'teacher';
-  const isAdmissions = currentRole === 'admissions_committee';
+  const isSuperAdmin = hasRole('super_admin');
+  const isAdmissions = hasRole('admissions_committee');
+  const isTeacher = hasRole('teacher');
 
   document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'block' : 'none';
 
-  const visibleTabs = ROLE_TABS[currentRole] || ROLE_TABS.staff;
+  const visibleTabs = getVisibleTabsForRoles(currentRoles);
   ALL_TABS.forEach(tab => {
     const btn = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
     if (btn) btn.style.display = visibleTabs.includes(tab) ? 'block' : 'none';
@@ -1007,14 +1111,19 @@ function applyRolePermissions() {
   }
   if (firstPanel) firstPanel.classList.add('active');
 
-  // Stat dashboard adjustments per role
-  if (isTeacher) {
+  // Stat dashboard: hidden only for someone whose ONLY access is Teacher (no families/staff/board access);
+  // limited 2-box view for admissions-only; full view for everyone else (including Teacher+Staff combos)
+  const hasFamiliesAccess = visibleTabs.includes('families');
+  const pureAdmissions = isAdmissions && !hasFamiliesAccess;
+  const pureTeacher = isTeacher && !hasFamiliesAccess && !pureAdmissions;
+
+  if (pureTeacher) {
     document.getElementById('statsDashboard').style.display = 'none';
   } else {
     document.getElementById('statsDashboard').style.display = '';
-    document.getElementById('statBoxVolSlots').style.display = isAdmissions ? 'none' : '';
-    document.getElementById('statBoxNewsletters').style.display = isAdmissions ? 'none' : '';
-    document.getElementById('statsDashboard').style.gridTemplateColumns = isAdmissions ? '1fr 1fr' : '';
+    document.getElementById('statBoxVolSlots').style.display = pureAdmissions ? 'none' : '';
+    document.getElementById('statBoxNewsletters').style.display = pureAdmissions ? 'none' : '';
+    document.getElementById('statsDashboard').style.gridTemplateColumns = pureAdmissions ? '1fr 1fr' : '';
   }
 }
 
@@ -1022,18 +1131,24 @@ function getRoleLabel(role) {
   if (role === 'super_admin') return 'Super Admin';
   if (role === 'admissions_committee') return 'Admissions Committee';
   if (role === 'teacher') return 'Teacher';
+  if (role === 'board_member') return 'Board Member';
   return 'Staff';
 }
+
+// Canonical display order for badges
+const ROLE_BADGE_ORDER = ['super_admin','board_member','teacher','staff','admissions_committee'];
 
 function enterDashboard() {
   showOnly('adminDashboard');
   document.getElementById('adminUserEmail').textContent = currentSession.user.email;
-  const badge = document.getElementById('adminRoleBadge');
-  badge.textContent = getRoleLabel(currentRole);
-  badge.className = 'role-badge ' + currentRole;
+  const badgeContainer = document.getElementById('adminRoleBadge');
+  const orderedRoles = ROLE_BADGE_ORDER.filter(r => hasRole(r));
+  badgeContainer.innerHTML = orderedRoles.map(r =>
+    `<span class="role-badge ${r}" style="margin-left:0;font-size:0.8rem;padding:5px 16px;">${getRoleLabel(r)}</span>`
+  ).join('');
   applyRolePermissions();
   loadAll();
-  if (currentRole === 'super_admin') loadStaffAccess();
+  if (hasRole('super_admin')) loadStaffAccess();
 }
 
 function updateGreetingName(firstName) {
@@ -1047,7 +1162,7 @@ sb.auth.onAuthStateChange((event, session) => {
   if (session) {
     checkRoleAndContinue(session);
   } else {
-    currentRole = null;
+    currentRoles = [];
     currentSession = null;
     showOnly('loginScreen');
   }
@@ -1129,50 +1244,79 @@ document.getElementById('resetAuthenticatorBtn').addEventListener('click', async
 });
 
 // ── STAFF ACCESS (super admin only) ─────────────────────────────
+const ALL_KNOWN_ROLES = ['super_admin','staff','admissions_committee','teacher','board_member'];
+
 async function loadStaffAccess() {
   const { data, error } = await sb.from('staff_roles').select('*').order('email');
   const list = document.getElementById('staffAccessList');
+  const filterSelect = document.getElementById('staffFilterRole');
   if (error) { list.innerHTML = '<p class="empty-state">Could not load staff list.</p>'; return; }
   document.getElementById('staffCount').textContent = data ? `(${data.length})` : '';
+
+  // Build filter options dynamically from whatever roles actually exist in the data
+  // (plus the known role list, so brand-new roles always show up automatically)
+  const rolesPresent = new Set();
+  (data || []).forEach(s => (s.roles || []).forEach(r => rolesPresent.add(r)));
+  ALL_KNOWN_ROLES.forEach(r => rolesPresent.add(r));
+  const currentFilter = filterSelect.value;
+  filterSelect.innerHTML = '<option value="">All Roles</option>' +
+    Array.from(rolesPresent).map(r => `<option value="${r}">${getRoleLabel(r)}</option>`).join('');
+  filterSelect.value = currentFilter;
+
   if (!data || data.length === 0) {
     list.innerHTML = '<p class="empty-state">No staff added yet.</p>';
     return;
   }
-  list.innerHTML = data.map(s => `
+
+  const filtered = currentFilter ? data.filter(s => (s.roles || []).includes(currentFilter)) : data;
+  if (filtered.length === 0) {
+    list.innerHTML = '<p class="empty-state">No staff match this filter.</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(s => {
+    const roles = s.roles || [];
+    const badgesHTML = ROLE_BADGE_ORDER.filter(r => roles.includes(r))
+      .map(r => `<span class="role-badge ${r}" style="margin-left:0;margin-right:6px;display:inline-block;margin-bottom:8px;">${getRoleLabel(r)}</span>`).join('');
+    const checkboxesHTML = ALL_KNOWN_ROLES.map(r => `
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0 0 8px;font-size:0.9rem;">
+        <input type="checkbox" class="edit-role-checkbox-${s.id}" value="${r}" ${roles.includes(r) ? 'checked' : ''}> ${getRoleLabel(r)}
+      </label>`).join('');
+
+    return `
     <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;" id="staff-card-${s.id}">
-      <span class="role-badge ${s.role}" style="margin-left:0;display:inline-block;margin-bottom:8px;">${getRoleLabel(s.role)}</span>
+      <div style="margin-bottom:8px;">${badgesHTML}</div>
 
       <!-- VIEW MODE -->
       <div id="staff-view-${s.id}">
         ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : '<p style="font-family:\'Trebuchet MS\',sans-serif;font-size:0.88rem;color:#aaa;font-style:italic;margin:0 0 2px;">No name on file</p>'}
         <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
         <div style="display:flex;gap:8px;">
-          <button class="view-btn" onclick="showStaffEdit(${s.id}, '${s.first_name || ''}', '${s.last_name || ''}')">Edit</button>
+          <button class="view-btn" onclick="showStaffEdit(${s.id})">Edit</button>
           <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
         </div>
       </div>
 
       <!-- EDIT MODE -->
       <div id="staff-edit-${s.id}" style="display:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
           <input type="text" id="edit-first-${s.id}" value="${s.first_name || ''}" placeholder="First name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
           <input type="text" id="edit-last-${s.id}" value="${s.last_name || ''}" placeholder="Last name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
         </div>
-        <select id="edit-role-${s.id}" style="width:100%;padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;margin-bottom:10px;">
-          <option value="staff" ${s.role === 'staff' ? 'selected' : ''}>Staff</option>
-          <option value="admissions_committee" ${s.role === 'admissions_committee' ? 'selected' : ''}>Admissions Committee</option>
-          <option value="teacher" ${s.role === 'teacher' ? 'selected' : ''}>Teacher</option>
-          <option value="super_admin" ${s.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
-        </select>
+        <p style="font-size:0.82rem;color:#9a8b84;margin-bottom:8px;">Roles (select one or more)</p>
+        <div id="edit-roles-${s.id}" style="margin-bottom:10px;">${checkboxesHTML}</div>
         <div style="display:flex;gap:8px;">
           <button class="save-btn" style="padding:8px 18px;font-size:0.85rem;" onclick="saveStaffName(${s.id})">Save</button>
           <button class="signout-btn" style="padding:8px 18px;font-size:0.85rem;" onclick="cancelStaffEdit(${s.id})">Cancel</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-window.showStaffEdit = (id, firstName, lastName) => {
+document.getElementById('staffFilterRole').addEventListener('change', loadStaffAccess);
+
+window.showStaffEdit = (id) => {
   document.getElementById(`staff-view-${id}`).style.display = 'none';
   document.getElementById(`staff-edit-${id}`).style.display = 'block';
   document.getElementById(`edit-first-${id}`).focus();
@@ -1186,14 +1330,15 @@ window.cancelStaffEdit = (id) => {
 window.saveStaffName = async (id) => {
   const firstName = document.getElementById(`edit-first-${id}`).value.trim();
   const lastName = document.getElementById(`edit-last-${id}`).value.trim();
-  const role = document.getElementById(`edit-role-${id}`).value;
+  const roles = Array.from(document.querySelectorAll(`.edit-role-checkbox-${id}:checked`)).map(cb => cb.value);
+  if (roles.length === 0) { showToast('Select at least one role'); return; }
   const btn = document.querySelector(`#staff-edit-${id} .save-btn`);
   btn.disabled = true;
   btn.textContent = 'Saving...';
   const { error } = await sb.from('staff_roles').update({
     first_name: firstName || null,
     last_name: lastName || null,
-    role
+    roles
   }).eq('id', id);
   if (error) { showToast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Save'; return; }
 
@@ -1209,29 +1354,36 @@ window.saveStaffName = async (id) => {
   loadStaffAccess();
 };
 
+function getRoleAccessDescription(role) {
+  if (role === 'super_admin') return 'manage staff access and start a new school year';
+  if (role === 'admissions_committee') return 'monitor and manage upcoming information nights for prospective families';
+  if (role === 'teacher') return 'view your assigned students and manage their grades in the Gradebook';
+  if (role === 'board_member') return 'access board resources and materials';
+  return 'manage newsletters, family enrollment, the yearly schedule, info nights, and volunteer slots';
+}
+
 document.getElementById('saveStaffRole').addEventListener('click', async () => {
   const firstName = document.getElementById('staff-first').value.trim();
   const lastName = document.getElementById('staff-last').value.trim();
   const email = document.getElementById('staff-email').value.trim().toLowerCase();
-  const role = document.getElementById('staff-role').value;
+  const roles = Array.from(document.querySelectorAll('#staff-roles-checkboxes .role-checkbox:checked')).map(cb => cb.value);
   if (!email) { showToast('Please enter an email'); return; }
+  if (roles.length === 0) { showToast('Select at least one role'); return; }
   const btn = document.getElementById('saveStaffRole');
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
   const { error } = await sb.from('staff_roles').upsert(
-    { email, role, first_name: firstName || null, last_name: lastName || null },
+    { email, roles, first_name: firstName || null, last_name: lastName || null },
     { onConflict: 'email' }
   );
   if (error) { btn.disabled = false; btn.textContent = 'Grant Access'; showToast('Error: ' + error.message); return; }
 
-  // Send welcome email
-  const roleLabel = getRoleLabel(role);
-  const accessDesc = role === 'super_admin'
-    ? 'As a Super Admin you have full access to manage newsletters, family emails, the yearly schedule, info nights, volunteer slots, staff access, and the ability to start a new school year.'
-    : role === 'admissions_committee'
-    ? 'As an Admissions Committee member your access is focused on the Info Nights tab, where you can monitor and manage upcoming information nights for prospective families.'
-    : 'As a Staff member you can manage newsletters, family emails, the yearly schedule, info nights, and volunteer slots.';
+  // Send welcome email — describe access for every role granted
+  const roleLabels = ROLE_BADGE_ORDER.filter(r => roles.includes(r)).map(getRoleLabel).join(' & ');
+  const accessDesc = ROLE_BADGE_ORDER.filter(r => roles.includes(r))
+    .map(r => `As ${/^[aeiou]/i.test(getRoleLabel(r)) ? 'an' : 'a'} ${getRoleLabel(r)}, you can ${getRoleAccessDescription(r)}.`)
+    .join(' ');
 
   await sb.rpc('send_email_via_resend', {
     to_email: email,
@@ -1241,7 +1393,7 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
       <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
       <h2 style="color:#C8102E;text-align:center;">Your NCS Admin Access</h2>
       <p style="color:#3A2E2A;font-size:16px;">Hi${firstName ? ' ' + firstName : ''},</p>
-      <p style="color:#3A2E2A;font-size:16px;">You've been granted <strong>${roleLabel}</strong> access to the Northridge Community School admin site. ${accessDesc}</p>
+      <p style="color:#3A2E2A;font-size:16px;">You've been granted <strong>${roleLabels}</strong> access to the Northridge Community School admin site. ${accessDesc}</p>
       <p style="color:#3A2E2A;font-size:16px;">To sign in, visit the link below and click "Sign in with Google" using this email address. After signing in, a 6-digit verification code will be sent to your email — enter it to complete login.</p>
       <div style="text-align:center;margin:32px 0;">
         <a href="https://admin.northridgecommunityschool.com" style="background:#C8102E;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;font-size:16px;">Sign In to Admin Site</a>
@@ -1259,6 +1411,7 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
   document.getElementById('staff-first').value = '';
   document.getElementById('staff-last').value = '';
   document.getElementById('staff-email').value = '';
+  document.querySelectorAll('#staff-roles-checkboxes .role-checkbox').forEach(cb => cb.checked = false);
   showToast('✅ Access granted and welcome email sent to ' + email, 4000);
   loadStaffAccess();
 });
@@ -1280,7 +1433,9 @@ function loadAll() {
   loadVolSignups();
   loadGreetingAndStats();
   loadTeacherOptions();
-  if (document.getElementById('studentRowsContainer').children.length === 0) addStudentRow();
+  if (document.getElementById('studentRowsContainer').children.length === 0) {
+    if (!restoreEnrollDraft()) addStudentRow();
+  }
 }
 
 // ── GREETING, VERSE & STATS ───────────────────────────────────
@@ -1571,23 +1726,41 @@ async function loadFamilies() {
     const kidsHTML = kids.length > 0
       ? kids.map(s => `
           <div style="font-size:0.85rem;color:#6b5e58;background:#fff;border:1px solid var(--grey-line);border-radius:6px;padding:6px 12px;">
-            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
+            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.dob ? ' · DOB ' + s.dob : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
           </div>`).join('')
       : '<span style="font-size:0.85rem;color:#aaa;font-style:italic;">No students added</span>';
+
+    const parentBlock = (label, icon, name, email, phone, dob) => {
+      if (!name && !email && !phone && !dob) return '';
+      return `
+        <div style="font-size:0.85rem;color:#6b5e58;display:flex;flex-direction:column;gap:2px;">
+          <strong style="color:var(--ink);">${icon} ${label}${name ? ': ' + name : ''}</strong>
+          ${email ? `<span>📧 ${email}</span>` : ''}
+          ${phone ? `<span>📱 ${phone}</span>` : ''}
+          ${dob ? `<span>🎂 ${dob}</span>` : ''}
+        </div>`;
+    };
+
+    const resendButtons = `
+      ${f.father_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.father_email}', '${f.father_name || f.name}', '${f.access_code}')">Resend to Father</button>` : ''}
+      ${f.mother_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.mother_email}', '${f.mother_name || f.name}', '${f.access_code}')">Resend to Mother</button>` : ''}
+      ${(!f.father_email && !f.mother_email) ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.email}', '${f.name}', '${f.access_code}')">Resend Code</button>` : ''}
+    `;
+
     return `
-    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
         <div class="event-row-actions">
-          <button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.email}', '${f.name}', '${f.access_code}')">Resend Code</button>
+          ${resendButtons}
           <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
         </div>
       </div>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.email}</span>
-        ${f.second_email ? `<span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.second_email}</span>` : ''}
-        <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
+        ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
+        ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
+      <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
   }).join('');
@@ -1612,6 +1785,10 @@ async function loadTeacherOptions() {
   });
 }
 
+window.togglePersonSection = (id) => {
+  document.getElementById(id).classList.toggle('collapsed');
+};
+
 let studentRowCounter = 0;
 function addStudentRow() {
   studentRowCounter++;
@@ -1621,38 +1798,53 @@ function addStudentRow() {
   div.className = 'student-row';
   div.id = `student-row-${id}`;
   div.innerHTML = `
-    <div class="student-row-header">
-      <span>Student</span>
-      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id})">✕ Remove</button>
+    <div class="student-row-header" onclick="toggleStudentRow(${id}, event)">
+      <span class="student-row-title"><span class="student-toggle-icon">▾</span> 🎓 Student</span>
+      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id}, event)">✕ Remove</button>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>First Name</label>
-        <input type="text" class="student-first" placeholder="e.g. Matteo">
+    <div class="student-row-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" class="student-first" placeholder="e.g. Phoebe">
+        </div>
+        <div class="form-group">
+          <label>Last Name <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
+          <input type="text" class="student-last" placeholder="e.g. Sample">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Last Name <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
-        <input type="text" class="student-last" placeholder="e.g. Kim">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" class="student-dob">
+        </div>
+        <div class="form-group">
+          <label>Grade</label>
+          <select class="student-grade">
+            <option value="">— Select Grade —</option>
+            ${GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Grade</label>
-        <select class="student-grade">
-          <option value="">— Select Grade —</option>
-          ${GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Assigned Teacher</label>
-        <select class="student-teacher-select">${teacherOptionsCache}</select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigned Teacher</label>
+          <select class="student-teacher-select">${teacherOptionsCache}</select>
+        </div>
       </div>
     </div>`;
   container.appendChild(div);
   updateRemoveButtonsVisibility();
 }
 
-window.removeStudentRow = (id) => {
+window.toggleStudentRow = (id, e) => {
+  if (e) e.stopPropagation();
+  const row = document.getElementById(`student-row-${id}`);
+  if (row) row.classList.toggle('collapsed');
+};
+
+window.removeStudentRow = (id, e) => {
+  if (e) e.stopPropagation();
   const row = document.getElementById(`student-row-${id}`);
   if (row) row.remove();
   updateRemoveButtonsVisibility();
@@ -1668,28 +1860,112 @@ function updateRemoveButtonsVisibility() {
 
 document.getElementById('addStudentRowBtn').addEventListener('click', addStudentRow);
 
+// ── DRAFT AUTOSAVE (survives iOS reloading the tab when backgrounded) ──
+const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
+
+function collectEnrollDraft() {
+  return {
+    name: document.getElementById('fam-name').value,
+    email: document.getElementById('fam-email').value,
+    email2: document.getElementById('fam-email-2').value,
+    isNew: document.getElementById('fam-new').checked,
+    students: Array.from(document.querySelectorAll('.student-row')).map(row => ({
+      first: row.querySelector('.student-first').value,
+      last: row.querySelector('.student-last').value,
+      grade: row.querySelector('.student-grade').value,
+      teacher: row.querySelector('.student-teacher-select').value
+    }))
+  };
+}
+
+function saveEnrollDraft() {
+  try { sessionStorage.setItem(ENROLL_DRAFT_KEY, JSON.stringify(collectEnrollDraft())); } catch (e) {}
+}
+
+function clearEnrollDraft() {
+  sessionStorage.removeItem(ENROLL_DRAFT_KEY);
+}
+
+function restoreEnrollDraft() {
+  let draft;
+  try { draft = JSON.parse(sessionStorage.getItem(ENROLL_DRAFT_KEY)); } catch (e) { return false; }
+  if (!draft) return false;
+
+  document.getElementById('fam-name').value = draft.name || '';
+  document.getElementById('fam-email').value = draft.email || '';
+  document.getElementById('fam-email-2').value = draft.email2 || '';
+  document.getElementById('fam-new').checked = !!draft.isNew;
+
+  document.getElementById('studentRowsContainer').innerHTML = '';
+  const rows = (draft.students && draft.students.length > 0) ? draft.students : [{}];
+  rows.forEach(s => {
+    addStudentRow();
+    const row = document.querySelector('.student-row:last-child');
+    row.querySelector('.student-first').value = s.first || '';
+    row.querySelector('.student-last').value = s.last || '';
+    if (s.grade) row.querySelector('.student-grade').value = s.grade;
+    if (s.teacher) row.querySelector('.student-teacher-select').value = s.teacher;
+  });
+  return true;
+}
+
+// Autosave on any change within the Enroll Family form
+['fam-name','fam-email','fam-email-2','fam-new'].forEach(id => {
+  document.getElementById(id).addEventListener('input', saveEnrollDraft);
+  document.getElementById(id).addEventListener('change', saveEnrollDraft);
+});
+document.getElementById('studentRowsContainer').addEventListener('input', saveEnrollDraft);
+document.getElementById('studentRowsContainer').addEventListener('change', saveEnrollDraft);
+document.getElementById('addStudentRowBtn').addEventListener('click', () => setTimeout(saveEnrollDraft, 0));
+
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
-  const name = document.getElementById('fam-name').value.trim();
-  const email = document.getElementById('fam-email').value.trim();
-  const email2 = document.getElementById('fam-email-2').value.trim();
+  const fatherName = document.getElementById('father-name').value.trim();
+  const fatherEmail = document.getElementById('father-email').value.trim();
+  const fatherPhone = document.getElementById('father-phone').value.trim();
+  const fatherDob = document.getElementById('father-dob').value || null;
+  const motherName = document.getElementById('mother-name').value.trim();
+  const motherEmail = document.getElementById('mother-email').value.trim();
+  const motherPhone = document.getElementById('mother-phone').value.trim();
+  const motherDob = document.getElementById('mother-dob').value || null;
   const isNewFamily = document.getElementById('fam-new').checked;
 
   const studentRows = Array.from(document.querySelectorAll('.student-row')).map(row => ({
     first_name: row.querySelector('.student-first').value.trim(),
     last_name: row.querySelector('.student-last').value.trim(),
+    dob: row.querySelector('.student-dob').value || null,
     grade: row.querySelector('.student-grade').value || null,
     assigned_teacher_email: row.querySelector('.student-teacher-select').value || null
   })).filter(s => s.first_name);
 
-  if (!name || !email) { showToast('Please enter both name and email'); return; }
+  if (!fatherEmail && !motherEmail) { showToast('Please enter at least one parent email (Father or Mother)'); return; }
   if (studentRows.length === 0) { showToast('Please enter at least one student\'s first name'); return; }
 
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
   btn.textContent = 'Enrolling...';
 
+  // email/second_email remain the columns that drive login + welcome email + volunteer signup matching —
+  // whichever parent email is provided becomes the primary, the other (if both given) becomes secondary.
+  const primaryEmail = fatherEmail || motherEmail;
+  const secondaryEmail = (fatherEmail && motherEmail) ? motherEmail : null;
+  const displayName = [fatherName, motherName].filter(Boolean).join(' & ') || 'Family';
+
   const { data: famData, error } = await sb.from('family_emails')
-    .insert({ name, email, second_email: email2 || null, student_count: studentRows.length, is_new_family: isNewFamily })
+    .insert({
+      name: displayName,
+      email: primaryEmail,
+      second_email: secondaryEmail,
+      father_name: fatherName || null,
+      father_email: fatherEmail || null,
+      father_phone: fatherPhone || null,
+      father_dob: fatherDob,
+      mother_name: motherName || null,
+      mother_email: motherEmail || null,
+      mother_phone: motherPhone || null,
+      mother_dob: motherDob,
+      student_count: studentRows.length,
+      is_new_family: isNewFamily
+    })
     .select()
     .single();
 
@@ -1703,12 +1979,13 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   btn.textContent = 'Enroll Family';
   if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
 
-  document.getElementById('fam-name').value = '';
-  document.getElementById('fam-email').value = '';
-  document.getElementById('fam-email-2').value = '';
+  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
   document.getElementById('fam-new').checked = false;
   document.getElementById('studentRowsContainer').innerHTML = '';
   addStudentRow();
+  clearEnrollDraft();
 
   showToast('✅ Family enrolled and welcome email sent!', 4000);
   loadFamilies();
@@ -2069,15 +2346,21 @@ async function printFamilies() {
   const rows = data.map((f, i) => {
     const kids = f.students || [];
     const kidsLine = kids.length > 0
-      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}`).join(' &nbsp;·&nbsp; ')
+      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}${s.dob ? ' — DOB ' + s.dob : ''}`).join(' &nbsp;·&nbsp; ')
       : 'No students on file';
+    const parentLine = (label, name, email, phone) =>
+      (name || email || phone) ? `${label}: ${[name, email, phone].filter(Boolean).join(', ')}` : '';
+    const parentsLine = [
+      parentLine('Father', f.father_name, f.father_email, f.father_phone),
+      parentLine('Mother', f.mother_name, f.mother_email, f.mother_phone)
+    ].filter(Boolean).join(' &nbsp;·&nbsp; ') || `${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}`;
     return `
     <div class="print-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
       <div style="display:flex;justify-content:space-between;width:100%;">
         <strong>${i + 1}. ${f.name}</strong>
         <span>${kids.length} student${kids.length === 1 ? '' : 's'}</span>
       </div>
-      <span style="font-size:0.85rem;">${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}</span>
+      <span style="font-size:0.85rem;">${parentsLine}</span>
       <span style="font-size:0.85rem;color:#6b5e58;">${kidsLine}</span>
     </div>`;
   }).join('');
