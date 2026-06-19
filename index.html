@@ -697,8 +697,8 @@
     </div>
     <div class="events-list">
       <h3>Authorized Staff <span class="family-count" id="staffCount"></span></h3>
-      <div style="margin-bottom:20px;">
-        <select id="staffFilterRole" style="width:100%;max-width:400px;padding:14px 16px;border:2px solid var(--grey-line);border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;transition:border-color 0.2s;">
+      <div style="margin-bottom:14px;">
+        <select id="staffFilterRole" style="max-width:260px;">
           <option value="">All Roles</option>
         </select>
       </div>
@@ -720,74 +720,11 @@
 
   <!-- BOARD MEMBER PANEL (placeholder — Google Drive integration coming) -->
   <div class="admin-panel" id="panel-boardmember">
-    <div id="boardMemberContent" style="display:none;">
-      <!-- Google Drive Files Section -->
-      <div class="admin-form">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-          <h3 style="margin:0;flex:1;">📁 Board Resources</h3>
-          <span id="boardFilesStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;">Loading...</span>
-        </div>
-        <div id="boardFilesList" style="display:grid;gap:12px;"></div>
-      </div>
-    </div>
-
-    <!-- Super Admin Only: Security Documentation -->
-    <div id="boardSecurityDocs" style="display:none;">
-      <div class="admin-form">
-        <h3 style="margin-bottom:24px;display:flex;align-items:center;gap:8px;color:var(--red);">🔒 Super Admin Security Protocol</h3>
-        
-        <div style="background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:20px;margin-bottom:24px;">
-          <h4 style="color:var(--ink);margin-bottom:12px;font-family:'Trebuchet MS',sans-serif;">Account Protection</h4>
-          <ul style="margin:0;padding-left:20px;color:#6b5e58;font-size:0.9rem;line-height:1.6;">
-            <li><strong>Cannot be deleted</strong> via normal user management screens</li>
-            <li><strong>Cannot be demoted</strong> through frontend interfaces</li>
-            <li><strong>Server-side authorization</strong> required for all changes</li>
-            <li><strong>Final Super Admin protected</strong> — system prevents removal of last Super Admin</li>
-          </ul>
-        </div>
-
-        <div style="background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:20px;margin-bottom:24px;">
-          <h4 style="color:var(--ink);margin-bottom:12px;font-family:'Trebuchet MS',sans-serif;">Removal/Demotion Requirements</h4>
-          <ol style="margin:0;padding-left:20px;color:#6b5e58;font-size:0.9rem;line-height:1.8;">
-            <li>Administrator must <strong>re-authenticate</strong></li>
-            <li><strong>MFA verification</strong> required (TOTP or email code)</li>
-            <li><strong>Server-side confirmation secret</strong> must be validated (stored in env vars only)</li>
-            <li><strong>Final confirmation dialog</strong> must be completed</li>
-          </ol>
-        </div>
-
-        <div style="background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:20px;margin-bottom:24px;">
-          <h4 style="color:var(--ink);margin-bottom:12px;font-family:'Trebuchet MS',sans-serif;">Confirmation Secret Protection</h4>
-          <ul style="margin:0;padding-left:20px;color:#6b5e58;font-size:0.9rem;line-height:1.6;">
-            <li>🚫 <strong>Never exposed</strong> to frontend</li>
-            <li>🚫 <strong>Never in</strong> React/JavaScript bundles</li>
-            <li>🚫 <strong>Never in</strong> API responses or database visible to users</li>
-            <li>✅ <strong>Stored only</strong> in secure server environment variables</li>
-          </ul>
-        </div>
-
-        <div style="background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:20px;">
-          <h4 style="color:var(--ink);margin-bottom:12px;font-family:'Trebuchet MS',sans-serif;">✓ Audit Logging (Immutable)</h4>
-          <p style="margin:0;color:#6b5e58;font-size:0.9rem;line-height:1.6;">Every Super Admin action is logged and <strong>cannot be edited</strong>:</p>
-          <ul style="margin:12px 0 0;padding-left:20px;color:#6b5e58;font-size:0.9rem;line-height:1.6;">
-            <li>User performing the action</li>
-            <li>User being modified</li>
-            <li>Action type (delete, demote, restore)</li>
-            <li>Timestamp with timezone</li>
-            <li>IP address (if available)</li>
-            <li>Device/browser info (if available)</li>
-            <li>Reason entered by administrator</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Placeholder for non-board members -->
-    <div id="boardPlaceholder" style="text-align:center;padding:48px 24px;">
+    <div class="admin-form" style="text-align:center;padding:48px 24px;">
       <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
-      <h3 style="margin-bottom:8px;">Board Resources</h3>
-      <p style="color:#6b5e58;max-width:420px;margin:0 auto;font-size:0.95rem;">
-        Board members can view and download shared resources from the NCS board folder.
+      <h3 style="margin-bottom:8px;">Board Resources Coming Soon</h3>
+      <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
+        This is where board members will browse, upload, and manage files from the NCS Google Drive board folders.
       </p>
     </div>
   </div>
@@ -1134,7 +1071,7 @@ function hasRole(r) {
 }
 
 const ROLE_TABS = {
-  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess','boardmember'],
+  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess'],
   staff: ['newsletter','families','yearly','infonights','volunteer'],
   admissions_committee: ['infonights'],
   teacher: ['gradebook'],
@@ -1151,7 +1088,6 @@ function getVisibleTabsForRoles(roles) {
 
 function applyRolePermissions() {
   const isSuperAdmin = hasRole('super_admin');
-  const isBoardMember = hasRole('board_member');
   const isAdmissions = hasRole('admissions_committee');
   const isTeacher = hasRole('teacher');
 
@@ -1174,24 +1110,6 @@ function applyRolePermissions() {
     document.getElementById('sectionMenuLabel').textContent = firstBtn.textContent;
   }
   if (firstPanel) firstPanel.classList.add('active');
-
-  // Initialize board member panel
-  if (visibleTabs.includes('boardmember')) {
-    const boardPlaceholder = document.getElementById('boardPlaceholder');
-    const boardContent = document.getElementById('boardMemberContent');
-    const boardSecurityDocs = document.getElementById('boardSecurityDocs');
-    
-    if (isBoardMember) {
-      if (boardPlaceholder) boardPlaceholder.style.display = 'none';
-      if (boardContent) boardContent.style.display = 'block';
-      if (isSuperAdmin && boardSecurityDocs) boardSecurityDocs.style.display = 'block';
-      checkAndLoadBoardFiles();
-    } else if (isSuperAdmin) {
-      if (boardPlaceholder) boardPlaceholder.style.display = 'none';
-      if (boardContent) boardContent.style.display = 'none';
-      if (boardSecurityDocs) boardSecurityDocs.style.display = 'block';
-    }
-  }
 
   // Stat dashboard: hidden only for someone whose ONLY access is Teacher (no families/staff/board access);
   // limited 2-box view for admissions-only; full view for everyone else (including Teacher+Staff combos)
@@ -1231,8 +1149,6 @@ function enterDashboard() {
   applyRolePermissions();
   loadAll();
   if (hasRole('super_admin')) loadStaffAccess();
-  // Handle Google OAuth callback if returning from sign-in
-  handleGoogleOAuthCallback();
 }
 
 function updateGreetingName(firstName) {
@@ -1253,7 +1169,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 document.getElementById('googleSignIn').addEventListener('click', async () => {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL + '/admin.html' } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL } });
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
@@ -1614,180 +1530,6 @@ async function loadGreetingAndStats() {
   } else {
     document.getElementById('statNextNight').textContent = 'None';
     document.getElementById('statNextNight').style.fontSize = '1rem';
-  }
-}
-
-// ── BOARD MEMBER FILES (GOOGLE OAUTH) ──────────────────────
-// Configuration
-const NCS_BOARD_FOLDER_ID = '15890EGxKPz8gZVfJALkc-1oAx01xv7z8'; // NCS Board main folder with subfolders
-
-// Check if user has Google Drive access, if not prompt for Google sign-in
-async function checkAndLoadBoardFiles() {
-  const list = document.getElementById('boardFilesList');
-  const status = document.getElementById('boardFilesStatus');
-  
-  if (!list) return;
-  
-  try {
-    // Check if we have a Google access token in session
-    let googleToken = sessionStorage.getItem('google_access_token');
-    
-    if (!googleToken) {
-      // Check if there's a session with provider token
-      const { data: { session }, error } = await sb.auth.getSession();
-      if (session && session.provider_token) {
-        googleToken = session.provider_token;
-        sessionStorage.setItem('google_access_token', googleToken);
-      }
-    }
-    
-    if (!googleToken) {
-      // Show sign-in prompt
-      list.innerHTML = `
-        <div style="text-align:center;padding:32px 24px;">
-          <div style="font-size:2rem;margin-bottom:16px;">🔐</div>
-          <h4 style="margin-bottom:12px;color:var(--ink);">Connect Google Drive</h4>
-          <p style="color:#6b5e58;margin-bottom:20px;font-size:0.95rem;">
-            Sign in with your Google account to access shared board files.
-          </p>
-          <button id="googleSignInBtn" style="background:var(--bronze);color:#fff;padding:11px 24px;border:none;border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;">
-            🔗 Sign In with Google
-          </button>
-        </div>
-      `;
-      status.textContent = '';
-      
-      document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
-      return;
-    }
-    
-    // Load files with the Google token
-    await loadBoardFilesWithGoogle(googleToken);
-  } catch (err) {
-    console.error('Error checking board files:', err);
-    list.innerHTML = `<p class="empty-state" style="color:var(--red);">Error checking access: ${err.message}</p>`;
-    status.textContent = 'Error';
-  }
-}
-
-// Sign in with Google to get Drive access
-async function signInWithGoogle() {
-  const status = document.getElementById('boardFilesStatus');
-  status.textContent = 'Redirecting to Google...';
-  
-  try {
-    const { data, error } = await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://admin.northridgecommunityschool.com/admin.html'
-      }
-    });
-    
-    if (error) {
-      throw new Error(error.message);
-    }
-  } catch (err) {
-    console.error('Google sign-in error:', err);
-    showToast('Error signing in with Google');
-    status.textContent = '';
-  }
-}
-
-// Load board files using Google Drive API with user's token
-async function loadBoardFilesWithGoogle(googleToken) {
-  const list = document.getElementById('boardFilesList');
-  const status = document.getElementById('boardFilesStatus');
-  
-  status.textContent = 'Loading...';
-  
-  try {
-    if (!NCS_BOARD_FOLDER_ID || NCS_BOARD_FOLDER_ID === 'YOUR_BOARD_FOLDER_ID_HERE') {
-      throw new Error('Board folder ID not configured. Please update NCS_BOARD_FOLDER_ID in admin_index.html');
-    }
-    
-    // Query Google Drive for files in the board folder
-    const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=parents='${NCS_BOARD_FOLDER_ID}' and trashed=false&fields=id,name,modifiedTime,webViewLink,mimeType&pageSize=50&orderBy=modifiedTime%20desc`,
-      {
-        headers: {
-          Authorization: `Bearer ${googleToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Token expired, clear and retry
-        sessionStorage.removeItem('google_access_token');
-        checkAndLoadBoardFiles();
-        return;
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `Google Drive API error: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    const files = data.files || [];
-    
-    if (files.length === 0) {
-      list.innerHTML = '<p class="empty-state">No board resources shared yet.</p>';
-      status.textContent = '';
-      return;
-    }
-    
-    // Files include both documents AND subfolders
-    // Board members can click folders to navigate into them on Google Drive
-    
-    // Render files
-    list.innerHTML = files.map(file => {
-      const modifiedDate = new Date(file.modifiedTime).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-      
-      const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-      
-      return `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;gap:12px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.95rem;word-break:break-word;">
-              ${isFolder ? '📁' : '📄'} ${file.name}
-            </div>
-            <div style="font-size:0.8rem;color:#aaa;margin-top:4px;">
-              ${modifiedDate}
-            </div>
-          </div>
-          <a href="${file.webViewLink}" target="_blank" rel="noopener" style="background:var(--bronze);color:#fff;padding:8px 16px;border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:background 0.2s;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-            ${isFolder ? '📂 Open' : '⬇️ Download'}
-          </a>
-        </div>
-      `;
-    }).join('');
-    
-    status.textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
-  } catch (err) {
-    console.error('Error loading board files:', err);
-    list.innerHTML = `<p class="empty-state" style="color:var(--red);">⚠️ ${err.message}</p>`;
-    status.textContent = 'Error';
-  }
-}
-
-// Handle OAuth callback
-async function handleGoogleOAuthCallback() {
-  try {
-    const { data: { session }, error } = await sb.auth.getSession();
-    if (session && session.provider_token) {
-      sessionStorage.setItem('google_access_token', session.provider_token);
-      // Reload board files if panel exists
-      const list = document.getElementById('boardFilesList');
-      if (list) {
-        checkAndLoadBoardFiles();
-      }
-    }
-  } catch (err) {
-    console.error('Error handling OAuth callback:', err);
   }
 }
 
