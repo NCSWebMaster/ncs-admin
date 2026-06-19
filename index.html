@@ -1253,7 +1253,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 document.getElementById('googleSignIn').addEventListener('click', async () => {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL + '/' /* index.html on GitHub Pages */ } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL } });
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
@@ -1618,8 +1618,8 @@ async function loadGreetingAndStats() {
 }
 
 // ── BOARD MEMBER FILES (GOOGLE OAUTH) ──────────────────────
-// Configuration
-const NCS_BOARD_FOLDER_ID = '15890EGxKPz8gZVfJALkc-1oAx01xv7z8'; // NCS Board main folder with subfolders
+// Configuration - UPDATE THIS WITH YOUR BOARD FOLDER ID
+const NCS_BOARD_FOLDER_ID = 'YOUR_BOARD_FOLDER_ID_HERE'; // Replace with your actual folder ID
 
 // Check if user has Google Drive access, if not prompt for Google sign-in
 async function checkAndLoadBoardFiles() {
@@ -1679,7 +1679,8 @@ async function signInWithGoogle() {
     const { data, error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://admin.northridgecommunityschool.com/'
+        redirectTo: `${window.location.origin}/admin.html`,
+        scopes: 'https://www.googleapis.com/auth/drive.readonly'
       }
     });
     
@@ -1735,9 +1736,6 @@ async function loadBoardFilesWithGoogle(googleToken) {
       status.textContent = '';
       return;
     }
-    
-    // Files include both documents AND subfolders
-    // Board members can click folders to navigate into them on Google Drive
     
     // Render files
     list.innerHTML = files.map(file => {
