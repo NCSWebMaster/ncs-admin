@@ -826,17 +826,20 @@ async function beginTotpEnrollment() {
   document.getElementById('totpEnrollError').textContent = '';
   document.getElementById('totpEnrollCodeInput').value = '';
 
-  // Clean up any leftover unverified factor from a previous interrupted attempt
+  // Best-effort cleanup of any leftover unverified factor (may fail silently if not yet aal2 — that's OK, the unique name below handles it either way)
   const { data: existingFactors } = await sb.auth.mfa.listFactors();
   if (existingFactors && existingFactors.totp) {
     for (const f of existingFactors.totp) {
       if (f.status === 'unverified') {
-        await sb.auth.mfa.unenroll({ factorId: f.id });
+        const { error: unenrollError } = await sb.auth.mfa.unenroll({ factorId: f.id });
+        if (unenrollError) console.warn('Could not remove stale factor (non-fatal):', unenrollError.message);
       }
     }
   }
 
-  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'NCS Admin Authenticator' });
+  // Unique name guarantees no collision even if cleanup above didn't succeed
+  const uniqueName = 'NCS Admin Authenticator ' + Date.now();
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: uniqueName });
   if (error) {
     showToast('⚠️ Could not start setup: ' + error.message, 6000);
     console.error('TOTP enroll error:', error);
