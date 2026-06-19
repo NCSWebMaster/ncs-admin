@@ -503,6 +503,16 @@
       <h3>Grant Admin Access</h3>
       <div class="form-row">
         <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="staff-first" placeholder="e.g. Jane">
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="staff-last" placeholder="e.g. Smith">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
           <label>Staff Email (Google account)</label>
           <input type="email" id="staff-email" placeholder="e.g. teacher@gmail.com">
         </div>
@@ -722,13 +732,14 @@ async function verifyMfaCode() {
 
 async function checkRoleAndContinue(session) {
   currentSession = session;
-  const { data, error } = await sb.from('staff_roles').select('role').eq('email', session.user.email).maybeSingle();
+  const { data, error } = await sb.from('staff_roles').select('role, first_name, last_name').eq('email', session.user.email).maybeSingle();
   if (error || !data) {
     currentRole = null;
     showOnly('notAuthorizedScreen');
     return;
   }
   currentRole = data.role;
+  currentSession._staffName = data.first_name || null;
 
   const alreadyVerified = sessionStorage.getItem('ncs_mfa_verified_' + session.user.id) === 'true';
   if (alreadyVerified) {
@@ -785,6 +796,13 @@ function enterDashboard() {
   if (currentRole === 'super_admin') loadStaffAccess();
 }
 
+function updateGreetingName(firstName) {
+  if (!firstName) return;
+  const title = document.getElementById('greetingTitle');
+  const current = title.textContent; // e.g. "Good afternoon!"
+  title.textContent = current.replace('!', `, ${firstName}!`);
+}
+
 sb.auth.onAuthStateChange((event, session) => {
   if (session) {
     checkRoleAndContinue(session);
@@ -833,24 +851,63 @@ async function loadStaffAccess() {
   list.innerHTML = data.map(s => `
     <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
       <span class="role-badge ${s.role}" style="margin-left:0;display:inline-block;margin-bottom:8px;">${getRoleLabel(s.role)}</span>
-      <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);margin:0 0 12px;">${s.email}</p>
+      ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : ''}
+      <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
       <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
     </div>`).join('');
 }
 
 document.getElementById('saveStaffRole').addEventListener('click', async () => {
+  const firstName = document.getElementById('staff-first').value.trim();
+  const lastName = document.getElementById('staff-last').value.trim();
   const email = document.getElementById('staff-email').value.trim().toLowerCase();
   const role = document.getElementById('staff-role').value;
   if (!email) { showToast('Please enter an email'); return; }
   const btn = document.getElementById('saveStaffRole');
   btn.disabled = true;
   btn.textContent = 'Saving...';
-  const { error } = await sb.from('staff_roles').upsert({ email, role }, { onConflict: 'email' });
+
+  const { error } = await sb.from('staff_roles').upsert(
+    { email, role, first_name: firstName || null, last_name: lastName || null },
+    { onConflict: 'email' }
+  );
+  if (error) { btn.disabled = false; btn.textContent = 'Grant Access'; showToast('Error: ' + error.message); return; }
+
+  // Send welcome email
+  const roleLabel = getRoleLabel(role);
+  const accessDesc = role === 'super_admin'
+    ? 'As a Super Admin you have full access to manage newsletters, family emails, the yearly schedule, info nights, volunteer slots, staff access, and the ability to start a new school year.'
+    : role === 'admissions_committee'
+    ? 'As an Admissions Committee member your access is focused on the Info Nights tab, where you can monitor and manage upcoming information nights for prospective families.'
+    : 'As a Staff member you can manage newsletters, family emails, the yearly schedule, info nights, and volunteer slots.';
+
+  await sb.rpc('send_email_via_resend', {
+    to_email: email,
+    subject: 'Your NCS Admin Access',
+    from_email: 'NCS Admin <webmaster@northridgecommunityschool.com>',
+    html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+      <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
+      <h2 style="color:#C8102E;text-align:center;">Your NCS Admin Access</h2>
+      <p style="color:#3A2E2A;font-size:16px;">Hi${firstName ? ' ' + firstName : ''},</p>
+      <p style="color:#3A2E2A;font-size:16px;">You've been granted <strong>${roleLabel}</strong> access to the Northridge Community School admin site. ${accessDesc}</p>
+      <p style="color:#3A2E2A;font-size:16px;">To sign in, visit the link below and click "Sign in with Google" using this email address. After signing in, a 6-digit verification code will be sent to your email — enter it to complete login.</p>
+      <div style="text-align:center;margin:32px 0;">
+        <a href="https://admin.northridgecommunityschool.com" style="background:#C8102E;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;font-size:16px;">Sign In to Admin Site</a>
+      </div>
+      <p style="color:#3A2E2A;font-size:16px;">If you have any questions, please reach out to the office directly at <a href="mailto:office@northridgecommunityschool.com" style="color:#B07D4F;">office@northridgecommunityschool.com</a> or by phone at 818-360-1111.</p>
+      <p style="color:#3A2E2A;font-size:16px;">God bless,<br>Northridge Community School</p>
+      <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
+        Northridge Community School · Where Godly Character meets Great Academics
+      </p>
+    </div>`
+  });
+
   btn.disabled = false;
   btn.textContent = 'Grant Access';
-  if (error) { showToast('Error: ' + error.message); return; }
+  document.getElementById('staff-first').value = '';
+  document.getElementById('staff-last').value = '';
   document.getElementById('staff-email').value = '';
-  showToast('✅ Access granted to ' + email);
+  showToast('✅ Access granted and welcome email sent to ' + email, 4000);
   loadStaffAccess();
 });
 
@@ -933,6 +990,7 @@ async function loadGreetingAndStats() {
   const hour = new Date().getHours();
   let greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('greetingTitle').textContent = `${greeting}!`;
+  updateGreetingName(currentSession && currentSession._staffName);
 
   // Daily verse — rotates by day of year
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
