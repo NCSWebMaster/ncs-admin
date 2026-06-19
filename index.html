@@ -427,6 +427,24 @@
           <input type="number" id="fam-students" min="1" value="1" style="max-width:120px;">
         </div>
         <div class="form-group">
+          <label>Grade</label>
+          <select id="fam-grade">
+            <option value="">— Select Grade —</option>
+            <option value="TK">TK</option>
+            <option value="Kindergarten">Kindergarten</option>
+            <option value="1st Grade">1st Grade</option>
+            <option value="2nd Grade">2nd Grade</option>
+            <option value="3rd Grade">3rd Grade</option>
+            <option value="4th Grade">4th Grade</option>
+            <option value="5th Grade">5th Grade</option>
+            <option value="6th Grade">6th Grade</option>
+            <option value="7th Grade">7th Grade</option>
+            <option value="8th Grade">8th Grade</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
           <label>Assigned Teacher</label>
           <select id="fam-teacher">
             <option value="">— Not Assigned —</option>
@@ -1579,6 +1597,7 @@ async function loadFamilies() {
         <span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.email}</span>
         ${f.second_email ? `<span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.second_email}</span>` : ''}
         <span style="font-size:0.85rem;color:#6b5e58;">🎓 ${f.student_count || 1} student${(f.student_count || 1) === 1 ? '' : 's'}</span>
+        ${f.grade ? `<span style="font-size:0.85rem;color:#6b5e58;">📚 ${f.grade}</span>` : ''}
         ${f.assigned_teacher_email ? `<span style="font-size:0.85rem;color:#6b5e58;">👩‍🏫 ${f.assigned_teacher_email}</span>` : ''}
         <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       </div>
@@ -1605,12 +1624,13 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const email2 = document.getElementById('fam-email-2').value.trim();
   const studentCount = parseInt(document.getElementById('fam-students').value, 10) || 1;
   const isNewFamily = document.getElementById('fam-new').checked;
+  const grade = document.getElementById('fam-grade').value || null;
   const assignedTeacher = document.getElementById('fam-teacher').value || null;
   if (!name || !email) { showToast('Please enter both name and email'); return; }
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
   btn.textContent = 'Enrolling...';
-  const { error } = await sb.from('family_emails').insert({ name, email, second_email: email2 || null, student_count: studentCount, is_new_family: isNewFamily, assigned_teacher_email: assignedTeacher });
+  const { error } = await sb.from('family_emails').insert({ name, email, second_email: email2 || null, student_count: studentCount, is_new_family: isNewFamily, grade, assigned_teacher_email: assignedTeacher });
   btn.disabled = false;
   btn.textContent = 'Enroll Family';
   if (error) { showToast('Error: ' + error.message); return; }
@@ -1619,6 +1639,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   document.getElementById('fam-email-2').value = '';
   document.getElementById('fam-students').value = '1';
   document.getElementById('fam-new').checked = false;
+  document.getElementById('fam-grade').value = '';
   document.getElementById('fam-teacher').value = '';
   showToast('✅ Family enrolled and welcome email sent!', 4000);
   loadFamilies();
