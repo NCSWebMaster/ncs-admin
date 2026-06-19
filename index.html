@@ -1043,6 +1043,13 @@ async function checkRoleAndContinue(session) {
   const { data, error } = await sb.from('staff_roles').select('roles, first_name, last_name').eq('email', session.user.email).maybeSingle();
   if (error || !data) {
     currentRoles = [];
+    console.error('checkRoleAndContinue error:', error, 'data:', data);
+    const msgEl = document.querySelector('#notAuthorizedScreen p');
+    if (msgEl) {
+      msgEl.textContent = error
+        ? `There was a problem checking your access: ${error.message}`
+        : `Your account isn't on the NCS admin staff list. Contact a Super Admin to be granted access, or sign out and try a different account.`;
+    }
     showOnly('notAuthorizedScreen');
     return;
   }
