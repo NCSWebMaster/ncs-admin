@@ -807,9 +807,14 @@ async function verifyEmailMfaCode() {
 async function chooseTotpMethod() {
   const btn = document.getElementById('chooseTotpBtn');
   btn.disabled = true;
-  const { data: factorsData } = await sb.auth.mfa.listFactors();
-  const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
+  const { data: factorsData, error: listError } = await sb.auth.mfa.listFactors();
   btn.disabled = false;
+  if (listError) {
+    showToast('⚠️ Authenticator setup failed: ' + listError.message, 6000);
+    console.error('listFactors error:', listError);
+    return;
+  }
+  const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
   if (verifiedTotp) {
     beginTotpChallenge(verifiedTotp.id);
   } else {
@@ -823,9 +828,8 @@ async function beginTotpEnrollment() {
 
   const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'NCS Admin Authenticator' });
   if (error) {
-    document.getElementById('totpEnrollError').textContent = 'Could not start setup. Please try again.';
+    showToast('⚠️ Could not start setup: ' + error.message, 6000);
     console.error('TOTP enroll error:', error);
-    showMfaChoice();
     return;
   }
   pendingFactorId = data.id;
