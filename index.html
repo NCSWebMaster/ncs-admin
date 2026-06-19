@@ -1253,7 +1253,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 document.getElementById('googleSignIn').addEventListener('click', async () => {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL + '/admin.html' } });
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
@@ -1679,7 +1679,7 @@ async function signInWithGoogle() {
     const { data, error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/admin.html`
+        redirectTo: 'https://admin.northridgecommunityschool.com/admin.html'
       }
     });
     
