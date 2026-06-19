@@ -398,7 +398,14 @@
           <label># of Students</label>
           <input type="number" id="fam-students" min="1" value="1" style="max-width:120px;">
         </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+            <input type="checkbox" id="fam-new" style="width:18px;height:18px;cursor:pointer;">
+            New Family (first time at NCS)
+          </label>
+        </div>
       </div>
+      <p style="font-size:0.8rem;color:#9a8b84;margin:-6px 0 14px;">Unchecked = returning family. This changes the wording of the welcome email they receive.</p>
       <button class="save-btn" id="saveFamiliy">Add Family</button>
     </div>
     <div class="events-list">
@@ -1477,18 +1484,20 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const name = document.getElementById('fam-name').value.trim();
   const email = document.getElementById('fam-email').value.trim();
   const studentCount = parseInt(document.getElementById('fam-students').value, 10) || 1;
+  const isNewFamily = document.getElementById('fam-new').checked;
   if (!name || !email) { showToast('Please enter both name and email'); return; }
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
   btn.textContent = 'Adding...';
-  const { error } = await sb.from('family_emails').insert({ name, email, student_count: studentCount });
+  const { error } = await sb.from('family_emails').insert({ name, email, student_count: studentCount, is_new_family: isNewFamily });
   btn.disabled = false;
   btn.textContent = 'Add Family';
   if (error) { showToast('Error: ' + error.message); return; }
   document.getElementById('fam-name').value = '';
   document.getElementById('fam-email').value = '';
   document.getElementById('fam-students').value = '1';
-  showToast('✅ Family added and access code emailed!', 4000);
+  document.getElementById('fam-new').checked = false;
+  showToast('✅ Family added and welcome email sent!', 4000);
   loadFamilies();
 });
 
