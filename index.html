@@ -826,6 +826,16 @@ async function beginTotpEnrollment() {
   document.getElementById('totpEnrollError').textContent = '';
   document.getElementById('totpEnrollCodeInput').value = '';
 
+  // Clean up any leftover unverified factor from a previous interrupted attempt
+  const { data: existingFactors } = await sb.auth.mfa.listFactors();
+  if (existingFactors && existingFactors.totp) {
+    for (const f of existingFactors.totp) {
+      if (f.status === 'unverified') {
+        await sb.auth.mfa.unenroll({ factorId: f.id });
+      }
+    }
+  }
+
   const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'NCS Admin Authenticator' });
   if (error) {
     showToast('⚠️ Could not start setup: ' + error.message, 6000);
