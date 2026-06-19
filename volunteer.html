@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Portal | Northridge Community School</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.brand-name{font-size:1.25rem;color:#C8102E;font-weight:700;}
+@media(max-width:900px){
+  .brand-name::after{content:"NCS";}
+  .brand-name-text{display:none;}
+}
+</style>
+<style>
+  .volunteer-hero{ text-align:center; padding:60px 6% 50px; background:linear-gradient(180deg,#fff 0%,#fdf6f2 100%); border-bottom:1px solid var(--grey-line); }
+  .volunteer-hero h1{ font-size:2.6rem; color:var(--red); margin-bottom:12px; }
+  .volunteer-hero p{ font-size:1.05rem; color:#5a4d47; max-width:600px; margin:0 auto; }
+
+  /* LOGIN */
+  .login-section{ max-width:480px; margin:0 auto; text-align:center; padding:60px 6%; }
+  .login-section h2{ color:var(--red); margin-bottom:10px; }
+  .login-section p{ color:#5a4d47; margin-bottom:28px; font-size:0.95rem; }
+  .login-form{ display:flex; flex-direction:column; gap:12px; max-width:360px; margin:0 auto; }
+  .login-form input{ padding:12px 16px; border:1px solid var(--grey-line); border-radius:6px; font-family:Georgia,serif; font-size:0.95rem; color:var(--ink); }
+  .login-form input:focus{ outline:none; border-color:var(--bronze); }
+  .login-btn{ background:var(--red); color:#fff; border:none; border-radius:6px; padding:13px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer; transition:opacity 0.2s; }
+  .login-btn:hover{ opacity:0.85; }
+  .login-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .login-note{ font-size:0.82rem; color:#aaa; margin-top:8px; font-style:italic; }
+  .login-error{ background:#fff0f2; border:1px solid #f5c0c8; border-radius:8px; padding:12px 16px; color:#c0392b; font-size:0.9rem; margin-top:12px; display:none; }
+
+  /* VOLUNTEER DASHBOARD */
+  .volunteer-wrap{ max-width:900px; margin:0 auto; padding:40px 6%; }
+  .volunteer-welcome{ display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--grey-line); flex-wrap:wrap; gap:12px; }
+  .volunteer-welcome h2{ color:var(--red); font-size:1.4rem; }
+  .volunteer-welcome p{ color:#6b5e58; font-size:0.88rem; font-family:'Trebuchet MS',sans-serif; }
+  .signout-btn{ background:none; border:1px solid var(--grey-line); border-radius:6px; padding:8px 16px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; cursor:pointer; color:#6b5e58; transition:all 0.2s; }
+  .signout-btn:hover{ background:var(--red); color:#fff; border-color:var(--red); }
+
+  /* SLOTS */
+  .slots-header{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1.1rem; color:var(--ink); margin-bottom:18px; }
+  .slot-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; padding:22px 24px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.03); }
+  .slot-card.full{ background:#fdf6f2; opacity:0.7; }
+  .slot-info{ flex:1; }
+  .slot-date{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--red); margin-bottom:4px; }
+  .slot-details{ font-size:0.9rem; color:#6b5e58; margin-bottom:4px; }
+  .slot-role{ font-family:'Trebuchet MS',sans-serif; font-size:0.88rem; font-weight:700; color:var(--bronze); margin-bottom:6px; }
+  .slot-spots{ font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; font-weight:700; }
+  .slot-spots.open{ color:#2e7d32; }
+  .slot-spots.full{ color:#aaa; }
+  .signup-btn{ background:var(--red); color:#fff; border:none; border-radius:6px; padding:11px 22px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.88rem; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+  .signup-btn:hover{ opacity:0.85; }
+  .signup-btn.full{ background:#ddd; color:#aaa; cursor:not-allowed; }
+  .empty-slots{ text-align:center; padding:48px; color:#aaa; font-style:italic; }
+
+  /* SIGNUP MODAL */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal{ background:#fff; border-radius:12px; padding:36px 32px; max-width:480px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+  .modal h3{ color:var(--red); font-size:1.3rem; margin-bottom:6px; }
+  .modal .slot-summary{ background:#fdf6f2; border-radius:8px; padding:14px 16px; margin-bottom:24px; font-size:0.9rem; color:#5a4d47; }
+  .modal-form{ display:flex; flex-direction:column; gap:14px; }
+  .modal-form input, .modal-form select{ padding:11px 14px; border:1px solid var(--grey-line); border-radius:6px; font-family:Georgia,serif; font-size:0.95rem; color:var(--ink); }
+  .modal-form input:focus, .modal-form select:focus{ outline:none; border-color:var(--bronze); }
+  .modal-btns{ display:flex; gap:12px; margin-top:8px; }
+  .modal-btns button{ flex:1; padding:12px; border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; border:none; transition:opacity 0.2s; }
+  .modal-confirm{ background:var(--red); color:#fff; }
+  .modal-confirm:hover{ opacity:0.85; }
+  .modal-confirm:disabled{ opacity:0.5; cursor:not-allowed; }
+  .modal-cancel{ background:#f3eee9; color:#6b5e58; }
+  .modal-cancel:hover{ background:#e6ddd6; }
+
+  /* MY SIGNUPS */
+  .my-signups{ margin-top:40px; padding-top:32px; border-top:1px solid var(--grey-line); }
+  .my-signups h3{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1.1rem; color:var(--ink); margin-bottom:18px; }
+  .my-signup-card{ background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; padding:16px 20px; margin-bottom:12px; }
+  .my-signup-row{ display:flex; justify-content:space-between; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--grey-line); font-size:0.9rem; color:var(--ink); gap:16px; }
+  .my-signup-row:last-of-type{ border-bottom:none; }
+  .my-signup-label{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:var(--bronze); white-space:nowrap; flex-shrink:0; padding-top:2px; }
+  .cancel-note{ font-size:0.82rem; color:#aaa; font-style:italic; margin-top:10px; display:block; }
+
+  .toast{ position:fixed; bottom:24px; right:24px; background:var(--ink); color:#fff; padding:14px 24px; border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-size:0.9rem; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999; max-width:320px; }
+  .toast.show{ opacity:1; }
+
+  @media(max-width:600px){
+    .slot-card{ flex-direction:column; align-items:flex-start; }
+    .signup-btn{ width:100%; }
+    .modal{ padding:24px 20px; }
+    .modal-btns{ flex-direction:column; }
+    .volunteer-hero h1{ font-size:1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">
+    <img src="logo.png" alt="NCS Crest">
+    <span class="brand-name"><span class="brand-name-text">Northridge Community School</span></span>
+  </a>
+    <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="admissions.html">Admissions</a></li>
+    <li><a href="index.html#donate">Donate</a></li>
+    <li class="nav-portal"><a href="volunteer.html" class="active">Parent Portal</a></li>
+  </ul>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="volunteer-hero">
+  <h1>Parent Portal</h1>
+  <p>Sign in with your email and access code to access your parent dashboard.</p>
+</div>
+
+<!-- LOGIN -->
+<div id="loginSection">
+  <div class="login-section">
+    <h2>Parent Sign In</h2>
+    <p>Enter your email address and the access code that was sent to you when you were added to our system.</p>
+    <div class="login-form">
+      <input type="email" id="loginEmail" placeholder="Your email address">
+      <input type="text" id="loginCode" placeholder="Access code (e.g. X7K9P2)" style="text-transform:uppercase;letter-spacing:4px;font-weight:700;">
+      <button class="login-btn" id="loginBtn">Sign In</button>
+      <p class="login-note">Don't have an access code? Contact the office at office@northridgecommunityschool.com</p>
+    </div>
+    <div class="login-error" id="loginError">❌ Email or access code not recognized. Please check your details or contact the office.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="volunteerDashboard" style="display:none;">
+  <div class="volunteer-wrap">
+    <div class="volunteer-welcome">
+      <div>
+        <h2>Volunteer Opportunities</h2>
+        <p id="volunteerUserEmail"></p>
+      </div>
+      <button class="signout-btn" id="volunteerSignOut">Sign Out</button>
+    </div>
+
+    <div class="slots-header">Available Slots</div>
+    <div id="slotsList"></div>
+
+    <div class="my-signups">
+      <h3>My Signups</h3>
+      <div id="mySignupsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-overlay" id="signupModal" style="display:none;">
+  <div class="modal">
+    <h3>Sign Up to Volunteer</h3>
+    <div class="slot-summary" id="modalSlotSummary"></div>
+    <div class="modal-form">
+      <input type="text" id="sig-name" placeholder="Your full name">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="modalCancel">Cancel</button>
+      <button class="modal-confirm" id="modalConfirm">Confirm Signup</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <img class="crest-small" src="logo.png" alt="NCS Crest">
+  <p>&copy; 2026 Northridge Community School. All rights reserved.</p>
+  <div class="footer-contact">
+    <span>P: 818-360-1111 (Textable)</span>
+    <span class="footer-divider">·</span>
+    <span>11263 Balboa Avenue, Los Angeles, CA 91344</span>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+const SUPABASE_URL = 'https://eqgzfrzokhowpedderrb.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxZ3pmcnpva2hvd3BlZGRlcnJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjU4ODIsImV4cCI6MjA5NzIwMTg4Mn0.r94X0ZGSdAO_vtd4dXQKmjdVFtPZ7wSpYeUVzPAkjJo';
+
+let currentUserEmail = null;
+let currentSlotId = null;
+let currentSlotRole = null;
+
+function showToast(msg, duration = 3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+async function fetchData(table, params = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' }
+  });
+  return res.json();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+document.getElementById('loginCode').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const code = document.getElementById('loginCode').value.trim().toUpperCase();
+  const errorDiv = document.getElementById('loginError');
+  errorDiv.style.display = 'none';
+
+  if (!email || !code) { showToast('Please enter both email and access code'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  // Debug — show exactly what we're sending
+  console.log('Email sent:', email);
+  console.log('Code sent:', code);
+
+  // Check email + code against family_emails table (matches either primary or second email)
+  const url = `${SUPABASE_URL}/rest/v1/family_emails?or=(email.eq.${encodeURIComponent(email)},second_email.eq.${encodeURIComponent(email)})&access_code=eq.${encodeURIComponent(code)}&select=*`;
+  console.log('Query URL:', url);
+  const data = await fetchData('family_emails', `?or=(email.eq.${encodeURIComponent(email)},second_email.eq.${encodeURIComponent(email)})&access_code=eq.${encodeURIComponent(code)}&select=*`);
+  console.log('Result:', JSON.stringify(data));
+
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+
+  if (!data || data.length === 0) {
+    errorDiv.innerHTML = `❌ No match found.<br><small>Email tried: <strong>${email}</strong></small><br><small>Code tried: <strong>${code}</strong></small>`;
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  // Valid! Store in session
+  currentUserEmail = email;
+  sessionStorage.setItem('ncs_vol_email', email);
+  sessionStorage.setItem('ncs_vol_name', data[0].name);
+  showDashboard(email, data[0].name);
+});
+
+function showDashboard(email, name) {
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('volunteerDashboard').style.display = 'block';
+  document.getElementById('volunteerUserEmail').textContent = `Signed in as ${name} (${email})`;
+  currentUserEmail = email;
+  loadSlots();
+  loadMySignups();
+}
+
+document.getElementById('volunteerSignOut').addEventListener('click', () => {
+  sessionStorage.removeItem('ncs_vol_email');
+  sessionStorage.removeItem('ncs_vol_name');
+  currentUserEmail = null;
+  document.getElementById('loginSection').style.display = 'block';
+  document.getElementById('volunteerDashboard').style.display = 'none';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginCode').value = '';
+  showToast('Signed out');
+});
+
+// Check session on load — verify against database
+const savedEmail = sessionStorage.getItem('ncs_vol_email');
+const savedName = sessionStorage.getItem('ncs_vol_name');
+if (savedEmail && savedName) {
+  // Re-verify email still exists in family_emails
+  fetchData('family_emails', `?email=eq.${encodeURIComponent(savedEmail)}&select=id`).then(data => {
+    if (data && data.length > 0) {
+      showDashboard(savedEmail, savedName);
+    } else {
+      // Family was removed — clear session and show login
+      sessionStorage.removeItem('ncs_vol_email');
+      sessionStorage.removeItem('ncs_vol_name');
+      document.getElementById('loginError').textContent = '⚠️ Your account is no longer active. Please contact the office.';
+      document.getElementById('loginError').style.display = 'block';
+    }
+  });
+}
+
+// ── SLOTS ─────────────────────────────────────────────────────
+async function loadSlots() {
+  const data = await fetchData('volunteer_slots', '?select=*&order=id');
+  const list = document.getElementById('slotsList');
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p class="empty-slots">No volunteer opportunities available right now. Check back soon!</p>';
+    return;
+  }
+  list.innerHTML = data.map(slot => {
+    const spotsLeft = slot.spots_total - slot.spots_filled;
+    const isFull = spotsLeft <= 0;
+    return `
+      <div class="slot-card ${isFull ? 'full' : ''}">
+        <div class="slot-info">
+          <div class="slot-date">${slot.date} · ${slot.time}</div>
+          <div class="slot-details">${slot.classroom}${slot.teacher ? ' · ' + slot.teacher : ''}</div>
+          <div class="slot-role">${slot.role || 'Volunteer'}</div>
+          <div class="slot-spots ${isFull ? 'full' : 'open'}">
+            ${isFull ? 'Full' : `${spotsLeft} spot${spotsLeft > 1 ? 's' : ''} remaining`}
+          </div>
+        </div>
+        <button class="signup-btn ${isFull ? 'full' : ''}"
+          ${isFull ? 'disabled' : `onclick="openSignupModal(${slot.id}, '${slot.date}', '${slot.time}', '${slot.classroom}', '${slot.teacher || ''}', '${slot.role || 'Volunteer'}')"`}>
+          ${isFull ? 'Full' : 'Sign Up'}
+        </button>
+      </div>`;
+  }).join('');
+}
+
+// ── MY SIGNUPS ────────────────────────────────────────────────
+async function loadMySignups() {
+  const data = await fetchData('volunteer_signups',
+    `?parent_email=eq.${encodeURIComponent(currentUserEmail)}&select=*,volunteer_slots(date,time,classroom,teacher,role)&order=id.desc`);
+  const list = document.getElementById('mySignupsList');
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p style="color:#aaa;font-style:italic;font-size:0.9rem;">You have no upcoming signups.</p>';
+    return;
+  }
+  list.innerHTML = data.map(s => `
+    <div class="my-signup-card">
+      <div class="my-signup-row"><span class="my-signup-label">Date & Time</span><span>${s.volunteer_slots.date} at ${s.volunteer_slots.time}</span></div>
+      <div class="my-signup-row"><span class="my-signup-label">Location</span><span>${s.volunteer_slots.classroom}${s.volunteer_slots.teacher ? ' · ' + s.volunteer_slots.teacher : ''}</span></div>
+      <div class="my-signup-row"><span class="my-signup-label">Role</span><span>${s.volunteer_slots.role || s.role || '—'}</span></div>
+      <span class="cancel-note">Need to cancel? Contact us at office@northridgecommunityschool.com</span>
+    </div>`).join('');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+window.openSignupModal = (id, date, time, classroom, teacher, role) => {
+  currentSlotId = id;
+  currentSlotRole = role;
+  document.getElementById('modalSlotSummary').innerHTML =
+    `<strong>${date} at ${time}</strong><br>${classroom}${teacher ? ' · ' + teacher : ''}<br><span style="color:var(--bronze);font-weight:600;">Role: ${role}</span>`;
+  document.getElementById('signupModal').style.display = 'flex';
+};
+
+document.getElementById('modalCancel').addEventListener('click', () => {
+  document.getElementById('signupModal').style.display = 'none';
+  currentSlotId = null;
+  currentSlotRole = null;
+});
+
+document.getElementById('modalConfirm').addEventListener('click', async () => {
+  const name = document.getElementById('sig-name').value.trim();
+  if (!name) { showToast('Please enter your name'); return; }
+
+  const btn = document.getElementById('modalConfirm');
+  btn.disabled = true;
+  btn.textContent = 'Signing up...';
+
+  try {
+    // Check not already signed up
+    const existing = await fetchData('volunteer_signups',
+      `?slot_id=eq.${currentSlotId}&parent_email=eq.${encodeURIComponent(currentUserEmail)}&select=id`);
+    if (existing && existing.length > 0) {
+      showToast('You are already signed up for this slot!');
+      btn.disabled = false;
+      btn.textContent = 'Confirm Signup';
+      return;
+    }
+
+    // Insert signup
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/volunteer_signups`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        slot_id: currentSlotId,
+        parent_name: name,
+        parent_email: currentUserEmail,
+        role: currentSlotRole
+      })
+    });
+
+    if (!insertRes.ok) {
+      const err = await insertRes.json();
+      showToast('Error: ' + (err.message || 'Could not save signup'));
+      btn.disabled = false;
+      btn.textContent = 'Confirm Signup';
+      return;
+    }
+
+    // Increment spots
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_spots_filled`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slot_id_input: currentSlotId })
+      });
+    } catch(e) { console.warn('increment error', e); }
+
+    // Send confirmation email
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/send_email_via_resend`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON,
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to_email: currentUserEmail,
+          subject: '✅ Volunteer Signup Confirmed — NCS',
+          html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+            <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
+            <h2 style="color:#C8102E;text-align:center;">Volunteer Signup Confirmed!</h2>
+            <p style="color:#3A2E2A;font-size:16px;">Dear ${name},</p>
+            <p style="color:#3A2E2A;font-size:16px;">Thank you for signing up to volunteer at NCS!</p>
+            <div style="background:#fdf6f2;border-radius:8px;padding:16px 20px;margin:20px 0;">
+              <p style="margin:0;font-size:15px;color:#3A2E2A;"><strong>Date & Time:</strong> ${document.getElementById('modalSlotSummary').querySelector('strong').textContent}</p>
+              <p style="margin:8px 0 0;font-size:15px;color:#3A2E2A;"><strong>Role:</strong> ${currentSlotRole}</p>
+            </div>
+            <p style="color:#3A2E2A;font-size:15px;">To cancel, contact us at <a href="mailto:office@northridgecommunityschool.com" style="color:#B07D4F;">office@northridgecommunityschool.com</a>.</p>
+            <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
+              Northridge Community School · Where Godly Character meets Great Academics
+            </p>
+          </div>`
+        })
+      });
+    } catch(e) { console.warn('email error', e); }
+
+    btn.disabled = false;
+    btn.textContent = 'Confirm Signup';
+    document.getElementById('signupModal').style.display = 'none';
+    document.getElementById('sig-name').value = '';
+    currentSlotId = null;
+    currentSlotRole = null;
+    showToast('✅ Signed up! Check your email for confirmation.', 4000);
+    loadSlots();
+    loadMySignups();
+
+  } catch(err) {
+    showToast('Something went wrong. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Confirm Signup';
+  }
+});
+</script>
+</body>
+</html>
