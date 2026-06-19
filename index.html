@@ -26,6 +26,10 @@
   .mfa-resend-link{ display:block; margin:18px auto 0; background:none; border:none; color:var(--bronze); font-family:'Trebuchet MS',sans-serif; font-size:0.88rem; cursor:pointer; text-decoration:underline; }
   .mfa-resend-link:disabled{ opacity:0.5; cursor:not-allowed; text-decoration:none; }
   .mfa-error{ color:var(--red); font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; margin-bottom:12px; min-height:1.2em; }
+  .mfa-choice-btn{ display:flex; align-items:center; gap:16px; width:100%; padding:18px 20px; background:#fff; border:2px solid var(--grey-line); border-radius:10px; cursor:pointer; text-align:left; transition:border-color 0.2s, background 0.2s; }
+  .mfa-choice-btn:hover{ border-color:var(--red); background:#fdf6f2; }
+  .mfa-choice-btn strong{ display:block; font-family:'Trebuchet MS',sans-serif; font-size:1rem; color:var(--ink); }
+  .mfa-choice-btn small{ display:block; font-size:0.82rem; color:#6b5e58; margin-top:2px; }
   .role-badge{ display:inline-block; padding:3px 12px; border-radius:20px; font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-left:8px; }
   .role-badge.super_admin{ background:#fdf6f2; color:var(--bronze); border:1px solid var(--bronze); }
   .role-badge.staff{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
@@ -181,15 +185,64 @@
   </button>
 </div>
 
-<!-- MFA VERIFICATION -->
-<div id="mfaScreen" class="admin-login" style="display:none;">
+<!-- MFA METHOD CHOICE -->
+<div id="mfaChoiceScreen" class="admin-login" style="display:none;">
+  <h2>Verify It's You</h2>
+  <p>Choose how you'd like to verify your sign-in.</p>
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:320px;margin:28px auto 0;">
+    <button class="mfa-choice-btn" id="chooseTotpBtn">
+      <span style="font-size:1.6rem;">📱</span>
+      <span>
+        <strong>Authenticator App</strong>
+        <small>Use a code from an app on your phone</small>
+      </span>
+    </button>
+    <button class="mfa-choice-btn" id="chooseEmailBtn">
+      <span style="font-size:1.6rem;">📧</span>
+      <span>
+        <strong>Email Me a Code</strong>
+        <small>We'll send a 6-digit code to your email</small>
+      </span>
+    </button>
+  </div>
+  <button class="mfa-resend-link" id="mfaChoiceCancelBtn" style="margin-top:24px;">Cancel and sign out</button>
+</div>
+
+<!-- TOTP ENROLLMENT (first-time setup) -->
+<div id="totpEnrollScreen" class="admin-login" style="display:none;">
+  <h2>Set Up Your Authenticator</h2>
+  <p>Scan this QR code with Google Authenticator, your phone's built-in authenticator (iPhone: Settings → Passwords → Verification Codes; Android: Google Password Manager), or any TOTP app.</p>
+  <img id="totpQrImg" src="" alt="QR Code" style="display:block;margin:20px auto;width:200px;height:200px;border:1px solid var(--grey-line);border-radius:8px;">
+  <p style="font-size:0.82rem;color:#9a8b84;">Can't scan? Enter this code manually:</p>
+  <p id="totpSecretText" style="font-family:monospace;font-size:1rem;font-weight:700;color:var(--red);letter-spacing:2px;word-break:break-all;margin-bottom:20px;"></p>
+  <div class="mfa-error" id="totpEnrollError"></div>
+  <input type="text" id="totpEnrollCodeInput" class="mfa-code-input" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+  <button class="mfa-verify-btn" id="totpEnrollVerifyBtn">Confirm &amp; Continue</button>
+  <button class="mfa-resend-link" id="totpEnrollBackBtn">← Use a different method</button>
+  <button class="mfa-resend-link" id="totpEnrollCancelBtn">Cancel and sign out</button>
+</div>
+
+<!-- TOTP VERIFICATION (returning staff) -->
+<div id="totpVerifyScreen" class="admin-login" style="display:none;">
+  <h2>Enter Your Authenticator Code</h2>
+  <p>Open your authenticator app and enter the current 6-digit code.</p>
+  <div class="mfa-error" id="totpVerifyError"></div>
+  <input type="text" id="totpVerifyCodeInput" class="mfa-code-input" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+  <button class="mfa-verify-btn" id="totpVerifyBtn">Verify &amp; Continue</button>
+  <button class="mfa-resend-link" id="totpVerifyBackBtn">← Use a different method</button>
+  <button class="mfa-resend-link" id="totpVerifyCancelBtn">Cancel and sign out</button>
+</div>
+
+<!-- EMAIL CODE VERIFICATION -->
+<div id="emailMfaScreen" class="admin-login" style="display:none;">
   <h2>Check Your Email</h2>
-  <p id="mfaSubtext">We sent a 6-digit code to your email. Enter it below to continue.</p>
-  <div class="mfa-error" id="mfaError"></div>
-  <input type="text" id="mfaCodeInput" class="mfa-code-input" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
-  <button class="mfa-verify-btn" id="mfaVerifyBtn">Verify &amp; Continue</button>
-  <button class="mfa-resend-link" id="mfaResendBtn">Resend code</button>
-  <button class="mfa-resend-link" id="mfaCancelBtn">Cancel and sign out</button>
+  <p id="emailMfaSubtext">We sent a 6-digit code to your email. Enter it below to continue.</p>
+  <div class="mfa-error" id="emailMfaError"></div>
+  <input type="text" id="emailMfaCodeInput" class="mfa-code-input" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+  <button class="mfa-verify-btn" id="emailMfaVerifyBtn">Verify &amp; Continue</button>
+  <button class="mfa-resend-link" id="emailMfaResendBtn">Resend code</button>
+  <button class="mfa-resend-link" id="emailMfaBackBtn">← Use a different method</button>
+  <button class="mfa-resend-link" id="emailMfaCancelBtn">Cancel and sign out</button>
 </div>
 
 <!-- NOT AUTHORIZED -->
@@ -211,6 +264,7 @@
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <button class="signout-btn" id="signOutBtn">Sign Out</button>
+      <button class="signout-btn" id="resetAuthenticatorBtn">🔄 Reset Authenticator</button>
       <button class="reset-btn" id="resetYearBtn" style="display:none;">🎓 Start New School Year</button>
     </div>
   </div>
@@ -622,25 +676,32 @@ function showToast(msg, duration = 3000) {
 // ── AUTH, MFA & ROLES ────────────────────────────────────────
 let currentRole = null;
 let currentSession = null;
-let resendCooldownTimer = null;
-let mfaInitiated = false;
+let pendingFactorId = null;
 
 function showOnly(screenId) {
-  ['loginScreen','mfaScreen','notAuthorizedScreen','adminDashboard'].forEach(id => {
+  ['loginScreen','mfaChoiceScreen','totpEnrollScreen','totpVerifyScreen','emailMfaScreen','notAuthorizedScreen','adminDashboard'].forEach(id => {
     document.getElementById(id).style.display = (id === screenId) ? 'block' : 'none';
   });
 }
 
+function showMfaChoice() {
+  document.getElementById('mfaChoiceScreen').style.display = 'block';
+  ['loginScreen','totpEnrollScreen','totpVerifyScreen','emailMfaScreen','notAuthorizedScreen','adminDashboard'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+}
+
+// ── EMAIL CODE MFA ──────────────────────────────────────────────
 function generateMfaCode() {
   return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
 }
 
-async function sendMfaCode(email) {
+async function sendEmailMfaCode(email) {
   const code = generateMfaCode();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
   const { error: insertError } = await sb.from('admin_mfa_codes').insert({ email, code, expires_at: expiresAt });
   if (insertError) {
-    document.getElementById('mfaError').textContent = 'Could not start verification. Please try again.';
+    document.getElementById('emailMfaError').textContent = 'Could not start verification. Please try again.';
     console.error('MFA insert error:', insertError);
     return false;
   }
@@ -661,23 +722,24 @@ async function sendMfaCode(email) {
     </div>`
   });
   if (sendError) {
-    document.getElementById('mfaError').textContent = 'Could not send the code. Please try again.';
+    document.getElementById('emailMfaError').textContent = 'Could not send the code. Please try again.';
     console.error('MFA send error:', sendError);
     return false;
   }
   return true;
 }
 
-function startResendCooldown() {
-  const btn = document.getElementById('mfaResendBtn');
+let emailResendCooldownTimer = null;
+function startEmailResendCooldown() {
+  const btn = document.getElementById('emailMfaResendBtn');
   let seconds = 60;
   btn.disabled = true;
   btn.textContent = `Resend code (${seconds}s)`;
-  clearInterval(resendCooldownTimer);
-  resendCooldownTimer = setInterval(() => {
+  clearInterval(emailResendCooldownTimer);
+  emailResendCooldownTimer = setInterval(() => {
     seconds--;
     if (seconds <= 0) {
-      clearInterval(resendCooldownTimer);
+      clearInterval(emailResendCooldownTimer);
       btn.disabled = false;
       btn.textContent = 'Resend code';
     } else {
@@ -686,25 +748,24 @@ function startResendCooldown() {
   }, 1000);
 }
 
-async function beginMfaChallenge(email) {
-  if (mfaInitiated) return;
-  mfaInitiated = true;
-  document.getElementById('mfaError').textContent = '';
-  document.getElementById('mfaCodeInput').value = '';
-  document.getElementById('mfaSubtext').textContent = `We sent a 6-digit code to ${email}. Enter it below to continue.`;
-  showOnly('mfaScreen');
-  const ok = await sendMfaCode(email);
-  if (ok) startResendCooldown();
+async function beginEmailMfaChallenge() {
+  const email = currentSession.user.email;
+  document.getElementById('emailMfaError').textContent = '';
+  document.getElementById('emailMfaCodeInput').value = '';
+  document.getElementById('emailMfaSubtext').textContent = `We sent a 6-digit code to ${email}. Enter it below to continue.`;
+  showOnly('emailMfaScreen');
+  const ok = await sendEmailMfaCode(email);
+  if (ok) startEmailResendCooldown();
 }
 
-async function verifyMfaCode() {
-  const code = document.getElementById('mfaCodeInput').value.trim();
+async function verifyEmailMfaCode() {
+  const code = document.getElementById('emailMfaCodeInput').value.trim();
   const email = currentSession.user.email;
   if (!/^\d{6}$/.test(code)) {
-    document.getElementById('mfaError').textContent = 'Enter the 6-digit code from your email.';
+    document.getElementById('emailMfaError').textContent = 'Enter the 6-digit code from your email.';
     return;
   }
-  const btn = document.getElementById('mfaVerifyBtn');
+  const btn = document.getElementById('emailMfaVerifyBtn');
   btn.disabled = true;
   btn.textContent = 'Verifying...';
 
@@ -721,12 +782,103 @@ async function verifyMfaCode() {
   btn.textContent = 'Verify & Continue';
 
   if (error || !data || data.length === 0) {
-    document.getElementById('mfaError').textContent = 'That code is incorrect or expired. Please try again or resend.';
+    document.getElementById('emailMfaError').textContent = 'That code is incorrect or expired. Please try again or resend.';
     return;
   }
 
   await sb.from('admin_mfa_codes').update({ used: true }).eq('id', data[0].id);
   sessionStorage.setItem('ncs_mfa_verified_' + currentSession.user.id, 'true');
+  enterDashboard();
+}
+
+async function chooseTotpMethod() {
+  const btn = document.getElementById('chooseTotpBtn');
+  btn.disabled = true;
+  const { data: factorsData } = await sb.auth.mfa.listFactors();
+  const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
+  btn.disabled = false;
+  if (verifiedTotp) {
+    beginTotpChallenge(verifiedTotp.id);
+  } else {
+    beginTotpEnrollment();
+  }
+}
+
+async function beginTotpEnrollment() {
+  document.getElementById('totpEnrollError').textContent = '';
+  document.getElementById('totpEnrollCodeInput').value = '';
+
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'NCS Admin Authenticator' });
+  if (error) {
+    document.getElementById('totpEnrollError').textContent = 'Could not start setup. Please try again.';
+    console.error('TOTP enroll error:', error);
+    showMfaChoice();
+    return;
+  }
+  pendingFactorId = data.id;
+  document.getElementById('totpQrImg').src = data.totp.qr_code;
+  document.getElementById('totpSecretText').textContent = data.totp.secret;
+  showOnly('totpEnrollScreen');
+}
+
+async function confirmTotpEnrollment() {
+  const code = document.getElementById('totpEnrollCodeInput').value.trim();
+  if (!/^\d{6}$/.test(code)) {
+    document.getElementById('totpEnrollError').textContent = 'Enter the 6-digit code from your authenticator app.';
+    return;
+  }
+  const btn = document.getElementById('totpEnrollVerifyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  const { data: challenge, error: challengeError } = await sb.auth.mfa.challenge({ factorId: pendingFactorId });
+  if (challengeError) {
+    document.getElementById('totpEnrollError').textContent = 'Something went wrong. Please try again.';
+    btn.disabled = false; btn.textContent = 'Confirm & Continue';
+    return;
+  }
+  const { error: verifyError } = await sb.auth.mfa.verify({ factorId: pendingFactorId, challengeId: challenge.id, code });
+  btn.disabled = false;
+  btn.textContent = 'Confirm & Continue';
+
+  if (verifyError) {
+    document.getElementById('totpEnrollError').textContent = 'That code didn\'t match. Make sure you scanned the QR code and try the newest code shown in your app.';
+    return;
+  }
+  enterDashboard();
+}
+
+async function beginTotpChallenge(factorId) {
+  pendingFactorId = factorId;
+  document.getElementById('totpVerifyError').textContent = '';
+  document.getElementById('totpVerifyCodeInput').value = '';
+  showOnly('totpVerifyScreen');
+}
+
+async function verifyTotpCode() {
+  const code = document.getElementById('totpVerifyCodeInput').value.trim();
+  if (!/^\d{6}$/.test(code)) {
+    document.getElementById('totpVerifyError').textContent = 'Enter the 6-digit code from your authenticator app.';
+    return;
+  }
+  const btn = document.getElementById('totpVerifyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  const { data: challenge, error: challengeError } = await sb.auth.mfa.challenge({ factorId: pendingFactorId });
+  if (challengeError) {
+    document.getElementById('totpVerifyError').textContent = 'Something went wrong. Please try again.';
+    btn.disabled = false; btn.textContent = 'Verify & Continue';
+    return;
+  }
+  const { error: verifyError } = await sb.auth.mfa.verify({ factorId: pendingFactorId, challengeId: challenge.id, code });
+  btn.disabled = false;
+  btn.textContent = 'Verify & Continue';
+
+  if (verifyError) {
+    document.getElementById('totpVerifyError').textContent = 'That code is incorrect or expired. Please try the current code shown in your app.';
+    return;
+  }
   enterDashboard();
 }
 
@@ -741,12 +893,14 @@ async function checkRoleAndContinue(session) {
   currentRole = data.role;
   currentSession._staffName = data.first_name || null;
 
-  const alreadyVerified = sessionStorage.getItem('ncs_mfa_verified_' + session.user.id) === 'true';
-  if (alreadyVerified) {
+  const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  const emailVerified = sessionStorage.getItem('ncs_mfa_verified_' + session.user.id) === 'true';
+  if ((aal && aal.currentLevel === 'aal2') || emailVerified) {
     enterDashboard();
-  } else {
-    beginMfaChallenge(session.user.email);
+    return;
   }
+
+  showMfaChoice();
 }
 
 function applyRolePermissions() {
@@ -809,7 +963,6 @@ sb.auth.onAuthStateChange((event, session) => {
   } else {
     currentRole = null;
     currentSession = null;
-    mfaInitiated = false;
     showOnly('loginScreen');
   }
 });
@@ -825,17 +978,54 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
 document.getElementById('notAuthSignOutBtn').addEventListener('click', async () => {
   await sb.auth.signOut();
 });
-document.getElementById('mfaCancelBtn').addEventListener('click', async () => {
+document.getElementById('mfaChoiceCancelBtn').addEventListener('click', async () => {
   await sb.auth.signOut();
 });
-document.getElementById('mfaVerifyBtn').addEventListener('click', verifyMfaCode);
-document.getElementById('mfaCodeInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') verifyMfaCode();
+document.getElementById('totpEnrollCancelBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
 });
-document.getElementById('mfaResendBtn').addEventListener('click', async () => {
-  document.getElementById('mfaError').textContent = '';
-  const ok = await sendMfaCode(currentSession.user.email);
-  if (ok) { startResendCooldown(); showToast('New code sent'); }
+document.getElementById('totpVerifyCancelBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+});
+document.getElementById('emailMfaCancelBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+});
+
+// Method choice
+document.getElementById('chooseTotpBtn').addEventListener('click', chooseTotpMethod);
+document.getElementById('chooseEmailBtn').addEventListener('click', beginEmailMfaChallenge);
+
+// Back-to-choice links
+document.getElementById('totpEnrollBackBtn').addEventListener('click', showMfaChoice);
+document.getElementById('totpVerifyBackBtn').addEventListener('click', showMfaChoice);
+document.getElementById('emailMfaBackBtn').addEventListener('click', showMfaChoice);
+
+document.getElementById('totpEnrollVerifyBtn').addEventListener('click', confirmTotpEnrollment);
+document.getElementById('totpEnrollCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') confirmTotpEnrollment();
+});
+document.getElementById('totpVerifyBtn').addEventListener('click', verifyTotpCode);
+document.getElementById('totpVerifyCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') verifyTotpCode();
+});
+document.getElementById('emailMfaVerifyBtn').addEventListener('click', verifyEmailMfaCode);
+document.getElementById('emailMfaCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') verifyEmailMfaCode();
+});
+document.getElementById('emailMfaResendBtn').addEventListener('click', async () => {
+  document.getElementById('emailMfaError').textContent = '';
+  const ok = await sendEmailMfaCode(currentSession.user.email);
+  if (ok) { startEmailResendCooldown(); showToast('New code sent'); }
+});
+
+document.getElementById('resetAuthenticatorBtn').addEventListener('click', async () => {
+  if (!confirm('This will remove your current authenticator and ask you to set up a new one right now. Continue?')) return;
+  const { data: factorsData } = await sb.auth.mfa.listFactors();
+  const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
+  if (verifiedTotp) {
+    await sb.auth.mfa.unenroll({ factorId: verifiedTotp.id });
+  }
+  beginTotpEnrollment();
 });
 
 // ── STAFF ACCESS (super admin only) ─────────────────────────────
