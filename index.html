@@ -262,11 +262,13 @@
       <h2 id="greetingTitle">Good morning!</h2>
       <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <div style="display:flex;gap:10px;align-items:center;position:relative;">
       <button class="signout-btn" id="signOutBtn">Sign Out</button>
-      <span style="display:inline-block;width:1px;height:32px;background:var(--grey-line);margin:0 6px;vertical-align:middle;"></span>
-      <button id="resetAuthenticatorBtn" style="background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:9px 16px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;opacity:0.85;">🔄 Reset Authenticator</button>
-      <button class="reset-btn" id="resetYearBtn" style="display:none;">🎓 Start New School Year</button>
+      <button id="moreActionsBtn" class="signout-btn" style="display:flex;align-items:center;gap:6px;">⋯ More</button>
+      <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:50;min-width:230px;">
+        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
+        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
+      </div>
     </div>
   </div>
 
@@ -937,7 +939,7 @@ function applyRolePermissions() {
   const isSuperAdmin = currentRole === 'super_admin';
   const isAdmissions = currentRole === 'admissions_committee';
 
-  document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
+  document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'block' : 'none';
   document.getElementById('staffAccessTabBtn').style.display = isSuperAdmin ? 'inline-block' : 'none';
 
   if (isAdmissions) {
@@ -1048,7 +1050,21 @@ document.getElementById('emailMfaResendBtn').addEventListener('click', async () 
   if (ok) { startEmailResendCooldown(); showToast('New code sent'); }
 });
 
+document.getElementById('moreActionsBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const menu = document.getElementById('moreActionsMenu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+});
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('moreActionsMenu');
+  const btn = document.getElementById('moreActionsBtn');
+  if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
+    menu.style.display = 'none';
+  }
+});
+
 document.getElementById('resetAuthenticatorBtn').addEventListener('click', async () => {
+  document.getElementById('moreActionsMenu').style.display = 'none';
   if (!confirm('This will remove your current authenticator and ask you to set up a new one right now. Continue?')) return;
   const { data: factorsData } = await sb.auth.mfa.listFactors();
   const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
@@ -1922,6 +1938,7 @@ function formatDateNice(dateStr) {
 }
 
 document.getElementById('resetYearBtn').addEventListener('click', () => {
+  document.getElementById('moreActionsMenu').style.display = 'none';
   holidayDates = [];
   mappedSlots = [];
   flaggedSlots = [];
