@@ -93,6 +93,10 @@
   .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
   .form-row.single{ grid-template-columns:1fr; }
   .form-group{ display:flex; flex-direction:column; gap:6px; }
+  .student-row{ background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; padding:16px; margin-bottom:12px; }
+  .student-row-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .student-row-header span{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:var(--bronze); }
+  .student-row-remove{ background:none; border:none; color:#c0392b; font-size:0.78rem; cursor:pointer; font-family:'Trebuchet MS',sans-serif; padding:2px 6px; }
   .form-group label{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); }
   .form-group input, .form-group select, .form-group textarea{ padding:10px 14px; border:1px solid var(--grey-line); border-radius:6px; font-family:Georgia,serif; font-size:0.95rem; color:var(--ink); background:#fff; transition:border-color 0.2s; }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus{ outline:none; border-color:var(--bronze); }
@@ -183,8 +187,8 @@
 
 <!-- LOGIN -->
 <div id="loginScreen" class="admin-login">
-  <h2>Admin Login</h2>
-  <p>Sign in with your NCS Google account to manage the school website.</p>
+  <h2>NCS OnePlace</h2>
+  <p>Sign in with your NCS Google account.</p>
   <button class="google-btn" id="googleSignIn">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
     Sign in with Google
@@ -421,19 +425,14 @@
           <input type="email" id="fam-email-2" placeholder="e.g. otherparent@email.com">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label># of Students</label>
-          <input type="number" id="fam-students" min="1" value="1" style="max-width:120px;">
-        </div>
-        <div class="form-group">
-          <label>Assigned Teacher</label>
-          <select id="fam-teacher">
-            <option value="">— Not Assigned —</option>
-          </select>
-        </div>
+
+      <div style="margin:24px 0 12px;display:flex;align-items:center;justify-content:space-between;">
+        <label style="margin:0;">Students</label>
+        <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add Another Student</button>
       </div>
-      <button class="save-btn" id="saveFamiliy">Enroll Family</button>
+      <div id="studentRowsContainer"></div>
+
+      <button class="save-btn" id="saveFamiliy" style="margin-top:8px;">Enroll Family</button>
     </div>
     <div class="events-list">
       <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
@@ -1281,6 +1280,7 @@ function loadAll() {
   loadVolSignups();
   loadGreetingAndStats();
   loadTeacherOptions();
+  if (document.getElementById('studentRowsContainer').children.length === 0) addStudentRow();
 }
 
 // ── GREETING, VERSE & STATS ───────────────────────────────────
@@ -1559,14 +1559,22 @@ document.getElementById('uploadAndSend').addEventListener('click', () => uploadN
 
 // ── FAMILY EMAILS ─────────────────────────────────────────────
 async function loadFamilies() {
-  const { data } = await sb.from('family_emails').select('*').order('name');
+  const { data } = await sb.from('family_emails').select('*, students(*)').order('name');
   const list = document.getElementById('familyList');
   document.getElementById('familyCount').textContent = data ? `(${data.length} families)` : '';
   if (!data || data.length === 0) {
     list.innerHTML = '<p class="empty-state">No families added yet.</p>';
     return;
   }
-  list.innerHTML = data.map(f => `
+  list.innerHTML = data.map(f => {
+    const kids = f.students || [];
+    const kidsHTML = kids.length > 0
+      ? kids.map(s => `
+          <div style="font-size:0.85rem;color:#6b5e58;background:#fff;border:1px solid var(--grey-line);border-radius:6px;padding:6px 12px;">
+            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
+          </div>`).join('')
+      : '<span style="font-size:0.85rem;color:#aaa;font-style:italic;">No students added</span>';
+    return `
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
@@ -1578,48 +1586,130 @@ async function loadFamilies() {
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
         <span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.email}</span>
         ${f.second_email ? `<span style="font-size:0.85rem;color:#6b5e58;">📧 ${f.second_email}</span>` : ''}
-        <span style="font-size:0.85rem;color:#6b5e58;">🎓 ${f.student_count || 1} student${(f.student_count || 1) === 1 ? '' : 's'}</span>
-        ${f.assigned_teacher_email ? `<span style="font-size:0.85rem;color:#6b5e58;">👩‍🏫 ${f.assigned_teacher_email}</span>` : ''}
         <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       </div>
-    </div>`).join('');
+      <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
+    </div>`;
+  }).join('');
 }
 
 document.getElementById('famNewInfoBtn').addEventListener('click', () => {
   showToast('Unchecked = returning family. This changes the wording of the welcome email they receive.', 5500);
 });
 
+let teacherOptionsCache = '<option value="">— Not Assigned —</option>';
+const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
+
 async function loadTeacherOptions() {
-  const select = document.getElementById('fam-teacher');
-  if (!select) return;
   const { data } = await sb.from('staff_roles').select('email, first_name, last_name').eq('role', 'teacher').order('first_name');
-  const current = select.value;
-  select.innerHTML = '<option value="">— Not Assigned —</option>' +
+  teacherOptionsCache = '<option value="">— Not Assigned —</option>' +
     (data || []).map(t => `<option value="${t.email}">${[t.first_name, t.last_name].filter(Boolean).join(' ') || t.email}</option>`).join('');
-  select.value = current;
+  // Refresh any rows already on screen
+  document.querySelectorAll('.student-teacher-select').forEach(sel => {
+    const current = sel.value;
+    sel.innerHTML = teacherOptionsCache;
+    sel.value = current;
+  });
 }
+
+let studentRowCounter = 0;
+function addStudentRow() {
+  studentRowCounter++;
+  const id = studentRowCounter;
+  const container = document.getElementById('studentRowsContainer');
+  const div = document.createElement('div');
+  div.className = 'student-row';
+  div.id = `student-row-${id}`;
+  div.innerHTML = `
+    <div class="student-row-header">
+      <span>Student</span>
+      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id})">✕ Remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" class="student-first" placeholder="e.g. Matteo">
+      </div>
+      <div class="form-group">
+        <label>Last Name <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
+        <input type="text" class="student-last" placeholder="e.g. Kim">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grade</label>
+        <select class="student-grade">
+          <option value="">— Select Grade —</option>
+          ${GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assigned Teacher</label>
+        <select class="student-teacher-select">${teacherOptionsCache}</select>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  updateRemoveButtonsVisibility();
+}
+
+window.removeStudentRow = (id) => {
+  const row = document.getElementById(`student-row-${id}`);
+  if (row) row.remove();
+  updateRemoveButtonsVisibility();
+};
+
+function updateRemoveButtonsVisibility() {
+  const rows = document.querySelectorAll('.student-row');
+  rows.forEach(row => {
+    const btn = row.querySelector('.student-row-remove');
+    if (btn) btn.style.display = rows.length > 1 ? 'inline-block' : 'none';
+  });
+}
+
+document.getElementById('addStudentRowBtn').addEventListener('click', addStudentRow);
 
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const name = document.getElementById('fam-name').value.trim();
   const email = document.getElementById('fam-email').value.trim();
   const email2 = document.getElementById('fam-email-2').value.trim();
-  const studentCount = parseInt(document.getElementById('fam-students').value, 10) || 1;
   const isNewFamily = document.getElementById('fam-new').checked;
-  const assignedTeacher = document.getElementById('fam-teacher').value || null;
+
+  const studentRows = Array.from(document.querySelectorAll('.student-row')).map(row => ({
+    first_name: row.querySelector('.student-first').value.trim(),
+    last_name: row.querySelector('.student-last').value.trim(),
+    grade: row.querySelector('.student-grade').value || null,
+    assigned_teacher_email: row.querySelector('.student-teacher-select').value || null
+  })).filter(s => s.first_name);
+
   if (!name || !email) { showToast('Please enter both name and email'); return; }
+  if (studentRows.length === 0) { showToast('Please enter at least one student\'s first name'); return; }
+
   const btn = document.getElementById('saveFamiliy');
   btn.disabled = true;
   btn.textContent = 'Enrolling...';
-  const { error } = await sb.from('family_emails').insert({ name, email, second_email: email2 || null, student_count: studentCount, is_new_family: isNewFamily, assigned_teacher_email: assignedTeacher });
+
+  const { data: famData, error } = await sb.from('family_emails')
+    .insert({ name, email, second_email: email2 || null, student_count: studentRows.length, is_new_family: isNewFamily })
+    .select()
+    .single();
+
+  if (error) { btn.disabled = false; btn.textContent = 'Enroll Family'; showToast('Error: ' + error.message); return; }
+
+  const { error: studentsError } = await sb.from('students').insert(
+    studentRows.map(s => ({ ...s, family_email_id: famData.id }))
+  );
+
   btn.disabled = false;
   btn.textContent = 'Enroll Family';
-  if (error) { showToast('Error: ' + error.message); return; }
+  if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
+
   document.getElementById('fam-name').value = '';
   document.getElementById('fam-email').value = '';
   document.getElementById('fam-email-2').value = '';
-  document.getElementById('fam-students').value = '1';
   document.getElementById('fam-new').checked = false;
-  document.getElementById('fam-teacher').value = '';
+  document.getElementById('studentRowsContainer').innerHTML = '';
+  addStudentRow();
+
   showToast('✅ Family enrolled and welcome email sent!', 4000);
   loadFamilies();
 });
@@ -1974,16 +2064,23 @@ function openPrintWindow(title, bodyHTML) {
 }
 
 async function printFamilies() {
-  const { data } = await sb.from('family_emails').select('*').order('name');
+  const { data } = await sb.from('family_emails').select('*, students(*)').order('name');
   if (!data || data.length === 0) { showToast('No families to print'); return; }
-  const rows = data.map((f, i) => `
+  const rows = data.map((f, i) => {
+    const kids = f.students || [];
+    const kidsLine = kids.length > 0
+      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}`).join(' &nbsp;·&nbsp; ')
+      : 'No students on file';
+    return `
     <div class="print-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
       <div style="display:flex;justify-content:space-between;width:100%;">
         <strong>${i + 1}. ${f.name}</strong>
-        <span>${f.student_count || 1} student${(f.student_count || 1) === 1 ? '' : 's'}</span>
+        <span>${kids.length} student${kids.length === 1 ? '' : 's'}</span>
       </div>
       <span style="font-size:0.85rem;">${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}</span>
-    </div>`).join('');
+      <span style="font-size:0.85rem;color:#6b5e58;">${kidsLine}</span>
+    </div>`;
+  }).join('');
   openPrintWindow(`Enrolled Families (${data.length})`,
     `<div style="margin-bottom:24px;"><h2 style="margin-bottom:12px;font-size:1.1rem;color:#B07D4F;">Enrolled Families — ${data.length} total</h2>${rows}</div>`
   );
