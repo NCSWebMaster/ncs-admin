@@ -1679,7 +1679,7 @@ async function signInWithGoogle() {
     const { data, error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/admin.html`,
+        redirectTo: `redirectTo:`https://admin.northridgecommunityschool.com/admin.html`,
         scopes: 'https://www.googleapis.com/auth/drive.readonly'
       }
     });
