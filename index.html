@@ -1657,7 +1657,8 @@ async function checkAndLoadBoardFiles() {
       `;
       status.textContent = '';
       
-      document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
+      const googleDriveSignInBtn = document.getElementById('googleSignInBtn');
+      if (googleDriveSignInBtn) googleDriveSignInBtn.addEventListener('click', signInWithGoogle);
       return;
     }
     
@@ -2121,9 +2122,14 @@ const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
 
 function collectEnrollDraft() {
   return {
-    name: document.getElementById('fam-name').value,
-    email: document.getElementById('fam-email').value,
-    email2: document.getElementById('fam-email-2').value,
+    fatherName: document.getElementById('father-name').value,
+    fatherEmail: document.getElementById('father-email').value,
+    fatherPhone: document.getElementById('father-phone').value,
+    fatherDob: document.getElementById('father-dob').value,
+    motherName: document.getElementById('mother-name').value,
+    motherEmail: document.getElementById('mother-email').value,
+    motherPhone: document.getElementById('mother-phone').value,
+    motherDob: document.getElementById('mother-dob').value,
     isNew: document.getElementById('fam-new').checked,
     students: Array.from(document.querySelectorAll('.student-row')).map(row => ({
       first: row.querySelector('.student-first').value,
@@ -2147,9 +2153,14 @@ function restoreEnrollDraft() {
   try { draft = JSON.parse(sessionStorage.getItem(ENROLL_DRAFT_KEY)); } catch (e) { return false; }
   if (!draft) return false;
 
-  document.getElementById('fam-name').value = draft.name || '';
-  document.getElementById('fam-email').value = draft.email || '';
-  document.getElementById('fam-email-2').value = draft.email2 || '';
+  document.getElementById('father-name').value = draft.fatherName || draft.name || '';
+  document.getElementById('father-email').value = draft.fatherEmail || draft.email || '';
+  document.getElementById('father-phone').value = draft.fatherPhone || '';
+  document.getElementById('father-dob').value = draft.fatherDob || '';
+  document.getElementById('mother-name').value = draft.motherName || '';
+  document.getElementById('mother-email').value = draft.motherEmail || draft.email2 || '';
+  document.getElementById('mother-phone').value = draft.motherPhone || '';
+  document.getElementById('mother-dob').value = draft.motherDob || '';
   document.getElementById('fam-new').checked = !!draft.isNew;
 
   document.getElementById('studentRowsContainer').innerHTML = '';
@@ -2166,9 +2177,12 @@ function restoreEnrollDraft() {
 }
 
 // Autosave on any change within the Enroll Family form
-['fam-name','fam-email','fam-email-2','fam-new'].forEach(id => {
-  document.getElementById(id).addEventListener('input', saveEnrollDraft);
-  document.getElementById(id).addEventListener('change', saveEnrollDraft);
+['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-new'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', saveEnrollDraft);
+    el.addEventListener('change', saveEnrollDraft);
+  }
 });
 document.getElementById('studentRowsContainer').addEventListener('input', saveEnrollDraft);
 document.getElementById('studentRowsContainer').addEventListener('change', saveEnrollDraft);
