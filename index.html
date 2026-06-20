@@ -874,6 +874,14 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const FROM_EMAIL = 'office@northridgecommunityschool.com';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// TEMPORARY DEBUG: Show any JS errors as an alert so they're visible on iPad (no dev tools access)
+window.addEventListener('error', (e) => {
+  alert('JS Error: ' + e.message + '\n\nFile: ' + e.filename + '\nLine: ' + e.lineno);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  alert('Promise Error: ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason)));
+});
+
 function showToast(msg, duration = 3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -2006,6 +2014,7 @@ document.getElementById('studentRowsContainer').addEventListener('change', saveE
 document.getElementById('addStudentRowBtn').addEventListener('click', () => setTimeout(saveEnrollDraft, 0));
 
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
+  alert('DEBUG: Button click registered, starting enroll process...');
   const fatherName = document.getElementById('father-name').value.trim();
   const fatherEmail = document.getElementById('father-email').value.trim();
   const fatherPhone = document.getElementById('father-phone').value.trim();
