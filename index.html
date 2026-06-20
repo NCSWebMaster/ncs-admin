@@ -40,15 +40,23 @@
   .role-badge.board_member{ background:#eff6ff; color:#1d4ed8; border:1px solid #1d4ed8; }
   .section-menu-trigger{ display:flex; align-items:center; gap:6px; padding:9px 14px; background:none; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:#6b5e58; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
   .section-menu-trigger:hover{ background:var(--red); color:#fff; border-color:var(--red); }
-  .section-menu-dropdown{ position:fixed; right:12px; left:auto; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:60; width:250px; max-width:85vw; max-height:70vh; overflow-y:auto; }
+  .section-menu-dropdown{ position:absolute; right:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:60; width:250px; max-width:85vw; max-height:70vh; overflow-y:auto; }
   .section-menu-dropdown .admin-tab{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; margin-bottom:4px; }
   .section-menu-dropdown .admin-tab:last-child{ margin-bottom:0; }
+  .app-menu-category{ margin-bottom:6px; }
+  .app-menu-category:last-child{ margin-bottom:0; }
+  .app-menu-category-header{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:10px 12px; background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:#6b5e58; cursor:pointer; user-select:none; }
+  .app-menu-category-arrow{ transition:transform 0.2s; color:var(--bronze); }
+  .app-menu-category.collapsed .app-menu-category-arrow{ transform:rotate(-90deg); }
+  .app-menu-category-items{ overflow:hidden; max-height:1000px; transition:max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease; opacity:1; margin-top:6px; }
+  .app-menu-category.collapsed .app-menu-category-items{ max-height:0; opacity:0; margin-top:0; }
   .tab-drag-handle, .board-drag-handle{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
-  .sortable-ghost{ opacity:0.35; }
-  .sortable-chosen{ box-shadow:0 6px 18px rgba(0,0,0,0.18); }
-  .sortable-drag{ opacity:0.95; }
   .tab-drag-handle{ cursor:grab; color:#c9bdb4; font-size:1.1rem; flex-shrink:0; touch-action:none; line-height:1; }
   .admin-tab.active .tab-drag-handle{ color:rgba(255,255,255,0.65); }
+  .sortable-ghost{ opacity:0.3; background:#f3ece6 !important; }
+  .sortable-chosen{ box-shadow:0 10px 24px rgba(0,0,0,0.22) !important; transform:scale(1.03); opacity:0.97; z-index:1000; position:relative; transition:box-shadow 0.15s ease, transform 0.15s ease; }
+  .sortable-drag{ opacity:0.97 !important; box-shadow:0 10px 24px rgba(0,0,0,0.22) !important; }
+  .sortable-fallback{ opacity:0.97 !important; box-shadow:0 10px 24px rgba(0,0,0,0.22) !important; transform:scale(1.03); }
   .google-btn{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; padding:14px 28px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); cursor:pointer; transition:box-shadow 0.2s; }
   .google-btn:hover{ box-shadow:0 4px 14px rgba(0,0,0,0.1); }
   .google-btn img{ width:24px; }
@@ -297,25 +305,49 @@
   <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:16px;">
     <div style="position:relative;">
       <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
-      <div id="moreActionsMenu" style="display:none;position:fixed;left:12px;right:auto;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
-        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
-        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;margin-bottom:8px;">🎓 Start New School Year</button>
+      <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
+        <button id="signOutBtn" style="display:block;width:100%;text-align:left;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">Sign Out</button>
         <div style="border-top:1px solid var(--grey-line);margin:4px 0 8px;"></div>
-        <button id="signOutBtn" style="display:block;width:100%;text-align:left;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;">Sign Out</button>
+        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
+        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
       </div>
     </div>
     <div style="position:relative;">
       <button id="sectionMenuBtn" class="section-menu-trigger">🗂️ Apps <span style="font-size:0.7rem;">▾</span></button>
-      <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
-        <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
-        <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
-        <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
-        <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
-        <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
-        <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
-        <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
-        <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
-        <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
+      <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;top:calc(100% + 8px);">
+        <div class="app-menu-category" data-category="family">
+          <button class="app-menu-category-header" data-category="family">
+            <span>👨‍👩‍👧 Family &amp; Community</span>
+            <span class="app-menu-category-arrow">▾</span>
+          </button>
+          <div class="app-menu-category-items" data-category-items="family">
+            <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
+            <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
+            <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
+            <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
+            <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
+          </div>
+        </div>
+        <div class="app-menu-category" data-category="academics">
+          <button class="app-menu-category-header" data-category="academics">
+            <span>🎓 Academics</span>
+            <span class="app-menu-category-arrow">▾</span>
+          </button>
+          <div class="app-menu-category-items" data-category-items="academics">
+            <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
+          </div>
+        </div>
+        <div class="app-menu-category" data-category="admin">
+          <button class="app-menu-category-header" data-category="admin">
+            <span>🔐 Admin &amp; Governance</span>
+            <span class="app-menu-category-arrow">▾</span>
+          </button>
+          <div class="app-menu-category-items" data-category-items="admin">
+            <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
+            <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
+            <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1183,6 +1215,12 @@ function applyRolePermissions() {
     if (btn) btn.style.display = visibleTabs.includes(tab) ? 'block' : 'none';
   });
 
+  // Hide a category card entirely if none of its tabs are visible for this role
+  document.querySelectorAll('.app-menu-category').forEach(cat => {
+    const anyVisible = Array.from(cat.querySelectorAll('.admin-tab')).some(btn => btn.style.display !== 'none');
+    cat.style.display = anyVisible ? 'block' : 'none';
+  });
+
   // Activate the first available tab for this role
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
@@ -1322,15 +1360,8 @@ document.getElementById('emailMfaResendBtn').addEventListener('click', async () 
 
 document.getElementById('moreActionsBtn').addEventListener('click', (e) => {
   e.stopPropagation();
-  const btn = document.getElementById('moreActionsBtn');
   const menu = document.getElementById('moreActionsMenu');
-  if (menu.style.display === 'block') {
-    menu.style.display = 'none';
-  } else {
-    const rect = btn.getBoundingClientRect();
-    menu.style.top = (rect.bottom + 8) + 'px';
-    menu.style.display = 'block';
-  }
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 });
 document.addEventListener('click', (e) => {
   const menu = document.getElementById('moreActionsMenu');
@@ -1798,8 +1829,11 @@ function initBoardFilesSortable() {
   if (boardSortableInstance) { boardSortableInstance.destroy(); boardSortableInstance = null; }
   boardSortableInstance = Sortable.create(container, {
     handle: '.board-drag-handle',
-    animation: 200,
+    animation: 220,
     easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
+    delay: 120,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
     forceFallback: true,
     fallbackTolerance: 3,
     ghostClass: 'sortable-ghost',
@@ -1955,13 +1989,11 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
 
 document.getElementById('sectionMenuBtn').addEventListener('click', (e) => {
   e.stopPropagation();
-  const btn = document.getElementById('sectionMenuBtn');
   const menu = document.getElementById('sectionMenuDropdown');
   if (menu.style.display === 'block') {
     menu.style.display = 'none';
   } else {
-    const rect = btn.getBoundingClientRect();
-    menu.style.top = (rect.bottom + 8) + 'px';
+    expandActiveAppMenuCategory();
     menu.style.display = 'block';
   }
 });
@@ -1988,12 +2020,17 @@ async function saveTabOrder(order) {
   }, { onConflict: 'user_email' });
 }
 
-// Re-syncs the DOM tab button order + active tab/panel + dropdown label to match a given order
+// Re-syncs each category's internal tab order + active tab/panel to match a given flat order.
+// Tabs always stay within their own category card — only their order *within* that card changes.
 function applyTabOrderToDOM(orderedTabIds) {
-  const dropdown = document.getElementById('sectionMenuDropdown');
-  orderedTabIds.forEach(tabId => {
-    const btn = document.querySelector(`.admin-tab[data-tab="${tabId}"]`);
-    if (btn) dropdown.appendChild(btn);
+  document.querySelectorAll('.app-menu-category-items').forEach(categoryContainer => {
+    const tabsHere = Array.from(categoryContainer.children).map(el => el.dataset.tab);
+    const ordered = orderedTabIds.filter(t => tabsHere.includes(t));
+    tabsHere.forEach(t => { if (!ordered.includes(t)) ordered.push(t); }); // newly-added tabs go at the end
+    ordered.forEach(tabId => {
+      const btn = categoryContainer.querySelector(`.admin-tab[data-tab="${tabId}"]`);
+      if (btn) categoryContainer.appendChild(btn);
+    });
   });
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
@@ -2016,29 +2053,64 @@ async function applyPersonalTabOrder() {
   applyTabOrderToDOM(finalOrder);
 }
 
-// Drag tabs directly within the open dropdown to reorder them — saves automatically per-person
-let sectionMenuSortableInstance = null;
+// Expand only the category that contains the currently active tab; collapse the rest.
+// Runs every time the Apps menu is opened so it always reflects where you currently are.
+function expandActiveAppMenuCategory() {
+  const activeBtn = document.querySelector('.admin-tab.active');
+  const activeCategory = activeBtn ? activeBtn.closest('.app-menu-category') : null;
+  document.querySelectorAll('.app-menu-category').forEach(cat => {
+    cat.classList.toggle('collapsed', cat !== activeCategory);
+  });
+}
+
+document.querySelectorAll('.app-menu-category-header').forEach(header => {
+  header.addEventListener('click', (e) => {
+    e.stopPropagation();
+    header.closest('.app-menu-category').classList.toggle('collapsed');
+  });
+});
+
+// Drag tabs directly within their category card to reorder them — saves automatically per-person.
+// One Sortable instance per category (dragging is scoped to within a category, not across categories).
+let sectionMenuSortableInstances = [];
 function initSectionMenuSortable() {
-  const container = document.getElementById('sectionMenuDropdown');
-  if (!container || typeof Sortable === 'undefined') return;
-  if (sectionMenuSortableInstance) { sectionMenuSortableInstance.destroy(); sectionMenuSortableInstance = null; }
-  sectionMenuSortableInstance = Sortable.create(container, {
-    handle: '.tab-drag-handle',
-    animation: 200,
-    easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
-    forceFallback: true,
-    fallbackTolerance: 3,
-    ghostClass: 'sortable-ghost',
-    chosenClass: 'sortable-chosen',
-    dragClass: 'sortable-drag',
-    onEnd: async () => {
-      const newOrder = Array.from(container.children).map(el => el.dataset.tab);
-      await saveTabOrder(newOrder);
-      showToast('✅ Tab order saved');
-    }
+  if (sectionMenuSortableInstances.length) {
+    sectionMenuSortableInstances.forEach(inst => inst.destroy());
+    sectionMenuSortableInstances = [];
+  }
+  if (typeof Sortable === 'undefined') return;
+  document.querySelectorAll('.app-menu-category-items').forEach(container => {
+    const instance = Sortable.create(container, {
+      handle: '.tab-drag-handle',
+      animation: 220,
+      easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
+      delay: 120,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
+      forceFallback: true,
+      fallbackTolerance: 3,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      onEnd: async () => {
+        const newOrder = Array.from(document.querySelectorAll('.app-menu-category-items .admin-tab')).map(el => el.dataset.tab);
+        await saveTabOrder(newOrder);
+        showToast('✅ Tab order saved');
+      }
+    });
+    sectionMenuSortableInstances.push(instance);
   });
 }
 initSectionMenuSortable();
+
+// Safety net: close either dropdown if the page scrolls while one is open, so it never
+// ends up looking detached from its trigger button.
+window.addEventListener('scroll', () => {
+  const appsMenu = document.getElementById('sectionMenuDropdown');
+  const moreMenu = document.getElementById('moreActionsMenu');
+  if (appsMenu && appsMenu.style.display === 'block') appsMenu.style.display = 'none';
+  if (moreMenu && moreMenu.style.display === 'block') moreMenu.style.display = 'none';
+}, { passive: true });
 
 // ── NEWSLETTER ───────────────────────────────────────────────
 async function loadNewsletters() {
