@@ -292,29 +292,31 @@
       <h2 id="greetingTitle">Good morning!</h2>
       <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto;justify-content:flex-end;">
-      <div style="position:relative;">
-        <button id="sectionMenuBtn" class="section-menu-trigger">🗂️ Apps <span style="font-size:0.7rem;">▾</span></button>
-        <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
-          <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
-          <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
-          <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
-          <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
-          <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
-          <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
-          <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
-          <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
-          <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
-        </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:16px;">
+    <div style="position:relative;">
+      <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
+      <div id="moreActionsMenu" style="display:none;position:fixed;left:12px;right:auto;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
+        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
+        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;margin-bottom:8px;">🎓 Start New School Year</button>
+        <div style="border-top:1px solid var(--grey-line);margin:4px 0 8px;"></div>
+        <button id="signOutBtn" style="display:block;width:100%;text-align:left;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;">Sign Out</button>
       </div>
-      <div style="position:relative;">
-        <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
-        <div id="moreActionsMenu" style="display:none;position:fixed;right:12px;left:auto;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
-          <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
-          <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
-        </div>
+    </div>
+    <div style="position:relative;">
+      <button id="sectionMenuBtn" class="section-menu-trigger">🗂️ Apps <span style="font-size:0.7rem;">▾</span></button>
+      <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
+        <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
+        <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
+        <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
+        <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
+        <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
+        <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
+        <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
+        <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
+        <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
       </div>
-      <button class="signout-btn" id="signOutBtn" style="margin-left:8px;">Sign Out</button>
     </div>
   </div>
 
