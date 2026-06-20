@@ -725,7 +725,7 @@
           <h3 style="margin:0;flex:1;">🗂️ Board Minutes & Documents</h3>
           <button class="save-btn" id="boardNewFolderBtn" style="padding:8px 16px;font-size:0.85rem;">+ New Folder</button>
           <button class="save-btn" id="boardUploadBtn" style="padding:8px 16px;font-size:0.85rem;">⬆️ Upload File</button>
-          <input type="file" id="boardFileInput" style="display:none;">
+          <input type="file" id="boardFileInput" multiple style="display:none;">
         </div>
         <div id="boardBreadcrumb" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;margin-bottom:14px;"></div>
         <div id="boardFileManagerStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;margin-bottom:10px;"></div>
@@ -1723,15 +1723,34 @@ document.getElementById('boardUploadBtn').addEventListener('click', () => {
 });
 
 document.getElementById('boardFileInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
   const status = document.getElementById('boardFileManagerStatus');
-  status.textContent = 'Uploading...';
-  const path = boardCurrentPath + file.name;
-  const { error } = await sb.storage.from(BOARD_BUCKET).upload(path, file, { upsert: true });
+
+  let successCount = 0;
+  const errors = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    status.textContent = `Uploading ${i + 1} of ${files.length}: ${file.name}...`;
+    const path = boardCurrentPath + file.name;
+    const { error } = await sb.storage.from(BOARD_BUCKET).upload(path, file, { upsert: true });
+    if (error) {
+      errors.push(`${file.name}: ${error.message}`);
+    } else {
+      successCount++;
+    }
+  }
+
   e.target.value = '';
-  if (error) { showToast('Error: ' + error.message); status.textContent = ''; return; }
-  showToast('✅ File uploaded');
+
+  if (successCount > 0) {
+    showToast(`✅ ${successCount} file${successCount !== 1 ? 's' : ''} uploaded`);
+  }
+  if (errors.length > 0) {
+    showToast(`⚠️ ${errors.length} file${errors.length !== 1 ? 's' : ''} failed: ${errors[0]}`, 5000);
+  }
+
   loadBoardFileManager();
 });
 
