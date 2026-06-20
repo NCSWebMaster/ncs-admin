@@ -32,7 +32,6 @@
   .mfa-choice-btn small{ display:block; font-size:0.82rem; color:#6b5e58; margin-top:2px; }
   .role-badge{ display:inline-block; padding:3px 12px; border-radius:20px; font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-left:8px; }
   .role-badge.super_admin{ background:#fdf6f2; color:var(--bronze); border:1px solid var(--bronze); }
-  .role-badge.leader{ background:#fffbeb; color:#b45309; border:1px solid #b45309; }
   .role-badge.staff{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
   .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
   .role-badge.teacher{ background:#fdf4ff; color:#9333ea; border:1px solid #9333ea; }
@@ -320,21 +319,21 @@
     </div>
   </div>
 
-  <div style="position:relative;margin-bottom:32px;display:flex;gap:8px;align-items:center;">
-    <button id="sectionMenuBtn" class="section-menu-trigger" style="flex:1;">
+  <div style="position:relative;margin-bottom:32px;">
+    <button id="sectionMenuBtn" class="section-menu-trigger">
       <span id="sectionMenuLabel">📰 Newsletter</span>
       <span style="margin-left:auto;">▾</span>
     </button>
-    <button id="reorderTabsBtn" title="Reorder tabs" style="background:#fdf6f2;border:1.5px solid var(--bronze);color:var(--bronze);border-radius:8px;padding:0 14px;height:48px;font-size:1.1rem;cursor:pointer;flex-shrink:0;">⇅</button>
     <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
       <button class="admin-tab active" data-tab="newsletter">📰 Newsletter</button>
       <button class="admin-tab" data-tab="families">👨‍👩‍👧 Enroll Family</button>
       <button class="admin-tab" data-tab="yearly">📆 Year at a Glance</button>
       <button class="admin-tab" data-tab="infonights">📣 Info Nights</button>
-      <button class="admin-tab" data-tab="volunteer">🙋 Classroom Helper</button>
+      <button class="admin-tab" data-tab="volunteer">🙋 Volunteer Slots</button>
       <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
       <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;">🗂️ Gradebook</button>
       <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;">📋 Board Member</button>
+      <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;">🗑️ Trash</button>
     </div>
   </div>
 
@@ -455,35 +454,8 @@
         </div>
       </div>
 
-      <!-- HOME ADDRESS -->
-      <div style="margin-bottom:20px;">
-        <p style="font-size:0.82rem;color:#9a8b84;margin-bottom:10px;font-weight:700;">🏠 Home Address <span style="font-weight:400;">(optional)</span></p>
-        <div class="form-row">
-          <div class="form-group" style="flex:1;">
-            <label>Street Address</label>
-            <input type="text" id="fam-address-street" placeholder="e.g. 123 Main St">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>City</label>
-            <input type="text" id="fam-address-city" placeholder="e.g. Northridge">
-          </div>
-          <div class="form-group">
-            <label>State</label>
-            <select id="fam-address-state"></select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Zip Code</label>
-            <input type="text" id="fam-address-zip" placeholder="e.g. 91325" inputmode="numeric" maxlength="10">
-          </div>
-        </div>
-      </div>
-
       <!-- MOTHER -->
-      <div class="person-section collapsed" id="mother-section">
+      <div class="person-section" id="mother-section">
         <div class="person-section-header" onclick="togglePersonSection('mother-section')">
           <span>👩 Mother</span>
           <span class="person-toggle-icon">▾</span>
@@ -515,11 +487,11 @@
 
       <div style="margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;">
         <label style="margin:0;">Students</label>
-        <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add a Student</button>
+        <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add Another Student</button>
       </div>
       <div id="studentRowsContainer"></div>
 
-      <button class="save-btn" id="saveFamiliy" style="margin-top:8px;width:100%;display:block;text-align:center;font-size:0.95rem;font-weight:700;padding:13px;">Enroll Family</button>
+      <button class="save-btn" id="saveFamiliy" style="margin-top:8px;">Enroll Family</button>
     </div>
     <div class="events-list">
       <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
@@ -599,7 +571,7 @@
   <!-- VOLUNTEER SLOTS PANEL -->
   <div class="admin-panel" id="panel-volunteer">
     <div class="admin-form">
-      <h3>Add Classroom Helper Slot</h3>
+      <h3>Add Volunteer Slot</h3>
       <div class="form-row vol-form-row-3">
         <div class="form-group">
           <label>Date</label>
@@ -616,21 +588,40 @@
       </div>
       <div class="form-row vol-form-row-3">
         <div class="form-group">
-          <label>Classroom Location</label>
-          <select id="vol-classroom">
-            <option value="TK/First Grade">TK/First Grade</option>
-            <option value="Second/Third Grade">Second/Third Grade</option>
-            <option value="Fourth/Fifth Grade">Fourth/Fifth Grade</option>
-            <option value="Junior High">Junior High</option>
+          <label>Classroom / Location</label>
+          <input type="text" id="vol-classroom" placeholder="e.g. Room 4">
+        </div>
+        <div class="form-group">
+          <label>Teacher</label>
+          <input type="text" id="vol-teacher" placeholder="e.g. Mrs. Roush">
+        </div>
+        <div class="form-group">
+          <label>Role Needed</label>
+          <select id="vol-role" onchange="document.getElementById('vol-role-other-wrap').style.display=this.value==='Other'?'block':'none';">
+            <option value="Classroom Helper">Classroom Helper</option>
+            <option value="Lunch Supervisor">Lunch Supervisor</option>
+            <option value="Office Helper">Office Helper</option>
+            <option value="Chapel Dad">Chapel Dad</option>
+            <option value="Other">Other</option>
           </select>
+        </div>
+      </div>
+      <div id="vol-role-other-wrap" style="display:none;margin-bottom:12px;">
+        <div class="form-group">
+          <label>Specify Role</label>
+          <input type="text" id="vol-role-other" placeholder="e.g. Field Trip Chaperone">
         </div>
       </div>
       <div class="form-row vol-form-row-btn">
         <div class="form-group">
+          <label>Spots Available</label>
+          <input type="number" id="vol-spots" value="1" min="1" max="20">
+        </div>
+        <div class="form-group">
           <label>Send Reminder</label>
           <select id="vol-reminder">
             <option value="24">24 hrs before</option>
-            <option value="48" selected>48 hrs before</option>
+            <option value="48">48 hrs before</option>
             <option value="72">3 days before</option>
             <option value="168">1 week before</option>
             <option value="0">No reminder</option>
@@ -643,13 +634,14 @@
       </div>
     </div>
     <div class="events-list">
-      <h3>Current Classroom Helper Slots</h3>
-      <div class="vol-req-row" style="margin-bottom:16px;">
-        <label>Required slots per family:</label>
-        <input type="number" id="vol-required" min="1" max="20" placeholder="2">
-        <button onclick="saveVolRequired()">Save</button>
+      <h3>Current Volunteer Slots</h3>
+      <div id="volSummaryDashboard" style="margin-bottom:16px;">
+        <div class="vol-req-row">
+          <label>Required slots per family:</label>
+          <input type="number" id="vol-required" min="1" max="20" placeholder="2">
+          <button onclick="saveVolRequired()">Save</button>
+        </div>
       </div>
-      <div id="volSummaryDashboard"></div>
       <div id="volSlotList"></div>
     </div>
     <div class="events-list" style="margin-top:32px;">
@@ -661,7 +653,7 @@
 
   <!-- STAFF ACCESS PANEL (super admin only) -->
   <div class="admin-panel" id="panel-staffaccess">
-    <div class="admin-form" id="grantAccessFormWrap">
+    <div class="admin-form">
       <h3>Grant Admin Access</h3>
       <div class="form-row">
         <div class="form-group">
@@ -694,9 +686,6 @@
               <input type="checkbox" class="role-checkbox" value="board_member"> Board Member
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
-              <input type="checkbox" class="role-checkbox" value="leader"> Leader
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
               <input type="checkbox" class="role-checkbox" value="super_admin"> Super Admin
             </label>
           </div>
@@ -709,8 +698,8 @@
     </div>
     <div class="events-list">
       <h3>Authorized Staff <span class="family-count" id="staffCount"></span></h3>
-      <div style="margin-bottom:20px;">
-        <select id="staffFilterRole" style="width:100%;max-width:400px;padding:14px 16px;border:2px solid var(--grey-line);border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;transition:border-color 0.2s;">
+      <div style="margin-bottom:14px;">
+        <select id="staffFilterRole" style="max-width:260px;">
           <option value="">All Roles</option>
         </select>
       </div>
@@ -732,64 +721,36 @@
 
   <!-- BOARD MEMBER PANEL (placeholder — Google Drive integration coming) -->
   <div class="admin-panel" id="panel-boardmember">
-    <div id="boardMemberContent" style="display:none;">
-      <div class="admin-form">
-        <h3 style="margin-bottom:24px;">📁 Board Resources</h3>
-        <p style="color:#6b5e58;margin-bottom:20px;font-size:0.95rem;line-height:1.6;">
-          Access shared board documents and resources from our Google Drive folder.
-        </p>
-        <a href="https://drive.google.com/drive/folders/15890EGxKPz8gZVfJALkc-1oAx01xv7z8" 
-           target="_blank" 
-           rel="noopener"
-           style="display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-weight:700;text-decoration:none;transition:opacity 0.2s;font-size:0.95rem;"
-           onmouseover="this.style.opacity='0.9'"
-           onmouseout="this.style.opacity='1'">
-          📂 Open NCS Board Folder on Google Drive
-        </a>
-      </div>
-
-      <div class="admin-form" style="margin-top:24px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-          <h3 style="margin:0;flex:1;">🗂️ Board Minutes & Documents</h3>
-          <button class="save-btn" id="boardNewFolderBtn" style="padding:8px 16px;font-size:0.85rem;">+ New Folder</button>
-          <button class="save-btn" id="boardUploadBtn" style="padding:8px 16px;font-size:0.85rem;">⬆️ Upload File</button>
-          <input type="file" id="boardFileInput" multiple style="display:none;">
-        </div>
-        <div id="boardBreadcrumb" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;margin-bottom:14px;"></div>
-        <div id="boardFileManagerStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;margin-bottom:10px;"></div>
-        <div id="boardBulkDeleteBar" style="display:none;align-items:center;justify-content:space-between;background:#fdf6f2;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:12px;">
-          <span id="boardBulkDeleteCount" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;font-weight:700;color:var(--ink);"></span>
-          <button class="delete-btn" style="padding:7px 16px;font-size:0.82rem;" onclick="boardDeleteSelected()">🗑️ Delete Selected</button>
-        </div>
-        <div id="boardFileManagerList" style="display:grid;gap:10px;"></div>
-      </div>
-    </div>
-
-    <!-- Placeholder for non-board members -->
-    <div id="boardPlaceholder" style="text-align:center;padding:48px 24px;">
+    <div class="admin-form" style="text-align:center;padding:48px 24px;">
       <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
-      <h3 style="margin-bottom:8px;">Board Resources</h3>
-      <p style="color:#6b5e58;max-width:420px;margin:0 auto;font-size:0.95rem;">
-        Board members can view and download shared resources from the NCS board folder.
+      <h3 style="margin-bottom:8px;">Board Resources Coming Soon</h3>
+      <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
+        This is where board members will browse, upload, and manage files from the NCS Google Drive board folders.
       </p>
+    </div>
+  </div>
+
+  <!-- TRASH PANEL (super admin only) -->
+  <div class="admin-panel" id="panel-trash">
+    <div class="admin-form">
+      <h3>Deleted Students (Trash)</h3>
+      <p style="font-size:0.85rem;color:#9a8b84;margin-bottom:16px;">
+        Deleted students are automatically removed after 30 days. You can restore them to active status or permanently delete them immediately.
+      </p>
+    </div>
+    <div class="events-list">
+      <div style="margin-bottom:14px;">
+        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:var(--red);">
+          <span id="trashCount">0</span> student(s) in trash
+        </span>
+      </div>
+      <div id="trashList"></div>
     </div>
   </div>
 
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- REORDER TABS MODAL -->
-<div class="reset-overlay" id="reorderTabsOverlay" style="display:none;">
-  <div class="reset-modal" style="max-width:420px;">
-    <h3 style="margin-bottom:6px;">Reorder Your Tabs</h3>
-    <p style="font-size:0.85rem;color:#6b5e58;margin-bottom:18px;">This order is saved just for you — it won't change anyone else's view.</p>
-    <div id="reorderTabsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;text-align:left;"></div>
-    <div class="reset-modal-btns">
-      <button class="reset-confirm-btn" id="reorderTabsDoneBtn" style="width:100%;">Done</button>
-    </div>
-  </div>
-</div>
 
 <!-- RESET MODAL -->
 <div class="reset-overlay" id="resetOverlay" style="display:none;">
@@ -1128,18 +1089,14 @@ function hasRole(r) {
   return Array.isArray(currentRoles) && currentRoles.includes(r);
 }
 
-const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook','boardmember'];
-
 const ROLE_TABS = {
-  // Super Admin always sees every tab that exists — including any added in the future
-  super_admin: ALL_TABS,
-  // Leader sees everything except the Board tab
-  leader: ALL_TABS.filter(t => t !== 'boardmember'),
+  super_admin: ['newsletter','families','yearly','infonights','volunteer','staffaccess','trash'],
   staff: ['newsletter','families','yearly','infonights','volunteer'],
   admissions_committee: ['infonights'],
   teacher: ['gradebook'],
   board_member: ['newsletter','families','yearly','infonights','volunteer','boardmember']
 };
+const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook','boardmember','trash'];
 
 function getVisibleTabsForRoles(roles) {
   const set = new Set();
@@ -1150,16 +1107,10 @@ function getVisibleTabsForRoles(roles) {
 
 function applyRolePermissions() {
   const isSuperAdmin = hasRole('super_admin');
-  const isLeader = hasRole('leader');
-  const isBoardMember = hasRole('board_member');
   const isAdmissions = hasRole('admissions_committee');
   const isTeacher = hasRole('teacher');
 
   document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'block' : 'none';
-
-  // Leader can VIEW Staff Access but cannot grant/edit/remove access — only Super Admin can manage staff
-  const grantAccessForm = document.getElementById('grantAccessFormWrap');
-  if (grantAccessForm) grantAccessForm.style.display = isSuperAdmin ? 'block' : 'none';
 
   const visibleTabs = getVisibleTabsForRoles(currentRoles);
   ALL_TABS.forEach(tab => {
@@ -1179,16 +1130,6 @@ function applyRolePermissions() {
   }
   if (firstPanel) firstPanel.classList.add('active');
 
-  // Initialize board member panel — both Super Admins and Board Members see the Drive link + file manager
-  if (visibleTabs.includes('boardmember')) {
-    const boardPlaceholder = document.getElementById('boardPlaceholder');
-    const boardContent = document.getElementById('boardMemberContent');
-    if (boardPlaceholder) boardPlaceholder.style.display = 'none';
-    if (boardContent) boardContent.style.display = 'block';
-    boardCurrentPath = '';
-    loadBoardFileManager();
-  }
-
   // Stat dashboard: hidden only for someone whose ONLY access is Teacher (no families/staff/board access);
   // limited 2-box view for admissions-only; full view for everyone else (including Teacher+Staff combos)
   const hasFamiliesAccess = visibleTabs.includes('families');
@@ -1205,15 +1146,8 @@ function applyRolePermissions() {
   }
 }
 
-function formatHomeAddress(f) {
-  if (!f.home_address_street && !f.home_address_city && !f.home_address_zip) return '';
-  const cityStateZip = [f.home_address_city, [f.home_address_state, f.home_address_zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-  return [f.home_address_street, cityStateZip].filter(Boolean).join(', ');
-}
-
 function getRoleLabel(role) {
   if (role === 'super_admin') return 'Super Admin';
-  if (role === 'leader') return 'Leader';
   if (role === 'admissions_committee') return 'Admissions Committee';
   if (role === 'teacher') return 'Teacher';
   if (role === 'board_member') return 'Board Member';
@@ -1221,7 +1155,7 @@ function getRoleLabel(role) {
 }
 
 // Canonical display order for badges
-const ROLE_BADGE_ORDER = ['super_admin','leader','board_member','teacher','staff','admissions_committee'];
+const ROLE_BADGE_ORDER = ['super_admin','board_member','teacher','staff','admissions_committee'];
 
 function enterDashboard() {
   showOnly('adminDashboard');
@@ -1232,7 +1166,6 @@ function enterDashboard() {
     `<span class="role-badge ${r}" style="margin-left:0;font-size:0.8rem;padding:5px 16px;">${getRoleLabel(r)}</span>`
   ).join('');
   applyRolePermissions();
-  applyPersonalTabOrder();
   loadAll();
   if (hasRole('super_admin')) loadStaffAccess();
 }
@@ -1330,7 +1263,7 @@ document.getElementById('resetAuthenticatorBtn').addEventListener('click', async
 });
 
 // ── STAFF ACCESS (super admin only) ─────────────────────────────
-const ALL_KNOWN_ROLES = ['super_admin','leader','staff','admissions_committee','teacher','board_member'];
+const ALL_KNOWN_ROLES = ['super_admin','staff','admissions_committee','teacher','board_member'];
 
 async function loadStaffAccess() {
   const { data, error } = await sb.from('staff_roles').select('*').order('email');
@@ -1360,8 +1293,6 @@ async function loadStaffAccess() {
     return;
   }
 
-  const canManageStaff = hasRole('super_admin');
-
   list.innerHTML = filtered.map(s => {
     const roles = s.roles || [];
     const badgesHTML = ROLE_BADGE_ORDER.filter(r => roles.includes(r))
@@ -1379,11 +1310,10 @@ async function loadStaffAccess() {
       <div id="staff-view-${s.id}">
         ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : '<p style="font-family:\'Trebuchet MS\',sans-serif;font-size:0.88rem;color:#aaa;font-style:italic;margin:0 0 2px;">No name on file</p>'}
         <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
-        ${canManageStaff ? `
         <div style="display:flex;gap:8px;">
           <button class="view-btn" onclick="showStaffEdit(${s.id})">Edit</button>
           <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
-        </div>` : ''}
+        </div>
       </div>
 
       <!-- EDIT MODE -->
@@ -1416,27 +1346,11 @@ window.cancelStaffEdit = (id) => {
   document.getElementById(`staff-edit-${id}`).style.display = 'none';
 };
 
-// ── SUPER ADMIN SAFETY NET ─────────────────────────────────────
-// Prevents removing/demoting the last remaining Super Admin
-async function isOnlyRemainingSuperAdmin(targetId) {
-  const { data, error } = await sb.from('staff_roles').select('id').contains('roles', ['super_admin']);
-  if (error || !data) return false;
-  const targetIsSuperAdmin = data.some(s => s.id === targetId);
-  return targetIsSuperAdmin && data.length <= 1;
-}
-
 window.saveStaffName = async (id) => {
   const firstName = document.getElementById(`edit-first-${id}`).value.trim();
   const lastName = document.getElementById(`edit-last-${id}`).value.trim();
   const roles = Array.from(document.querySelectorAll(`.edit-role-checkbox-${id}:checked`)).map(cb => cb.value);
   if (roles.length === 0) { showToast('Select at least one role'); return; }
-
-  // Block demoting the last remaining Super Admin
-  if (!roles.includes('super_admin') && await isOnlyRemainingSuperAdmin(id)) {
-    showToast('⚠️ Cannot remove Super Admin role — this is the last remaining Super Admin');
-    return;
-  }
-
   const btn = document.querySelector(`#staff-edit-${id} .save-btn`);
   btn.disabled = true;
   btn.textContent = 'Saving...';
@@ -1461,7 +1375,6 @@ window.saveStaffName = async (id) => {
 
 function getRoleAccessDescription(role) {
   if (role === 'super_admin') return 'manage staff access and start a new school year';
-  if (role === 'leader') return 'view all areas of the admin site and staff roles (view-only for staff management)';
   if (role === 'admissions_committee') return 'monitor and manage upcoming information nights for prospective families';
   if (role === 'teacher') return 'view your assigned students and manage their grades in the Gradebook';
   if (role === 'board_member') return 'access board resources and materials';
@@ -1523,10 +1436,6 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
 });
 
 window.removeStaffRole = async (id, email) => {
-  if (await isOnlyRemainingSuperAdmin(id)) {
-    showToast('⚠️ Cannot remove this account — it is the last remaining Super Admin');
-    return;
-  }
   if (!confirm(`Remove admin access for ${email}?`)) return;
   const { error } = await sb.from('staff_roles').delete().eq('id', id);
   if (error) { showToast('Error: ' + error.message); return; }
@@ -1544,7 +1453,7 @@ function loadAll() {
   loadGreetingAndStats();
   loadTeacherOptions();
   if (document.getElementById('studentRowsContainer').children.length === 0) {
-    if (!restoreEnrollDraft()) addStudentRow(true);
+    if (!restoreEnrollDraft()) addStudentRow();
   }
 }
 
@@ -1643,269 +1552,6 @@ async function loadGreetingAndStats() {
   }
 }
 
-// ── BOARD MINUTES FILE MANAGER (Supabase Storage) ──────────────
-const BOARD_BUCKET = 'board-minutes';
-let boardCurrentPath = '';
-
-function boardFormatBreadcrumb() {
-  const crumb = document.getElementById('boardBreadcrumb');
-  if (!crumb) return;
-  const parts = boardCurrentPath.split('/').filter(Boolean);
-  let html = `<span style="cursor:pointer;color:var(--bronze);font-weight:700;" onclick="boardNavigateTo('')">🏠 Board Files</span>`;
-  let pathSoFar = '';
-  parts.forEach(p => {
-    pathSoFar += p + '/';
-    const target = pathSoFar;
-    html += ` / <span style="cursor:pointer;color:var(--bronze);font-weight:700;" onclick="boardNavigateTo('${target}')">${p}</span>`;
-  });
-  crumb.innerHTML = html;
-}
-
-window.boardNavigateTo = (path) => {
-  boardCurrentPath = path;
-  loadBoardFileManager();
-};
-
-window.boardGoBack = () => {
-  const parts = boardCurrentPath.split('/').filter(Boolean);
-  parts.pop();
-  boardCurrentPath = parts.length ? parts.join('/') + '/' : '';
-  loadBoardFileManager();
-};
-
-async function loadBoardFileManager() {
-  const list = document.getElementById('boardFileManagerList');
-  const status = document.getElementById('boardFileManagerStatus');
-  if (!list) return;
-  boardFormatBreadcrumb();
-  status.textContent = 'Loading...';
-  boardSelectedFiles.clear();
-  boardUpdateBulkBar();
-
-  const { data, error } = await sb.storage.from(BOARD_BUCKET).list(boardCurrentPath, {
-    sortBy: { column: 'name', order: 'asc' }
-  });
-
-  if (error) {
-    list.innerHTML = `<p class="empty-state" style="color:var(--red);">⚠️ ${error.message}</p>`;
-    status.textContent = '';
-    return;
-  }
-
-  // Filter out the hidden placeholder files used to represent empty folders
-  const visible = (data || []).filter(item => item.name !== '.keep');
-
-  if (visible.length === 0) {
-    list.innerHTML = '<p class="empty-state">This folder is empty.</p>';
-    status.textContent = '';
-    if (boardCurrentPath) {
-      list.innerHTML = `<div style="margin-bottom:10px;"><button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;" onclick="boardGoBack()">⬆ Back</button></div>` + list.innerHTML;
-    }
-    return;
-  }
-
-  const folders = visible.filter(item => item.id === null);
-  let files = visible.filter(item => item.id !== null);
-
-  // Apply this person's saved custom order for this folder (new files not yet ordered go to the end)
-  const savedOrder = await loadBoardFileOrder();
-  if (savedOrder.length > 0) {
-    const ordered = [];
-    savedOrder.forEach(name => {
-      const match = files.find(f => f.name === name);
-      if (match) ordered.push(match);
-    });
-    files.forEach(f => { if (!savedOrder.includes(f.name)) ordered.push(f); });
-    files = ordered;
-  }
-  boardCurrentFileOrder = files.map(f => f.name);
-
-  let html = '';
-  if (boardCurrentPath) {
-    html += `<button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;width:fit-content;" onclick="boardGoBack()">⬆ Back</button>`;
-  }
-
-  if (files.length > 0) {
-    html += `
-      <div style="display:flex;align-items:center;gap:10px;padding:0 4px;">
-        <label style="display:flex;align-items:center;gap:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;cursor:pointer;">
-          <input type="checkbox" id="boardSelectAllCb" onchange="boardToggleSelectAll(this.checked)"> Select All
-        </label>
-        <span style="font-size:0.78rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;">· Use ▲▼ to reorder (saved just for you)</span>
-      </div>`;
-  }
-
-  folders.forEach(folder => {
-    const fullPath = boardCurrentPath + folder.name + '/';
-    html += `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;cursor:pointer;" onclick="boardNavigateTo('${fullPath}')">
-        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--ink);">📁 ${folder.name}</span>
-        <span style="color:var(--bronze);">→</span>
-      </div>`;
-  });
-
-  files.forEach((file, idx) => {
-    const fullPath = boardCurrentPath + file.name;
-    const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
-    html += `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
-        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
-          <button onclick="boardMoveFile(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:none;border:1px solid var(--grey-line);border-radius:4px;width:26px;height:22px;cursor:pointer;color:var(--bronze);font-size:0.75rem;line-height:1;${idx === 0 ? 'opacity:0.3;' : ''}">▲</button>
-          <button onclick="boardMoveFile(${idx}, 1)" ${idx === files.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid var(--grey-line);border-radius:4px;width:26px;height:22px;cursor:pointer;color:var(--bronze);font-size:0.75rem;line-height:1;${idx === files.length - 1 ? 'opacity:0.3;' : ''}">▼</button>
-        </div>
-        <input type="checkbox" class="board-file-checkbox" data-path="${fullPath}" onchange="boardToggleFileSelect('${fullPath}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${file.name}</div>
-          <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
-        </div>
-        <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDownloadFile('${fullPath}', '${file.name}')">⬇️ Download</button>
-        <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDeleteFile('${fullPath}')">✕</button>
-      </div>`;
-  });
-
-  list.innerHTML = html;
-  status.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${files.length} file${files.length !== 1 ? 's' : ''}`;
-}
-
-// ── BULK FILE SELECTION / DELETE ───────────────────────────────
-// ── PER-PERSON FILE ORDER (saved to this account, follows them anywhere) ──
-let boardCurrentFileOrder = [];
-
-async function loadBoardFileOrder() {
-  if (!currentSession) return [];
-  const { data } = await sb.from('board_file_order')
-    .select('file_order')
-    .eq('user_email', currentSession.user.email)
-    .eq('folder_path', boardCurrentPath)
-    .maybeSingle();
-  return (data && data.file_order) || [];
-}
-
-async function saveBoardFileOrder(order) {
-  if (!currentSession) return;
-  await sb.from('board_file_order').upsert({
-    user_email: currentSession.user.email,
-    folder_path: boardCurrentPath,
-    file_order: order
-  }, { onConflict: 'user_email,folder_path' });
-}
-
-window.boardMoveFile = async (index, direction) => {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= boardCurrentFileOrder.length) return;
-  const arr = boardCurrentFileOrder.slice();
-  [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
-  boardCurrentFileOrder = arr;
-  await saveBoardFileOrder(arr);
-  loadBoardFileManager();
-};
-
-const boardSelectedFiles = new Set();
-
-window.boardToggleFileSelect = (path, checked) => {
-  if (checked) boardSelectedFiles.add(path);
-  else boardSelectedFiles.delete(path);
-  boardUpdateBulkBar();
-};
-
-window.boardToggleSelectAll = (checked) => {
-  document.querySelectorAll('.board-file-checkbox').forEach(cb => {
-    cb.checked = checked;
-    if (checked) boardSelectedFiles.add(cb.dataset.path);
-    else boardSelectedFiles.delete(cb.dataset.path);
-  });
-  boardUpdateBulkBar();
-};
-
-function boardUpdateBulkBar() {
-  const bar = document.getElementById('boardBulkDeleteBar');
-  if (!bar) return;
-  if (boardSelectedFiles.size > 0) {
-    bar.style.display = 'flex';
-    document.getElementById('boardBulkDeleteCount').textContent = `${boardSelectedFiles.size} selected`;
-  } else {
-    bar.style.display = 'none';
-  }
-}
-
-window.boardDeleteSelected = async () => {
-  const paths = Array.from(boardSelectedFiles);
-  if (paths.length === 0) return;
-  if (!confirm(`Delete ${paths.length} file${paths.length !== 1 ? 's' : ''}? This cannot be undone.`)) return;
-  const { error } = await sb.storage.from(BOARD_BUCKET).remove(paths);
-  if (error) { showToast('Error: ' + error.message); return; }
-  showToast(`✅ ${paths.length} file${paths.length !== 1 ? 's' : ''} deleted`);
-  loadBoardFileManager();
-};
-
-window.boardDownloadFile = async (path, filename) => {
-  const { data, error } = await sb.storage.from(BOARD_BUCKET).createSignedUrl(path, 60);
-  if (error) { showToast('Error: ' + error.message); return; }
-  const a = document.createElement('a');
-  a.href = data.signedUrl;
-  a.download = filename;
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-};
-
-window.boardDeleteFile = async (path) => {
-  if (!confirm('Delete this file? This cannot be undone.')) return;
-  const { error } = await sb.storage.from(BOARD_BUCKET).remove([path]);
-  if (error) { showToast('Error: ' + error.message); return; }
-  showToast('File deleted');
-  loadBoardFileManager();
-};
-
-document.getElementById('boardNewFolderBtn').addEventListener('click', async () => {
-  const name = prompt('New folder name:');
-  if (!name || !name.trim()) return;
-  const cleanName = name.trim().replace(/[\/\\]/g, '-');
-  const placeholderPath = boardCurrentPath + cleanName + '/.keep';
-  const emptyFile = new Blob([''], { type: 'text/plain' });
-  const { error } = await sb.storage.from(BOARD_BUCKET).upload(placeholderPath, emptyFile);
-  if (error) { showToast('Error: ' + error.message); return; }
-  showToast('✅ Folder created');
-  loadBoardFileManager();
-});
-
-document.getElementById('boardUploadBtn').addEventListener('click', () => {
-  document.getElementById('boardFileInput').click();
-});
-
-document.getElementById('boardFileInput').addEventListener('change', async (e) => {
-  const files = Array.from(e.target.files || []);
-  if (files.length === 0) return;
-  const status = document.getElementById('boardFileManagerStatus');
-
-  let successCount = 0;
-  const errors = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    status.textContent = `Uploading ${i + 1} of ${files.length}: ${file.name}...`;
-    const path = boardCurrentPath + file.name;
-    const { error } = await sb.storage.from(BOARD_BUCKET).upload(path, file, { upsert: true });
-    if (error) {
-      errors.push(`${file.name}: ${error.message}`);
-    } else {
-      successCount++;
-    }
-  }
-
-  e.target.value = '';
-
-  if (successCount > 0) {
-    showToast(`✅ ${successCount} file${successCount !== 1 ? 's' : ''} uploaded`);
-  }
-  if (errors.length > 0) {
-    showToast(`⚠️ ${errors.length} file${errors.length !== 1 ? 's' : ''} failed: ${errors[0]}`, 5000);
-  }
-
-  loadBoardFileManager();
-});
-
 // ── TABS ──────────────────────────────────────────────────────
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -1929,92 +1575,6 @@ document.addEventListener('click', (e) => {
   if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
     menu.style.display = 'none';
   }
-});
-
-// ── PER-PERSON TAB ORDER (saved to this account, follows them anywhere) ──
-async function loadTabOrder() {
-  if (!currentSession) return [];
-  const { data } = await sb.from('tab_order').select('tab_order').eq('user_email', currentSession.user.email).maybeSingle();
-  return (data && data.tab_order) || [];
-}
-
-async function saveTabOrder(order) {
-  if (!currentSession) return;
-  await sb.from('tab_order').upsert({
-    user_email: currentSession.user.email,
-    tab_order: order
-  }, { onConflict: 'user_email' });
-}
-
-// Re-syncs the DOM tab button order + active tab/panel + dropdown label to match a given order
-function applyTabOrderToDOM(orderedTabIds) {
-  const dropdown = document.getElementById('sectionMenuDropdown');
-  orderedTabIds.forEach(tabId => {
-    const btn = document.querySelector(`.admin-tab[data-tab="${tabId}"]`);
-    if (btn) dropdown.appendChild(btn);
-  });
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-  const firstTab = orderedTabIds[0];
-  const firstBtn = document.querySelector(`.admin-tab[data-tab="${firstTab}"]`);
-  const firstPanel = document.getElementById('panel-' + firstTab);
-  if (firstBtn) {
-    firstBtn.classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = firstBtn.textContent;
-  }
-  if (firstPanel) firstPanel.classList.add('active');
-}
-
-async function applyPersonalTabOrder() {
-  const savedOrder = await loadTabOrder();
-  if (savedOrder.length === 0) return; // no custom order saved — leave default order as-is
-  const visibleTabs = getVisibleTabsForRoles(currentRoles);
-  const finalOrder = [];
-  savedOrder.forEach(t => { if (visibleTabs.includes(t)) finalOrder.push(t); });
-  visibleTabs.forEach(t => { if (!finalOrder.includes(t)) finalOrder.push(t); }); // newly-visible tabs go at the end
-  applyTabOrderToDOM(finalOrder);
-}
-
-let reorderTabsWorkingOrder = [];
-
-function renderReorderTabsList() {
-  const container = document.getElementById('reorderTabsList');
-  container.innerHTML = reorderTabsWorkingOrder.map((tabId, idx) => {
-    const btn = document.querySelector(`.admin-tab[data-tab="${tabId}"]`);
-    const label = btn ? btn.textContent : tabId;
-    return `
-      <div style="display:flex;align-items:center;gap:10px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:10px 14px;">
-        <span style="flex:1;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);">${label}</span>
-        <button onclick="reorderTabMove(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:#fff;border:1px solid var(--grey-line);border-radius:4px;width:30px;height:26px;cursor:pointer;color:var(--bronze);${idx === 0 ? 'opacity:0.3;' : ''}">▲</button>
-        <button onclick="reorderTabMove(${idx}, 1)" ${idx === reorderTabsWorkingOrder.length - 1 ? 'disabled' : ''} style="background:#fff;border:1px solid var(--grey-line);border-radius:4px;width:30px;height:26px;cursor:pointer;color:var(--bronze);${idx === reorderTabsWorkingOrder.length - 1 ? 'opacity:0.3;' : ''}">▼</button>
-      </div>`;
-  }).join('');
-}
-
-window.reorderTabMove = (index, direction) => {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= reorderTabsWorkingOrder.length) return;
-  const arr = reorderTabsWorkingOrder.slice();
-  [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
-  reorderTabsWorkingOrder = arr;
-  renderReorderTabsList();
-};
-
-document.getElementById('reorderTabsBtn').addEventListener('click', async () => {
-  const visibleTabs = getVisibleTabsForRoles(currentRoles);
-  // Start from whatever order is currently shown on screen
-  reorderTabsWorkingOrder = Array.from(document.querySelectorAll('.admin-tab'))
-    .map(btn => btn.dataset.tab)
-    .filter(tabId => visibleTabs.includes(tabId));
-  renderReorderTabsList();
-  document.getElementById('reorderTabsOverlay').style.display = 'flex';
-});
-
-document.getElementById('reorderTabsDoneBtn').addEventListener('click', async () => {
-  await saveTabOrder(reorderTabsWorkingOrder);
-  applyTabOrderToDOM(reorderTabsWorkingOrder);
-  document.getElementById('reorderTabsOverlay').style.display = 'none';
-  showToast('✅ Tab order saved');
 });
 
 // ── NEWSLETTER ───────────────────────────────────────────────
@@ -2219,7 +1779,6 @@ async function loadFamilies() {
         ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
         ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
-      ${formatHomeAddress(f) ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${formatHomeAddress(f)}</span>` : ''}
       <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
@@ -2230,20 +1789,12 @@ document.getElementById('famNewInfoBtn').addEventListener('click', () => {
   showToast('Unchecked = returning family. This changes the wording of the welcome email they receive.', 5500);
 });
 
-let teacherOptionsCache = '<option value="">— Not Assigned —</option><option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>';
+let teacherOptionsCache = '<option value="">— Not Assigned —</option>';
 const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
 
-const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
-(function populateStateDropdown() {
-  const sel = document.getElementById('fam-address-state');
-  if (!sel) return;
-  sel.innerHTML = US_STATES.map(s => `<option value="${s}" ${s === 'California' ? 'selected' : ''}>${s}</option>`).join('');
-})();
-
 async function loadTeacherOptions() {
-  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').contains('roles', ['teacher']).order('first_name');
+  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').eq('role', 'teacher').order('first_name');
   teacherOptionsCache = '<option value="">— Not Assigned —</option>' +
-    '<option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>' +
     (data || []).map(t => `<option value="${t.email}">${[t.first_name, t.last_name].filter(Boolean).join(' ') || t.email}</option>`).join('');
   // Refresh any rows already on screen
   document.querySelectorAll('.student-teacher-select').forEach(sel => {
@@ -2258,12 +1809,12 @@ window.togglePersonSection = (id) => {
 };
 
 let studentRowCounter = 0;
-function addStudentRow(startCollapsed) {
+function addStudentRow() {
   studentRowCounter++;
   const id = studentRowCounter;
   const container = document.getElementById('studentRowsContainer');
   const div = document.createElement('div');
-  div.className = 'student-row' + (startCollapsed ? ' collapsed' : '');
+  div.className = 'student-row';
   div.id = `student-row-${id}`;
   div.innerHTML = `
     <div class="student-row-header" onclick="toggleStudentRow(${id}, event)">
@@ -2326,74 +1877,20 @@ function updateRemoveButtonsVisibility() {
   });
 }
 
-document.getElementById('addStudentRowBtn').addEventListener('click', () => addStudentRow(false));
-
-// ── AUTO-ADVANCE: Father → Mother → Student ────────────────────
-// When a section is left (focus moves elsewhere) and its Name field has
-// a value, that section collapses and the next one opens automatically.
-document.getElementById('father-section').addEventListener('focusout', (e) => {
-  const section = document.getElementById('father-section');
-  if (section.contains(e.relatedTarget)) return; // still inside this section
-  if (section.classList.contains('collapsed')) return;
-  const nameVal = document.getElementById('father-name').value.trim();
-  if (nameVal) {
-    section.classList.add('collapsed');
-    document.getElementById('mother-section').classList.remove('collapsed');
-  }
-});
-
-document.getElementById('mother-section').addEventListener('focusout', (e) => {
-  const section = document.getElementById('mother-section');
-  if (section.contains(e.relatedTarget)) return; // still inside this section
-  if (section.classList.contains('collapsed')) return;
-  const nameVal = document.getElementById('mother-name').value.trim();
-  if (nameVal) {
-    section.classList.add('collapsed');
-    const firstStudentRow = document.querySelector('.student-row');
-    if (firstStudentRow) firstStudentRow.classList.remove('collapsed');
-  }
-});
-
-// ── PHONE NUMBER AUTO-FORMATTING: (000) 000-0000 ──────────────
-function formatPhoneInput(e) {
-  let digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-  let formatted = digits;
-  if (digits.length > 6) {
-    formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6,10)}`;
-  } else if (digits.length > 3) {
-    formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}`;
-  } else if (digits.length > 0) {
-    formatted = `(${digits}`;
-  }
-  e.target.value = formatted;
-}
-['father-phone','mother-phone'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', formatPhoneInput);
-});
+document.getElementById('addStudentRowBtn').addEventListener('click', addStudentRow);
 
 // ── DRAFT AUTOSAVE (survives iOS reloading the tab when backgrounded) ──
 const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
 
 function collectEnrollDraft() {
   return {
-    fatherName: document.getElementById('father-name').value,
-    fatherEmail: document.getElementById('father-email').value,
-    fatherPhone: document.getElementById('father-phone').value,
-    fatherDob: document.getElementById('father-dob').value,
-    motherName: document.getElementById('mother-name').value,
-    motherEmail: document.getElementById('mother-email').value,
-    motherPhone: document.getElementById('mother-phone').value,
-    motherDob: document.getElementById('mother-dob').value,
-    addressStreet: document.getElementById('fam-address-street').value,
-    addressCity: document.getElementById('fam-address-city').value,
-    addressState: document.getElementById('fam-address-state').value,
-    addressZip: document.getElementById('fam-address-zip').value,
+    name: document.getElementById('fam-name').value,
+    email: document.getElementById('fam-email').value,
+    email2: document.getElementById('fam-email-2').value,
     isNew: document.getElementById('fam-new').checked,
     students: Array.from(document.querySelectorAll('.student-row')).map(row => ({
       first: row.querySelector('.student-first').value,
       last: row.querySelector('.student-last').value,
-      dob: row.querySelector('.student-dob').value,
       grade: row.querySelector('.student-grade').value,
       teacher: row.querySelector('.student-teacher-select').value
     }))
@@ -2413,32 +1910,18 @@ function restoreEnrollDraft() {
   try { draft = JSON.parse(sessionStorage.getItem(ENROLL_DRAFT_KEY)); } catch (e) { return false; }
   if (!draft) return false;
 
-  document.getElementById('father-name').value = draft.fatherName || '';
-  document.getElementById('father-email').value = draft.fatherEmail || '';
-  document.getElementById('father-phone').value = draft.fatherPhone || '';
-  document.getElementById('father-dob').value = draft.fatherDob || '';
-  document.getElementById('mother-name').value = draft.motherName || '';
-  document.getElementById('mother-email').value = draft.motherEmail || '';
-  document.getElementById('mother-phone').value = draft.motherPhone || '';
-  document.getElementById('mother-dob').value = draft.motherDob || '';
-  document.getElementById('fam-address-street').value = draft.addressStreet || '';
-  document.getElementById('fam-address-city').value = draft.addressCity || '';
-  document.getElementById('fam-address-state').value = draft.addressState || 'California';
-  document.getElementById('fam-address-zip').value = draft.addressZip || '';
+  document.getElementById('fam-name').value = draft.name || '';
+  document.getElementById('fam-email').value = draft.email || '';
+  document.getElementById('fam-email-2').value = draft.email2 || '';
   document.getElementById('fam-new').checked = !!draft.isNew;
-
-  // Auto-advance state on restore: collapse sections whose name is already filled
-  document.getElementById('father-section').classList.toggle('collapsed', !!draft.fatherName);
-  document.getElementById('mother-section').classList.toggle('collapsed', !!draft.motherName);
 
   document.getElementById('studentRowsContainer').innerHTML = '';
   const rows = (draft.students && draft.students.length > 0) ? draft.students : [{}];
-  rows.forEach((s, idx) => {
-    addStudentRow(idx === 0 && !draft.motherName);
+  rows.forEach(s => {
+    addStudentRow();
     const row = document.querySelector('.student-row:last-child');
     row.querySelector('.student-first').value = s.first || '';
     row.querySelector('.student-last').value = s.last || '';
-    if (s.dob) row.querySelector('.student-dob').value = s.dob;
     if (s.grade) row.querySelector('.student-grade').value = s.grade;
     if (s.teacher) row.querySelector('.student-teacher-select').value = s.teacher;
   });
@@ -2446,7 +1929,7 @@ function restoreEnrollDraft() {
 }
 
 // Autosave on any change within the Enroll Family form
-['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address-street','fam-address-city','fam-address-state','fam-address-zip','fam-new'].forEach(id => {
+['fam-name','fam-email','fam-email-2','fam-new'].forEach(id => {
   document.getElementById(id).addEventListener('input', saveEnrollDraft);
   document.getElementById(id).addEventListener('change', saveEnrollDraft);
 });
@@ -2463,10 +1946,6 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const motherEmail = document.getElementById('mother-email').value.trim();
   const motherPhone = document.getElementById('mother-phone').value.trim();
   const motherDob = document.getElementById('mother-dob').value || null;
-  const addressStreet = document.getElementById('fam-address-street').value.trim();
-  const addressCity = document.getElementById('fam-address-city').value.trim();
-  const addressState = document.getElementById('fam-address-state').value;
-  const addressZip = document.getElementById('fam-address-zip').value.trim();
   const isNewFamily = document.getElementById('fam-new').checked;
 
   const studentRows = Array.from(document.querySelectorAll('.student-row')).map(row => ({
@@ -2503,10 +1982,6 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
       mother_email: motherEmail || null,
       mother_phone: motherPhone || null,
       mother_dob: motherDob,
-      home_address_street: addressStreet || null,
-      home_address_city: addressCity || null,
-      home_address_state: addressCity || addressStreet || addressZip ? addressState : null,
-      home_address_zip: addressZip || null,
       student_count: studentRows.length,
       is_new_family: isNewFamily
     })
@@ -2523,15 +1998,12 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   btn.textContent = 'Enroll Family';
   if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
 
-  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address-street','fam-address-city','fam-address-zip'].forEach(id => {
+  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob'].forEach(id => {
     document.getElementById(id).value = '';
   });
-  document.getElementById('fam-address-state').value = 'California';
   document.getElementById('fam-new').checked = false;
-  document.getElementById('father-section').classList.remove('collapsed');
-  document.getElementById('mother-section').classList.add('collapsed');
   document.getElementById('studentRowsContainer').innerHTML = '';
-  addStudentRow(true);
+  addStudentRow();
   clearEnrollDraft();
 
   showToast('✅ Family enrolled and welcome email sent!', 4000);
@@ -2710,6 +2182,11 @@ async function loadVolSlots() {
   const notMet = allFamilies.filter(f => (signupsByEmail[f.email] || 0) < requiredSlots);
 
   summary.innerHTML = `
+    <div class="vol-req-row">
+      <label>Required slots per family:</label>
+      <input type="number" id="vol-required" min="1" max="20" value="${requiredSlots}">
+      <button onclick="saveVolRequired()">Save</button>
+    </div>
     <div class="vol-summary">
       <div class="vol-summary-pills">
         <span class="vol-pill green"><strong>${filledSpots}</strong> Filled</span>
@@ -2781,12 +2258,16 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
   const startTime = document.getElementById('vol-time-start').value;
   const endTime = document.getElementById('vol-time-end').value;
   const time = startTime ? (endTime ? `${formatT(startTime)} – ${formatT(endTime)}` : formatT(startTime)) : '';
+  const roleSelect = document.getElementById('vol-role').value;
+  const roleOther = document.getElementById('vol-role-other').value.trim();
+  const role = roleSelect === 'Other' && roleOther ? roleOther : roleSelect;
   const { error } = await sb.from('volunteer_slots').insert({
     date,
     time,
     classroom: document.getElementById('vol-classroom').value,
-    role: 'Classroom Helper',
-    spots_total: 1,
+    teacher: document.getElementById('vol-teacher').value,
+    role: role,
+    spots_total: parseInt(document.getElementById('vol-spots').value),
     spots_filled: 0,
     reminder_hours: parseInt(document.getElementById('vol-reminder').value),
     reminder_sent: false
@@ -2796,9 +2277,13 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
   document.getElementById('vol-date').value = '';
   document.getElementById('vol-time-start').value = '';
   document.getElementById('vol-time-end').value = '';
-  document.getElementById('vol-classroom').value = 'TK/First Grade';
-  document.getElementById('vol-reminder').value = '48';
-  showToast('Classroom Helper slot added!');
+  document.getElementById('vol-classroom').value = '';
+  document.getElementById('vol-teacher').value = '';
+  document.getElementById('vol-role').value = 'Classroom Helper';
+  document.getElementById('vol-role-other').value = '';
+  document.getElementById('vol-spots').value = '1';
+  document.getElementById('vol-reminder').value = '24';
+  showToast('Volunteer slot added!');
   loadVolSlots();
 });
 
@@ -2877,60 +2362,30 @@ function openPrintWindow(title, bodyHTML) {
 async function printFamilies() {
   const { data } = await sb.from('family_emails').select('*, students(*)').order('name');
   if (!data || data.length === 0) { showToast('No families to print'); return; }
-
-  const escapeHTML = (str) => (str || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-  const rows = data.map((f) => {
+  const rows = data.map((f, i) => {
     const kids = f.students || [];
-    const kidsHTML = kids.length > 0
-      ? kids.map(s => `${escapeHTML([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' — ' + escapeHTML(s.grade) : ''}`).join('<br>')
-      : '<span style="color:#aaa;">—</span>';
-
-    const fatherHTML = (f.father_name || f.father_phone)
-      ? `${escapeHTML(f.father_name) || '—'}${f.father_phone ? '<br>' + escapeHTML(f.father_phone) : ''}`
-      : '<span style="color:#aaa;">—</span>';
-
-    const motherHTML = (f.mother_name || f.mother_phone)
-      ? `${escapeHTML(f.mother_name) || '—'}${f.mother_phone ? '<br>' + escapeHTML(f.mother_phone) : ''}`
-      : '<span style="color:#aaa;">—</span>';
-
-    const fullAddress = formatHomeAddress(f);
-    const addressHTML = fullAddress ? escapeHTML(fullAddress) : '<span style="color:#aaa;">—</span>';
-
+    const kidsLine = kids.length > 0
+      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}${s.dob ? ' — DOB ' + s.dob : ''}`).join(' &nbsp;·&nbsp; ')
+      : 'No students on file';
+    const parentLine = (label, name, email, phone) =>
+      (name || email || phone) ? `${label}: ${[name, email, phone].filter(Boolean).join(', ')}` : '';
+    const parentsLine = [
+      parentLine('Father', f.father_name, f.father_email, f.father_phone),
+      parentLine('Mother', f.mother_name, f.mother_email, f.mother_phone)
+    ].filter(Boolean).join(' &nbsp;·&nbsp; ') || `${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}`;
     return `
-    <tr>
-      <td><strong>${escapeHTML(f.name)}</strong></td>
-      <td>${fatherHTML}</td>
-      <td>${motherHTML}</td>
-      <td>${addressHTML}</td>
-      <td>${kidsHTML}</td>
-    </tr>`;
+    <div class="print-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+      <div style="display:flex;justify-content:space-between;width:100%;">
+        <strong>${i + 1}. ${f.name}</strong>
+        <span>${kids.length} student${kids.length === 1 ? '' : 's'}</span>
+      </div>
+      <span style="font-size:0.85rem;">${parentsLine}</span>
+      <span style="font-size:0.85rem;color:#6b5e58;">${kidsLine}</span>
+    </div>`;
   }).join('');
-
-  const tableHTML = `
-    <div style="margin-bottom:24px;">
-      <h2 style="margin-bottom:16px;font-size:1.1rem;color:#B07D4F;">Family Directory — ${data.length} families</h2>
-      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-        <thead>
-          <tr style="background:#fdf6f2;border-bottom:2px solid #C8102E;">
-            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Family</th>
-            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Father</th>
-            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Mother</th>
-            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Home Address</th>
-            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Students (Grade)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    </div>
-    <style>
-      table tr:nth-child(even){ background:#fdf6f2; }
-      table td{ padding:10px 12px; border-bottom:1px solid #E6E1DC; vertical-align:top; }
-    </style>`;
-
-  openPrintWindow(`Family Directory (${data.length})`, tableHTML);
+  openPrintWindow(`Enrolled Families (${data.length})`,
+    `<div style="margin-bottom:24px;"><h2 style="margin-bottom:12px;font-size:1.1rem;color:#B07D4F;">Enrolled Families — ${data.length} total</h2>${rows}</div>`
+  );
 }
 
 async function printVolunteers() {
@@ -3097,6 +2552,90 @@ window.skipFlag = (i) => {
   row.style.opacity = '0.3';
   row.style.pointerEvents = 'none';
 };
+
+// ============================================================================
+// TRASH MANAGEMENT (Soft Delete)
+// ============================================================================
+
+async function loadTrash() {
+  const { data } = await sb.from('students')
+    .select('id, first_name, last_name, grade, assigned_teacher_email, deleted_at')
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false });
+
+  const list = document.getElementById('trashList');
+  document.getElementById('trashCount').textContent = data ? data.length : '0';
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p class="empty-state">No deleted students. All clear!</p>';
+    return;
+  }
+
+  list.innerHTML = data.map(student => {
+    const deletedDate = new Date(student.deleted_at);
+    const deleteDate = new Date(deletedDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const daysLeft = Math.ceil((deleteDate - new Date()) / (1000 * 60 * 60 * 24));
+    const deletedDateStr = deletedDate.toLocaleDateString();
+    
+    return `
+    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;border-left:4px solid var(--red);">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
+        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">
+          🎓 ${[student.first_name, student.last_name].filter(Boolean).join(' ')}
+        </strong>
+        <div class="event-row-actions">
+          <button class="save-btn" onclick="restoreStudent(${student.id}, '${[student.first_name, student.last_name].filter(Boolean).join(' ').replace(/'/g, "\\'")}')">Restore</button>
+          <button class="delete-btn" onclick="permanentlyDeleteStudent(${student.id}, '${[student.first_name, student.last_name].filter(Boolean).join(' ').replace(/'/g, "\\'")}')">Delete Permanently</button>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:#9a8b84;">
+        ${student.grade ? `<span>📚 ${student.grade}</span> · ` : ''}
+        ${student.assigned_teacher_email ? `<span>👩‍🏫 ${student.assigned_teacher_email}</span> · ` : ''}
+        <span style="color:var(--red);font-weight:700;">Deleted: ${deletedDateStr}</span>
+        ${daysLeft > 0 ? `<span> · Auto-purge in ${daysLeft} days</span>` : `<span style="color:var(--red);"> · PURGING SOON!</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.restoreStudent = async (studentId, studentName) => {
+  if (!confirm(`Restore ${studentName} to active status?`)) return;
+
+  const { error } = await sb.from('students')
+    .update({ deleted_at: null })
+    .eq('id', studentId);
+
+  if (error) {
+    showToast(`Error restoring student: ${error.message}`, 3000);
+  } else {
+    showToast(`✅ ${studentName} restored!`, 3000);
+    loadTrash();
+    loadFamilies();
+  }
+};
+
+window.permanentlyDeleteStudent = async (studentId, studentName) => {
+  if (!confirm(`Permanently delete ${studentName}? This cannot be undone.`)) return;
+
+  const { error } = await sb.from('students')
+    .delete()
+    .eq('id', studentId);
+
+  if (error) {
+    showToast(`Error deleting student: ${error.message}`, 3000);
+  } else {
+    showToast(`🗑️ ${studentName} permanently deleted.`, 3000);
+    loadTrash();
+    loadFamilies();
+  }
+};
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.admin-tab[data-tab="trash"]')) {
+    loadTrash();
+  }
+});
+
 
 document.getElementById('finalConfirmBtn').addEventListener('click', async () => {
   const btn = document.getElementById('finalConfirmBtn');
