@@ -38,11 +38,15 @@
   .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
   .role-badge.teacher{ background:#fdf4ff; color:#9333ea; border:1px solid #9333ea; }
   .role-badge.board_member{ background:#eff6ff; color:#1d4ed8; border:1px solid #1d4ed8; }
-  .section-menu-trigger{ display:flex; align-items:center; gap:8px; width:100%; padding:13px 18px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.92rem; color:var(--ink); cursor:pointer; transition:border-color 0.2s; }
-  .section-menu-trigger:hover{ border-color:var(--red); }
-  .section-menu-dropdown{ position:absolute; top:calc(100% + 8px); left:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:50; min-width:260px; max-width:90vw; }
+  .section-menu-trigger{ display:flex; align-items:center; gap:6px; padding:9px 14px; background:none; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:#6b5e58; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .section-menu-trigger:hover{ background:var(--red); color:#fff; border-color:var(--red); }
+  .section-menu-dropdown{ position:absolute; top:calc(100% + 8px); right:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:50; width:250px; max-width:85vw; max-height:70vh; overflow-y:auto; }
   .section-menu-dropdown .admin-tab{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; margin-bottom:4px; }
   .section-menu-dropdown .admin-tab:last-child{ margin-bottom:0; }
+  .tab-drag-handle, .board-drag-handle{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  .sortable-ghost{ opacity:0.35; }
+  .sortable-chosen{ box-shadow:0 6px 18px rgba(0,0,0,0.18); }
+  .sortable-drag{ opacity:0.95; }
   .tab-drag-handle{ cursor:grab; color:#c9bdb4; font-size:1.1rem; flex-shrink:0; touch-action:none; line-height:1; }
   .admin-tab.active .tab-drag-handle{ color:rgba(255,255,255,0.65); }
   .google-btn{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; padding:14px 28px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); cursor:pointer; transition:box-shadow 0.2s; }
@@ -288,13 +292,29 @@
       <h2 id="greetingTitle">Good morning!</h2>
       <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;position:relative;">
-      <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
-      <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:50;width:230px;max-width:80vw;box-sizing:border-box;">
-        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
-        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <div style="position:relative;">
+        <button id="sectionMenuBtn" class="section-menu-trigger">🗂️ Apps <span style="font-size:0.7rem;">▾</span></button>
+        <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
+          <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
+          <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
+          <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
+          <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
+          <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
+          <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
+          <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
+          <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
+          <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
+        </div>
       </div>
-      <button class="signout-btn" id="signOutBtn">Sign Out</button>
+      <div style="position:relative;">
+        <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
+        <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:50;width:230px;max-width:80vw;box-sizing:border-box;">
+          <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
+          <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
+        </div>
+      </div>
+      <button class="signout-btn" id="signOutBtn" style="margin-left:8px;">Sign Out</button>
     </div>
   </div>
 
@@ -321,24 +341,6 @@
     <div class="stat-box highlight" id="statBoxNextNight">
       <div class="stat-box-number" id="statNextNight">—</div>
       <div class="stat-box-label">Next Info Night</div>
-    </div>
-  </div>
-
-  <div style="position:relative;margin-bottom:32px;">
-    <button id="sectionMenuBtn" class="section-menu-trigger">
-      <span id="sectionMenuLabel">📰 Newsletter</span>
-      <span style="margin-left:auto;">▾</span>
-    </button>
-    <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
-      <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
-      <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
-      <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
-      <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
-      <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
-      <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
-      <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
-      <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
-      <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
     </div>
   </div>
 
@@ -1136,11 +1138,6 @@ async function checkRoleAndContinue(session) {
   showMfaChoice();
 }
 
-function getTabLabelText(btn) {
-  const labelSpan = btn.querySelector('.tab-label');
-  return labelSpan ? labelSpan.textContent : btn.textContent;
-}
-
 function hasRole(r) {
   return Array.isArray(currentRoles) && currentRoles.includes(r);
 }
@@ -1184,7 +1181,7 @@ function applyRolePermissions() {
     if (btn) btn.style.display = visibleTabs.includes(tab) ? 'block' : 'none';
   });
 
-  // Activate the first available tab for this role and sync the dropdown label
+  // Activate the first available tab for this role
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   const firstTab = visibleTabs[0];
@@ -1192,7 +1189,6 @@ function applyRolePermissions() {
   const firstPanel = document.getElementById('panel-' + firstTab);
   if (firstBtn) {
     firstBtn.classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(firstBtn);
   }
   if (firstPanel) firstPanel.classList.add('active');
 
@@ -1793,7 +1789,13 @@ function initBoardFilesSortable() {
   if (boardSortableInstance) { boardSortableInstance.destroy(); boardSortableInstance = null; }
   boardSortableInstance = Sortable.create(container, {
     handle: '.board-drag-handle',
-    animation: 150,
+    animation: 200,
+    easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
+    forceFallback: true,
+    fallbackTolerance: 3,
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    dragClass: 'sortable-drag',
     onEnd: async () => {
       const newOrder = Array.from(container.children).map(el => el.dataset.filename);
       boardCurrentFileOrder = newOrder;
@@ -1938,7 +1940,6 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(tab);
     document.getElementById('sectionMenuDropdown').style.display = 'none';
   });
 });
@@ -1985,7 +1986,6 @@ function applyTabOrderToDOM(orderedTabIds) {
   const firstPanel = document.getElementById('panel-' + firstTab);
   if (firstBtn) {
     firstBtn.classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(firstBtn);
   }
   if (firstPanel) firstPanel.classList.add('active');
 }
@@ -2008,7 +2008,13 @@ function initSectionMenuSortable() {
   if (sectionMenuSortableInstance) { sectionMenuSortableInstance.destroy(); sectionMenuSortableInstance = null; }
   sectionMenuSortableInstance = Sortable.create(container, {
     handle: '.tab-drag-handle',
-    animation: 150,
+    animation: 200,
+    easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
+    forceFallback: true,
+    fallbackTolerance: 3,
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    dragClass: 'sortable-drag',
     onEnd: async () => {
       const newOrder = Array.from(container.children).map(el => el.dataset.tab);
       await saveTabOrder(newOrder);
@@ -2329,32 +2335,6 @@ function updateRemoveButtonsVisibility() {
 
 document.getElementById('addStudentRowBtn').addEventListener('click', () => addStudentRow(false));
 
-// ── AUTO-ADVANCE: Father → Mother → Student ────────────────────
-// When a section is left (focus moves elsewhere) and its Name field has
-// a value, that section collapses and the next one opens automatically.
-document.getElementById('father-section').addEventListener('focusout', (e) => {
-  const section = document.getElementById('father-section');
-  if (section.contains(e.relatedTarget)) return; // still inside this section
-  if (section.classList.contains('collapsed')) return;
-  const nameVal = document.getElementById('father-name').value.trim();
-  if (nameVal) {
-    section.classList.add('collapsed');
-    document.getElementById('mother-section').classList.remove('collapsed');
-  }
-});
-
-document.getElementById('mother-section').addEventListener('focusout', (e) => {
-  const section = document.getElementById('mother-section');
-  if (section.contains(e.relatedTarget)) return; // still inside this section
-  if (section.classList.contains('collapsed')) return;
-  const nameVal = document.getElementById('mother-name').value.trim();
-  if (nameVal) {
-    section.classList.add('collapsed');
-    const firstStudentRow = document.querySelector('.student-row');
-    if (firstStudentRow) firstStudentRow.classList.remove('collapsed');
-  }
-});
-
 // ── PHONE NUMBER AUTO-FORMATTING: (000) 000-0000 ──────────────
 function formatPhoneInput(e) {
   let digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -2428,15 +2408,15 @@ function restoreEnrollDraft() {
   document.getElementById('fam-address-zip').value = draft.addressZip || '';
   document.getElementById('fam-new').checked = !!draft.isNew;
 
-  // Auto-advance state on restore: collapse sections whose name is already filled
+  // Father may collapse if already filled — Mother, Home Address, and Students always stay collapsed by default
   document.getElementById('father-section').classList.toggle('collapsed', !!draft.fatherName);
-  document.getElementById('homeaddress-section').classList.toggle('collapsed', !(draft.addressStreet || draft.addressCity || draft.addressZip));
-  document.getElementById('mother-section').classList.toggle('collapsed', !!draft.motherName);
+  document.getElementById('homeaddress-section').classList.add('collapsed');
+  document.getElementById('mother-section').classList.add('collapsed');
 
   document.getElementById('studentRowsContainer').innerHTML = '';
   const rows = (draft.students && draft.students.length > 0) ? draft.students : [{}];
   rows.forEach((s, idx) => {
-    addStudentRow(idx === 0 && !draft.motherName);
+    addStudentRow(true);
     const row = document.querySelector('.student-row:last-child');
     row.querySelector('.student-first').value = s.first || '';
     row.querySelector('.student-last').value = s.last || '';
