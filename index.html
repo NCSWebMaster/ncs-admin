@@ -1860,7 +1860,7 @@ let teacherOptionsCache = '<option value="">— Not Assigned —</option>';
 const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
 
 async function loadTeacherOptions() {
-  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').eq('role', 'teacher').order('first_name');
+  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').contains('roles', ['teacher']).order('first_name');
   teacherOptionsCache = '<option value="">— Not Assigned —</option>' +
     (data || []).map(t => `<option value="${t.email}">${[t.first_name, t.last_name].filter(Boolean).join(' ') || t.email}</option>`).join('');
   // Refresh any rows already on screen
@@ -1945,6 +1945,24 @@ function updateRemoveButtonsVisibility() {
 }
 
 document.getElementById('addStudentRowBtn').addEventListener('click', addStudentRow);
+
+// ── PHONE NUMBER AUTO-FORMATTING: (000) 000-0000 ──────────────
+function formatPhoneInput(e) {
+  let digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = digits;
+  if (digits.length > 6) {
+    formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6,10)}`;
+  } else if (digits.length > 3) {
+    formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}`;
+  } else if (digits.length > 0) {
+    formatted = `(${digits}`;
+  }
+  e.target.value = formatted;
+}
+['father-phone','mother-phone'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', formatPhoneInput);
+});
 
 // ── DRAFT AUTOSAVE (survives iOS reloading the tab when backgrounded) ──
 const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
