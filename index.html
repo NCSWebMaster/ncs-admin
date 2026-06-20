@@ -13,6 +13,7 @@
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
   .admin-wrap{ max-width:960px; margin:0 auto; padding:40px 6%; }
   .admin-login{ text-align:center; padding:80px 6%; }
@@ -335,6 +336,7 @@
       <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
       <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;">🗂️ Gradebook</button>
       <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;">📋 Board Member</button>
+      <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;">🗑️ Trash</button>
     </div>
   </div>
 
@@ -775,6 +777,24 @@
     </div>
   </div>
 
+  <!-- TRASH PANEL (super admin only) -->
+  <div class="admin-panel" id="panel-trash">
+    <div class="admin-form">
+      <h3>Deleted Students (Trash)</h3>
+      <p style="font-size:0.85rem;color:#9a8b84;margin-bottom:16px;">
+        Deleted students are automatically removed after 30 days. You can restore them to active status or permanently delete them immediately.
+      </p>
+    </div>
+    <div class="events-list">
+      <div style="margin-bottom:14px;">
+        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:var(--red);">
+          <span id="trashCount">0</span> student(s) in trash
+        </span>
+      </div>
+      <div id="trashList"></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1128,13 +1148,13 @@ function hasRole(r) {
   return Array.isArray(currentRoles) && currentRoles.includes(r);
 }
 
-const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook','boardmember'];
+const ALL_TABS = ['newsletter','families','yearly','infonights','volunteer','staffaccess','gradebook','boardmember','trash'];
 
 const ROLE_TABS = {
   // Super Admin always sees every tab that exists — including any added in the future
   super_admin: ALL_TABS,
-  // Leader sees everything except the Board tab
-  leader: ALL_TABS.filter(t => t !== 'boardmember'),
+  // Leader sees everything except the Board tab and Trash (Trash is Super Admin only)
+  leader: ALL_TABS.filter(t => t !== 'boardmember' && t !== 'trash'),
   staff: ['newsletter','families','yearly','infonights','volunteer'],
   admissions_committee: ['infonights'],
   teacher: ['gradebook'],
@@ -1699,7 +1719,7 @@ async function loadBoardFileManager() {
     list.innerHTML = '<p class="empty-state">This folder is empty.</p>';
     status.textContent = '';
     if (boardCurrentPath) {
-      list.innerHTML = `<div style="margin-bottom:10px;"><button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;" onclick="boardGoBack()">⬆ Back</button></div>` + list.innerHTML;
+      list.innerHTML = `<div style="margin-bottom:10px;"><button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;" onclick="boardGoBack()">Back</button></div>` + list.innerHTML;
     }
     return;
   }
@@ -1722,7 +1742,7 @@ async function loadBoardFileManager() {
 
   let html = '';
   if (boardCurrentPath) {
-    html += `<button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;width:fit-content;" onclick="boardGoBack()">⬆ Back</button>`;
+    html += `<button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;width:fit-content;" onclick="boardGoBack()">Back</button>`;
   }
 
   if (files.length > 0) {
@@ -1731,7 +1751,7 @@ async function loadBoardFileManager() {
         <label style="display:flex;align-items:center;gap:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;cursor:pointer;">
           <input type="checkbox" id="boardSelectAllCb" onchange="boardToggleSelectAll(this.checked)"> Select All
         </label>
-        <span style="font-size:0.78rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;">· Use ▲▼ to reorder (saved just for you)</span>
+        <span style="font-size:0.78rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;">· Drag ⋮⋮ to reorder (saved just for you)</span>
       </div>`;
   }
 
@@ -1744,27 +1764,45 @@ async function loadBoardFileManager() {
       </div>`;
   });
 
-  files.forEach((file, idx) => {
-    const fullPath = boardCurrentPath + file.name;
-    const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
-    html += `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
-        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
-          <button onclick="boardMoveFile(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:none;border:1px solid var(--grey-line);border-radius:4px;width:26px;height:22px;cursor:pointer;color:var(--bronze);font-size:0.75rem;line-height:1;${idx === 0 ? 'opacity:0.3;' : ''}">▲</button>
-          <button onclick="boardMoveFile(${idx}, 1)" ${idx === files.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid var(--grey-line);border-radius:4px;width:26px;height:22px;cursor:pointer;color:var(--bronze);font-size:0.75rem;line-height:1;${idx === files.length - 1 ? 'opacity:0.3;' : ''}">▼</button>
-        </div>
-        <input type="checkbox" class="board-file-checkbox" data-path="${fullPath}" onchange="boardToggleFileSelect('${fullPath}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${file.name}</div>
-          <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
-        </div>
-        <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDownloadFile('${fullPath}', '${file.name}')">⬇️ Download</button>
-        <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDeleteFile('${fullPath}')">✕</button>
-      </div>`;
-  });
+  if (files.length > 0) {
+    let filesHtml = '';
+    files.forEach(file => {
+      const fullPath = boardCurrentPath + file.name;
+      const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
+      filesHtml += `
+        <div class="board-file-row" data-filename="${file.name.replace(/"/g, '&quot;')}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
+          <span class="board-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
+          <input type="checkbox" class="board-file-checkbox" data-path="${fullPath}" onchange="boardToggleFileSelect('${fullPath}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${file.name}</div>
+            <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
+          </div>
+          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDownloadFile('${fullPath}', '${file.name}')">⬇️ Download</button>
+          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDeleteFile('${fullPath}')">✕</button>
+        </div>`;
+    });
+    html += `<div id="boardFilesSortable">${filesHtml}</div>`;
+  }
 
   list.innerHTML = html;
   status.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${files.length} file${files.length !== 1 ? 's' : ''}`;
+  initBoardFilesSortable();
+}
+
+let boardSortableInstance = null;
+function initBoardFilesSortable() {
+  const container = document.getElementById('boardFilesSortable');
+  if (!container || typeof Sortable === 'undefined') return;
+  if (boardSortableInstance) { boardSortableInstance.destroy(); boardSortableInstance = null; }
+  boardSortableInstance = Sortable.create(container, {
+    handle: '.board-drag-handle',
+    animation: 150,
+    onEnd: async () => {
+      const newOrder = Array.from(container.children).map(el => el.dataset.filename);
+      boardCurrentFileOrder = newOrder;
+      await saveBoardFileOrder(newOrder);
+    }
+  });
 }
 
 // ── BULK FILE SELECTION / DELETE ───────────────────────────────
@@ -1789,16 +1827,6 @@ async function saveBoardFileOrder(order) {
     file_order: order
   }, { onConflict: 'user_email,folder_path' });
 }
-
-window.boardMoveFile = async (index, direction) => {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= boardCurrentFileOrder.length) return;
-  const arr = boardCurrentFileOrder.slice();
-  [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
-  boardCurrentFileOrder = arr;
-  await saveBoardFileOrder(arr);
-  loadBoardFileManager();
-};
 
 const boardSelectedFiles = new Set();
 
@@ -1979,26 +2007,31 @@ let reorderTabsWorkingOrder = [];
 
 function renderReorderTabsList() {
   const container = document.getElementById('reorderTabsList');
-  container.innerHTML = reorderTabsWorkingOrder.map((tabId, idx) => {
+  container.innerHTML = reorderTabsWorkingOrder.map((tabId) => {
     const btn = document.querySelector(`.admin-tab[data-tab="${tabId}"]`);
     const label = btn ? btn.textContent : tabId;
     return `
-      <div style="display:flex;align-items:center;gap:10px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:10px 14px;">
+      <div class="tab-reorder-row" data-tab="${tabId}" style="display:flex;align-items:center;gap:10px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:10px 14px;">
+        <span class="tab-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
         <span style="flex:1;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);">${label}</span>
-        <button onclick="reorderTabMove(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:#fff;border:1px solid var(--grey-line);border-radius:4px;width:30px;height:26px;cursor:pointer;color:var(--bronze);${idx === 0 ? 'opacity:0.3;' : ''}">▲</button>
-        <button onclick="reorderTabMove(${idx}, 1)" ${idx === reorderTabsWorkingOrder.length - 1 ? 'disabled' : ''} style="background:#fff;border:1px solid var(--grey-line);border-radius:4px;width:30px;height:26px;cursor:pointer;color:var(--bronze);${idx === reorderTabsWorkingOrder.length - 1 ? 'opacity:0.3;' : ''}">▼</button>
       </div>`;
   }).join('');
+  initReorderTabsSortable();
 }
 
-window.reorderTabMove = (index, direction) => {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= reorderTabsWorkingOrder.length) return;
-  const arr = reorderTabsWorkingOrder.slice();
-  [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
-  reorderTabsWorkingOrder = arr;
-  renderReorderTabsList();
-};
+let reorderTabsSortableInstance = null;
+function initReorderTabsSortable() {
+  const container = document.getElementById('reorderTabsList');
+  if (!container || typeof Sortable === 'undefined') return;
+  if (reorderTabsSortableInstance) { reorderTabsSortableInstance.destroy(); reorderTabsSortableInstance = null; }
+  reorderTabsSortableInstance = Sortable.create(container, {
+    handle: '.tab-drag-handle',
+    animation: 150,
+    onEnd: () => {
+      reorderTabsWorkingOrder = Array.from(container.children).map(el => el.dataset.tab);
+    }
+  });
+}
 
 document.getElementById('reorderTabsBtn').addEventListener('click', async () => {
   const visibleTabs = getVisibleTabsForRoles(currentRoles);
@@ -3142,6 +3175,90 @@ document.getElementById('finalConfirmBtn').addEventListener('click', async () =>
     document.getElementById('summerOverlay').style.display = 'none';
     loadAll();
   }, 4000);
+});
+
+// ============================================================================
+// TRASH MANAGEMENT (Soft Delete)
+// ============================================================================
+
+async function loadTrash() {
+  const { data } = await sb.from('students')
+    .select('id, first_name, last_name, grade, assigned_teacher_email, deleted_at')
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false });
+
+  const list = document.getElementById('trashList');
+  document.getElementById('trashCount').textContent = data ? data.length : '0';
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p class="empty-state">No deleted students. All clear!</p>';
+    return;
+  }
+
+  list.innerHTML = data.map(student => {
+    const deletedDate = new Date(student.deleted_at);
+    const deleteDate = new Date(deletedDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const daysLeft = Math.ceil((deleteDate - new Date()) / (1000 * 60 * 60 * 24));
+    const deletedDateStr = deletedDate.toLocaleDateString();
+    const studentName = [student.first_name, student.last_name].filter(Boolean).join(' ');
+
+    return `
+    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;border-left:4px solid var(--red);">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
+        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">
+          🎓 ${studentName}
+        </strong>
+        <div class="event-row-actions">
+          <button class="save-btn" onclick="restoreStudent(${student.id}, '${studentName.replace(/'/g, "\\'")}')">Restore</button>
+          <button class="delete-btn" onclick="permanentlyDeleteStudent(${student.id}, '${studentName.replace(/'/g, "\\'")}')">Delete Permanently</button>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:#9a8b84;">
+        ${student.grade ? `<span>📚 ${student.grade}</span> · ` : ''}
+        ${student.assigned_teacher_email ? `<span>👩‍🏫 ${student.assigned_teacher_email}</span> · ` : ''}
+        <span style="color:var(--red);font-weight:700;">Deleted: ${deletedDateStr}</span>
+        ${daysLeft > 0 ? `<span> · Auto-purge in ${daysLeft} days</span>` : `<span style="color:var(--red);"> · PURGING SOON!</span>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.restoreStudent = async (studentId, studentName) => {
+  if (!confirm(`Restore ${studentName} to active status?`)) return;
+
+  const { error } = await sb.from('students')
+    .update({ deleted_at: null })
+    .eq('id', studentId);
+
+  if (error) {
+    showToast(`Error restoring student: ${error.message}`, 3000);
+  } else {
+    showToast(`✅ ${studentName} restored!`, 3000);
+    loadTrash();
+    loadFamilies();
+  }
+};
+
+window.permanentlyDeleteStudent = async (studentId, studentName) => {
+  if (!confirm(`Permanently delete ${studentName}? This cannot be undone.`)) return;
+
+  const { error } = await sb.from('students')
+    .delete()
+    .eq('id', studentId);
+
+  if (error) {
+    showToast(`Error deleting student: ${error.message}`, 3000);
+  } else {
+    showToast(`🗑️ ${studentName} permanently deleted.`, 3000);
+    loadTrash();
+    loadFamilies();
+  }
+};
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.admin-tab[data-tab="trash"]')) {
+    loadTrash();
+  }
 });
 </script>
 </body>
