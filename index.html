@@ -41,8 +41,10 @@
   .section-menu-trigger{ display:flex; align-items:center; gap:8px; width:100%; padding:13px 18px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.92rem; color:var(--ink); cursor:pointer; transition:border-color 0.2s; }
   .section-menu-trigger:hover{ border-color:var(--red); }
   .section-menu-dropdown{ position:absolute; top:calc(100% + 8px); left:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:50; min-width:260px; max-width:90vw; }
-  .section-menu-dropdown .admin-tab{ display:block; width:100%; text-align:left; margin-bottom:4px; }
+  .section-menu-dropdown .admin-tab{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; margin-bottom:4px; }
   .section-menu-dropdown .admin-tab:last-child{ margin-bottom:0; }
+  .tab-drag-handle{ cursor:grab; color:#c9bdb4; font-size:1.1rem; flex-shrink:0; touch-action:none; line-height:1; }
+  .admin-tab.active .tab-drag-handle{ color:rgba(255,255,255,0.65); }
   .google-btn{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--grey-line); border-radius:8px; padding:14px 28px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); cursor:pointer; transition:box-shadow 0.2s; }
   .google-btn:hover{ box-shadow:0 4px 14px rgba(0,0,0,0.1); }
   .google-btn img{ width:24px; }
@@ -98,6 +100,7 @@
   .form-group{ display:flex; flex-direction:column; gap:6px; }
   .person-section{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:16px; overflow:hidden; }
   .person-section-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fdf6f2; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; color:var(--ink); user-select:none; }
+  .person-section-title{ display:flex; align-items:center; gap:8px; }
   .person-section-body{ padding:16px; background:#fff; }
   .person-section.collapsed .person-section-body{ display:none; }
   .person-toggle-icon{ transition:transform 0.2s; color:var(--bronze); }
@@ -321,22 +324,21 @@
     </div>
   </div>
 
-  <div style="position:relative;margin-bottom:32px;display:flex;gap:8px;align-items:center;">
-    <button id="sectionMenuBtn" class="section-menu-trigger" style="flex:1;">
+  <div style="position:relative;margin-bottom:32px;">
+    <button id="sectionMenuBtn" class="section-menu-trigger">
       <span id="sectionMenuLabel">📰 Newsletter</span>
       <span style="margin-left:auto;">▾</span>
     </button>
-    <button id="reorderTabsBtn" title="Reorder tabs" style="background:#fdf6f2;border:1.5px solid var(--bronze);color:var(--bronze);border-radius:8px;padding:0 14px;height:48px;font-size:1.1rem;cursor:pointer;flex-shrink:0;">⇅</button>
     <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;">
-      <button class="admin-tab active" data-tab="newsletter">📰 Newsletter</button>
-      <button class="admin-tab" data-tab="families">👨‍👩‍👧 Enroll Family</button>
-      <button class="admin-tab" data-tab="yearly">📆 Year at a Glance</button>
-      <button class="admin-tab" data-tab="infonights">📣 Info Nights</button>
-      <button class="admin-tab" data-tab="volunteer">🙋 Classroom Helper</button>
-      <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;">🔐 Staff Access</button>
-      <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;">🗂️ Gradebook</button>
-      <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;">📋 Board Member</button>
-      <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;">🗑️ Trash</button>
+      <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
+      <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
+      <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
+      <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
+      <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
+      <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
+      <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
+      <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
+      <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
     </div>
   </div>
 
@@ -430,8 +432,7 @@
       <!-- FATHER -->
       <div class="person-section" id="father-section">
         <div class="person-section-header" onclick="togglePersonSection('father-section')">
-          <span>👨 Father</span>
-          <span class="person-toggle-icon">▾</span>
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 👨 Father</span>
         </div>
         <div class="person-section-body">
           <div class="form-row">
@@ -458,28 +459,32 @@
       </div>
 
       <!-- HOME ADDRESS -->
-      <div style="margin-bottom:20px;">
-        <p style="font-size:0.82rem;color:#9a8b84;margin-bottom:10px;font-weight:700;">🏠 Home Address <span style="font-weight:400;">(optional)</span></p>
-        <div class="form-row">
-          <div class="form-group" style="flex:1;">
-            <label>Street Address</label>
-            <input type="text" id="fam-address-street" placeholder="e.g. 123 Main St">
-          </div>
+      <div class="person-section collapsed" id="homeaddress-section">
+        <div class="person-section-header" onclick="togglePersonSection('homeaddress-section')">
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 🏠 Home Address <span style="font-weight:400;color:#9a8b84;">(optional)</span></span>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>City</label>
-            <input type="text" id="fam-address-city" placeholder="e.g. Northridge">
+        <div class="person-section-body">
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label>Street Address</label>
+              <input type="text" id="fam-address-street" placeholder="e.g. 123 Main St">
+            </div>
           </div>
-          <div class="form-group">
-            <label>State</label>
-            <select id="fam-address-state"></select>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="fam-address-city" placeholder="e.g. Northridge">
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <select id="fam-address-state"></select>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Zip Code</label>
-            <input type="text" id="fam-address-zip" placeholder="e.g. 91325" inputmode="numeric" maxlength="10">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Zip Code</label>
+              <input type="text" id="fam-address-zip" placeholder="e.g. 91325" inputmode="numeric" maxlength="10">
+            </div>
           </div>
         </div>
       </div>
@@ -487,8 +492,7 @@
       <!-- MOTHER -->
       <div class="person-section collapsed" id="mother-section">
         <div class="person-section-header" onclick="togglePersonSection('mother-section')">
-          <span>👩 Mother</span>
-          <span class="person-toggle-icon">▾</span>
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 👩 Mother</span>
         </div>
         <div class="person-section-body">
           <div class="form-row">
@@ -798,18 +802,6 @@
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- REORDER TABS MODAL -->
-<div class="reset-overlay" id="reorderTabsOverlay" style="display:none;">
-  <div class="reset-modal" style="max-width:420px;">
-    <h3 style="margin-bottom:6px;">Reorder Your Tabs</h3>
-    <p style="font-size:0.85rem;color:#6b5e58;margin-bottom:18px;">This order is saved just for you — it won't change anyone else's view.</p>
-    <div id="reorderTabsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;text-align:left;"></div>
-    <div class="reset-modal-btns">
-      <button class="reset-confirm-btn" id="reorderTabsDoneBtn" style="width:100%;">Done</button>
-    </div>
-  </div>
-</div>
 
 <!-- RESET MODAL -->
 <div class="reset-overlay" id="resetOverlay" style="display:none;">
@@ -1144,6 +1136,11 @@ async function checkRoleAndContinue(session) {
   showMfaChoice();
 }
 
+function getTabLabelText(btn) {
+  const labelSpan = btn.querySelector('.tab-label');
+  return labelSpan ? labelSpan.textContent : btn.textContent;
+}
+
 function hasRole(r) {
   return Array.isArray(currentRoles) && currentRoles.includes(r);
 }
@@ -1195,7 +1192,7 @@ function applyRolePermissions() {
   const firstPanel = document.getElementById('panel-' + firstTab);
   if (firstBtn) {
     firstBtn.classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = firstBtn.textContent;
+    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(firstBtn);
   }
   if (firstPanel) firstPanel.classList.add('active');
 
@@ -1941,7 +1938,7 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = tab.textContent;
+    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(tab);
     document.getElementById('sectionMenuDropdown').style.display = 'none';
   });
 });
@@ -1988,7 +1985,7 @@ function applyTabOrderToDOM(orderedTabIds) {
   const firstPanel = document.getElementById('panel-' + firstTab);
   if (firstBtn) {
     firstBtn.classList.add('active');
-    document.getElementById('sectionMenuLabel').textContent = firstBtn.textContent;
+    document.getElementById('sectionMenuLabel').textContent = getTabLabelText(firstBtn);
   }
   if (firstPanel) firstPanel.classList.add('active');
 }
@@ -2003,52 +2000,23 @@ async function applyPersonalTabOrder() {
   applyTabOrderToDOM(finalOrder);
 }
 
-let reorderTabsWorkingOrder = [];
-
-function renderReorderTabsList() {
-  const container = document.getElementById('reorderTabsList');
-  container.innerHTML = reorderTabsWorkingOrder.map((tabId) => {
-    const btn = document.querySelector(`.admin-tab[data-tab="${tabId}"]`);
-    const label = btn ? btn.textContent : tabId;
-    return `
-      <div class="tab-reorder-row" data-tab="${tabId}" style="display:flex;align-items:center;gap:10px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;padding:10px 14px;">
-        <span class="tab-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
-        <span style="flex:1;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;color:var(--ink);">${label}</span>
-      </div>`;
-  }).join('');
-  initReorderTabsSortable();
-}
-
-let reorderTabsSortableInstance = null;
-function initReorderTabsSortable() {
-  const container = document.getElementById('reorderTabsList');
+// Drag tabs directly within the open dropdown to reorder them — saves automatically per-person
+let sectionMenuSortableInstance = null;
+function initSectionMenuSortable() {
+  const container = document.getElementById('sectionMenuDropdown');
   if (!container || typeof Sortable === 'undefined') return;
-  if (reorderTabsSortableInstance) { reorderTabsSortableInstance.destroy(); reorderTabsSortableInstance = null; }
-  reorderTabsSortableInstance = Sortable.create(container, {
+  if (sectionMenuSortableInstance) { sectionMenuSortableInstance.destroy(); sectionMenuSortableInstance = null; }
+  sectionMenuSortableInstance = Sortable.create(container, {
     handle: '.tab-drag-handle',
     animation: 150,
-    onEnd: () => {
-      reorderTabsWorkingOrder = Array.from(container.children).map(el => el.dataset.tab);
+    onEnd: async () => {
+      const newOrder = Array.from(container.children).map(el => el.dataset.tab);
+      await saveTabOrder(newOrder);
+      showToast('✅ Tab order saved');
     }
   });
 }
-
-document.getElementById('reorderTabsBtn').addEventListener('click', async () => {
-  const visibleTabs = getVisibleTabsForRoles(currentRoles);
-  // Start from whatever order is currently shown on screen
-  reorderTabsWorkingOrder = Array.from(document.querySelectorAll('.admin-tab'))
-    .map(btn => btn.dataset.tab)
-    .filter(tabId => visibleTabs.includes(tabId));
-  renderReorderTabsList();
-  document.getElementById('reorderTabsOverlay').style.display = 'flex';
-});
-
-document.getElementById('reorderTabsDoneBtn').addEventListener('click', async () => {
-  await saveTabOrder(reorderTabsWorkingOrder);
-  applyTabOrderToDOM(reorderTabsWorkingOrder);
-  document.getElementById('reorderTabsOverlay').style.display = 'none';
-  showToast('✅ Tab order saved');
-});
+initSectionMenuSortable();
 
 // ── NEWSLETTER ───────────────────────────────────────────────
 async function loadNewsletters() {
@@ -2462,6 +2430,7 @@ function restoreEnrollDraft() {
 
   // Auto-advance state on restore: collapse sections whose name is already filled
   document.getElementById('father-section').classList.toggle('collapsed', !!draft.fatherName);
+  document.getElementById('homeaddress-section').classList.toggle('collapsed', !(draft.addressStreet || draft.addressCity || draft.addressZip));
   document.getElementById('mother-section').classList.toggle('collapsed', !!draft.motherName);
 
   document.getElementById('studentRowsContainer').innerHTML = '';
@@ -2562,6 +2531,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   document.getElementById('fam-address-state').value = 'California';
   document.getElementById('fam-new').checked = false;
   document.getElementById('father-section').classList.remove('collapsed');
+  document.getElementById('homeaddress-section').classList.add('collapsed');
   document.getElementById('mother-section').classList.add('collapsed');
   document.getElementById('studentRowsContainer').innerHTML = '';
   addStudentRow(true);
