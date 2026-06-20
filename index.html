@@ -485,6 +485,13 @@
       </div>
       <p style="font-size:0.8rem;color:#9a8b84;margin:-8px 0 20px;">At least one parent's email is required — that's what they'll use to sign in.</p>
 
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label>Home Address <span style="font-weight:400;color:#9a8b84;font-size:0.78rem;">(optional)</span></label>
+          <input type="text" id="fam-address" placeholder="e.g. 123 Main St, Northridge, CA 91325">
+        </div>
+      </div>
+
       <div style="margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;">
         <label style="margin:0;">Students</label>
         <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add a Student</button>
@@ -2036,6 +2043,7 @@ async function loadFamilies() {
         ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
         ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
+      ${f.home_address ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${f.home_address}</span>` : ''}
       <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
@@ -2168,6 +2176,7 @@ function collectEnrollDraft() {
     motherEmail: document.getElementById('mother-email').value,
     motherPhone: document.getElementById('mother-phone').value,
     motherDob: document.getElementById('mother-dob').value,
+    homeAddress: document.getElementById('fam-address').value,
     isNew: document.getElementById('fam-new').checked,
     students: Array.from(document.querySelectorAll('.student-row')).map(row => ({
       first: row.querySelector('.student-first').value,
@@ -2200,6 +2209,7 @@ function restoreEnrollDraft() {
   document.getElementById('mother-email').value = draft.motherEmail || '';
   document.getElementById('mother-phone').value = draft.motherPhone || '';
   document.getElementById('mother-dob').value = draft.motherDob || '';
+  document.getElementById('fam-address').value = draft.homeAddress || '';
   document.getElementById('fam-new').checked = !!draft.isNew;
 
   document.getElementById('studentRowsContainer').innerHTML = '';
@@ -2217,7 +2227,7 @@ function restoreEnrollDraft() {
 }
 
 // Autosave on any change within the Enroll Family form
-['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-new'].forEach(id => {
+['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address','fam-new'].forEach(id => {
   document.getElementById(id).addEventListener('input', saveEnrollDraft);
   document.getElementById(id).addEventListener('change', saveEnrollDraft);
 });
@@ -2234,6 +2244,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   const motherEmail = document.getElementById('mother-email').value.trim();
   const motherPhone = document.getElementById('mother-phone').value.trim();
   const motherDob = document.getElementById('mother-dob').value || null;
+  const homeAddress = document.getElementById('fam-address').value.trim();
   const isNewFamily = document.getElementById('fam-new').checked;
 
   const studentRows = Array.from(document.querySelectorAll('.student-row')).map(row => ({
@@ -2270,6 +2281,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
       mother_email: motherEmail || null,
       mother_phone: motherPhone || null,
       mother_dob: motherDob,
+      home_address: homeAddress || null,
       student_count: studentRows.length,
       is_new_family: isNewFamily
     })
@@ -2286,7 +2298,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   btn.textContent = 'Enroll Family';
   if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
 
-  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob'].forEach(id => {
+  ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('fam-new').checked = false;
@@ -2637,30 +2649,59 @@ function openPrintWindow(title, bodyHTML) {
 async function printFamilies() {
   const { data } = await sb.from('family_emails').select('*, students(*)').order('name');
   if (!data || data.length === 0) { showToast('No families to print'); return; }
-  const rows = data.map((f, i) => {
+
+  const escapeHTML = (str) => (str || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const rows = data.map((f) => {
     const kids = f.students || [];
-    const kidsLine = kids.length > 0
-      ? kids.map(s => `${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' (' + s.grade + (s.assigned_teacher_email ? ', ' + s.assigned_teacher_email : '') + ')' : ''}${s.dob ? ' — DOB ' + s.dob : ''}`).join(' &nbsp;·&nbsp; ')
-      : 'No students on file';
-    const parentLine = (label, name, email, phone) =>
-      (name || email || phone) ? `${label}: ${[name, email, phone].filter(Boolean).join(', ')}` : '';
-    const parentsLine = [
-      parentLine('Father', f.father_name, f.father_email, f.father_phone),
-      parentLine('Mother', f.mother_name, f.mother_email, f.mother_phone)
-    ].filter(Boolean).join(' &nbsp;·&nbsp; ') || `${f.email}${f.second_email ? ' &nbsp;·&nbsp; ' + f.second_email : ''}`;
+    const kidsHTML = kids.length > 0
+      ? kids.map(s => `${escapeHTML([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' — ' + escapeHTML(s.grade) : ''}`).join('<br>')
+      : '<span style="color:#aaa;">—</span>';
+
+    const fatherHTML = (f.father_name || f.father_phone)
+      ? `${escapeHTML(f.father_name) || '—'}${f.father_phone ? '<br>' + escapeHTML(f.father_phone) : ''}`
+      : '<span style="color:#aaa;">—</span>';
+
+    const motherHTML = (f.mother_name || f.mother_phone)
+      ? `${escapeHTML(f.mother_name) || '—'}${f.mother_phone ? '<br>' + escapeHTML(f.mother_phone) : ''}`
+      : '<span style="color:#aaa;">—</span>';
+
+    const addressHTML = f.home_address ? escapeHTML(f.home_address) : '<span style="color:#aaa;">—</span>';
+
     return `
-    <div class="print-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
-      <div style="display:flex;justify-content:space-between;width:100%;">
-        <strong>${i + 1}. ${f.name}</strong>
-        <span>${kids.length} student${kids.length === 1 ? '' : 's'}</span>
-      </div>
-      <span style="font-size:0.85rem;">${parentsLine}</span>
-      <span style="font-size:0.85rem;color:#6b5e58;">${kidsLine}</span>
-    </div>`;
+    <tr>
+      <td><strong>${escapeHTML(f.name)}</strong></td>
+      <td>${fatherHTML}</td>
+      <td>${motherHTML}</td>
+      <td>${addressHTML}</td>
+      <td>${kidsHTML}</td>
+    </tr>`;
   }).join('');
-  openPrintWindow(`Enrolled Families (${data.length})`,
-    `<div style="margin-bottom:24px;"><h2 style="margin-bottom:12px;font-size:1.1rem;color:#B07D4F;">Enrolled Families — ${data.length} total</h2>${rows}</div>`
-  );
+
+  const tableHTML = `
+    <div style="margin-bottom:24px;">
+      <h2 style="margin-bottom:16px;font-size:1.1rem;color:#B07D4F;">Family Directory — ${data.length} families</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead>
+          <tr style="background:#fdf6f2;border-bottom:2px solid #C8102E;">
+            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Family</th>
+            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Father</th>
+            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Mother</th>
+            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Home Address</th>
+            <th style="text-align:left;padding:10px 12px;color:#3A2E2A;">Students (Grade)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </div>
+    <style>
+      table tr:nth-child(even){ background:#fdf6f2; }
+      table td{ padding:10px 12px; border-bottom:1px solid #E6E1DC; vertical-align:top; }
+    </style>`;
+
+  openPrintWindow(`Family Directory (${data.length})`, tableHTML);
 }
 
 async function printVolunteers() {
