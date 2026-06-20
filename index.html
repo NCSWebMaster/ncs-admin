@@ -729,6 +729,10 @@
         </div>
         <div id="boardBreadcrumb" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;margin-bottom:14px;"></div>
         <div id="boardFileManagerStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;margin-bottom:10px;"></div>
+        <div id="boardBulkDeleteBar" style="display:none;align-items:center;justify-content:space-between;background:#fdf6f2;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:12px;">
+          <span id="boardBulkDeleteCount" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;font-weight:700;color:var(--ink);"></span>
+          <button class="delete-btn" style="padding:7px 16px;font-size:0.82rem;" onclick="boardDeleteSelected()">🗑️ Delete Selected</button>
+        </div>
         <div id="boardFileManagerList" style="display:grid;gap:10px;"></div>
       </div>
     </div>
@@ -1628,6 +1632,8 @@ async function loadBoardFileManager() {
   if (!list) return;
   boardFormatBreadcrumb();
   status.textContent = 'Loading...';
+  boardSelectedFiles.clear();
+  boardUpdateBulkBar();
 
   const { data, error } = await sb.storage.from(BOARD_BUCKET).list(boardCurrentPath, {
     sortBy: { column: 'name', order: 'asc' }
@@ -1659,6 +1665,15 @@ async function loadBoardFileManager() {
     html += `<button class="signout-btn" style="padding:8px 16px;font-size:0.85rem;width:fit-content;" onclick="boardGoBack()">⬆ Back</button>`;
   }
 
+  if (files.length > 0) {
+    html += `
+      <div style="display:flex;align-items:center;gap:10px;padding:0 4px;">
+        <label style="display:flex;align-items:center;gap:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;cursor:pointer;">
+          <input type="checkbox" id="boardSelectAllCb" onchange="boardToggleSelectAll(this.checked)"> Select All
+        </label>
+      </div>`;
+  }
+
   folders.forEach(folder => {
     const fullPath = boardCurrentPath + folder.name + '/';
     html += `
@@ -1673,6 +1688,7 @@ async function loadBoardFileManager() {
     const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
     html += `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
+        <input type="checkbox" class="board-file-checkbox" data-path="${fullPath}" onchange="boardToggleFileSelect('${fullPath}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${file.name}</div>
           <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
@@ -1685,6 +1701,45 @@ async function loadBoardFileManager() {
   list.innerHTML = html;
   status.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${files.length} file${files.length !== 1 ? 's' : ''}`;
 }
+
+// ── BULK FILE SELECTION / DELETE ───────────────────────────────
+const boardSelectedFiles = new Set();
+
+window.boardToggleFileSelect = (path, checked) => {
+  if (checked) boardSelectedFiles.add(path);
+  else boardSelectedFiles.delete(path);
+  boardUpdateBulkBar();
+};
+
+window.boardToggleSelectAll = (checked) => {
+  document.querySelectorAll('.board-file-checkbox').forEach(cb => {
+    cb.checked = checked;
+    if (checked) boardSelectedFiles.add(cb.dataset.path);
+    else boardSelectedFiles.delete(cb.dataset.path);
+  });
+  boardUpdateBulkBar();
+};
+
+function boardUpdateBulkBar() {
+  const bar = document.getElementById('boardBulkDeleteBar');
+  if (!bar) return;
+  if (boardSelectedFiles.size > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('boardBulkDeleteCount').textContent = `${boardSelectedFiles.size} selected`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+window.boardDeleteSelected = async () => {
+  const paths = Array.from(boardSelectedFiles);
+  if (paths.length === 0) return;
+  if (!confirm(`Delete ${paths.length} file${paths.length !== 1 ? 's' : ''}? This cannot be undone.`)) return;
+  const { error } = await sb.storage.from(BOARD_BUCKET).remove(paths);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast(`✅ ${paths.length} file${paths.length !== 1 ? 's' : ''} deleted`);
+  loadBoardFileManager();
+};
 
 window.boardDownloadFile = async (path, filename) => {
   const { data, error } = await sb.storage.from(BOARD_BUCKET).createSignedUrl(path, 60);
