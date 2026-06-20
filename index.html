@@ -486,7 +486,7 @@
 
       <div style="margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;">
         <label style="margin:0;">Students</label>
-        <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add Another Student</button>
+        <button type="button" id="addStudentRowBtn" style="background:#fdf6f2;color:var(--bronze);border:1.5px solid var(--bronze);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add a Student</button>
       </div>
       <div id="studentRowsContainer"></div>
 
@@ -1191,7 +1191,6 @@ function applyRolePermissions() {
       if (boardPlaceholder) boardPlaceholder.style.display = 'none';
       if (boardContent) boardContent.style.display = 'block';
       if (isSuperAdmin && boardSecurityDocs) boardSecurityDocs.style.display = 'block';
-      checkAndLoadBoardFiles();
     } else if (isSuperAdmin) {
       if (boardPlaceholder) boardPlaceholder.style.display = 'none';
       if (boardContent) boardContent.style.display = 'none';
@@ -1237,8 +1236,6 @@ function enterDashboard() {
   applyRolePermissions();
   loadAll();
   if (hasRole('super_admin')) loadStaffAccess();
-  // Handle Google OAuth callback if returning from sign-in
-  handleGoogleOAuthCallback();
 }
 
 function updateGreetingName(firstName) {
@@ -1259,7 +1256,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 document.getElementById('googleSignIn').addEventListener('click', async () => {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://admin.northridgecommunityschool.com' } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ADMIN_URL } });
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
@@ -1622,7 +1619,6 @@ async function loadGreetingAndStats() {
     document.getElementById('statNextNight').style.fontSize = '1rem';
   }
 }
-
 
 // ── TABS ──────────────────────────────────────────────────────
 document.querySelectorAll('.admin-tab').forEach(tab => {
