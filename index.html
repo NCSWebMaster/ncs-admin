@@ -634,13 +634,12 @@
     </div>
     <div class="events-list">
       <h3>Current Volunteer Slots</h3>
-      <div id="volSummaryDashboard" style="margin-bottom:16px;">
-        <div class="vol-req-row">
-          <label>Required slots per family:</label>
-          <input type="number" id="vol-required" min="1" max="20" placeholder="2">
-          <button onclick="saveVolRequired()">Save</button>
-        </div>
+      <div class="vol-req-row" style="margin-bottom:16px;">
+        <label>Required slots per family:</label>
+        <input type="number" id="vol-required" min="1" max="20" placeholder="2">
+        <button onclick="saveVolRequired()">Save</button>
       </div>
+      <div id="volSummaryDashboard"></div>
       <div id="volSlotList"></div>
     </div>
     <div class="events-list" style="margin-top:32px;">
@@ -873,14 +872,6 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // Resend API key stored securely in Supabase vault — not exposed here
 const FROM_EMAIL = 'office@northridgecommunityschool.com';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
-// TEMPORARY DEBUG: Show any JS errors as an alert so they're visible on iPad (no dev tools access)
-window.addEventListener('error', (e) => {
-  alert('JS Error: ' + e.message + '\n\nFile: ' + e.filename + '\nLine: ' + e.lineno);
-});
-window.addEventListener('unhandledrejection', (e) => {
-  alert('Promise Error: ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason)));
-});
 
 function showToast(msg, duration = 3000) {
   const t = document.getElementById('toast');
@@ -1960,13 +1951,19 @@ const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
 
 function collectEnrollDraft() {
   return {
-    name: document.getElementById('fam-name').value,
-    email: document.getElementById('fam-email').value,
-    email2: document.getElementById('fam-email-2').value,
+    fatherName: document.getElementById('father-name').value,
+    fatherEmail: document.getElementById('father-email').value,
+    fatherPhone: document.getElementById('father-phone').value,
+    fatherDob: document.getElementById('father-dob').value,
+    motherName: document.getElementById('mother-name').value,
+    motherEmail: document.getElementById('mother-email').value,
+    motherPhone: document.getElementById('mother-phone').value,
+    motherDob: document.getElementById('mother-dob').value,
     isNew: document.getElementById('fam-new').checked,
     students: Array.from(document.querySelectorAll('.student-row')).map(row => ({
       first: row.querySelector('.student-first').value,
       last: row.querySelector('.student-last').value,
+      dob: row.querySelector('.student-dob').value,
       grade: row.querySelector('.student-grade').value,
       teacher: row.querySelector('.student-teacher-select').value
     }))
@@ -1986,9 +1983,14 @@ function restoreEnrollDraft() {
   try { draft = JSON.parse(sessionStorage.getItem(ENROLL_DRAFT_KEY)); } catch (e) { return false; }
   if (!draft) return false;
 
-  document.getElementById('fam-name').value = draft.name || '';
-  document.getElementById('fam-email').value = draft.email || '';
-  document.getElementById('fam-email-2').value = draft.email2 || '';
+  document.getElementById('father-name').value = draft.fatherName || '';
+  document.getElementById('father-email').value = draft.fatherEmail || '';
+  document.getElementById('father-phone').value = draft.fatherPhone || '';
+  document.getElementById('father-dob').value = draft.fatherDob || '';
+  document.getElementById('mother-name').value = draft.motherName || '';
+  document.getElementById('mother-email').value = draft.motherEmail || '';
+  document.getElementById('mother-phone').value = draft.motherPhone || '';
+  document.getElementById('mother-dob').value = draft.motherDob || '';
   document.getElementById('fam-new').checked = !!draft.isNew;
 
   document.getElementById('studentRowsContainer').innerHTML = '';
@@ -1998,6 +2000,7 @@ function restoreEnrollDraft() {
     const row = document.querySelector('.student-row:last-child');
     row.querySelector('.student-first').value = s.first || '';
     row.querySelector('.student-last').value = s.last || '';
+    if (s.dob) row.querySelector('.student-dob').value = s.dob;
     if (s.grade) row.querySelector('.student-grade').value = s.grade;
     if (s.teacher) row.querySelector('.student-teacher-select').value = s.teacher;
   });
@@ -2005,7 +2008,7 @@ function restoreEnrollDraft() {
 }
 
 // Autosave on any change within the Enroll Family form
-['fam-name','fam-email','fam-email-2','fam-new'].forEach(id => {
+['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-new'].forEach(id => {
   document.getElementById(id).addEventListener('input', saveEnrollDraft);
   document.getElementById(id).addEventListener('change', saveEnrollDraft);
 });
@@ -2014,7 +2017,6 @@ document.getElementById('studentRowsContainer').addEventListener('change', saveE
 document.getElementById('addStudentRowBtn').addEventListener('click', () => setTimeout(saveEnrollDraft, 0));
 
 document.getElementById('saveFamiliy').addEventListener('click', async () => {
-  alert('DEBUG: Button click registered, starting enroll process...');
   const fatherName = document.getElementById('father-name').value.trim();
   const fatherEmail = document.getElementById('father-email').value.trim();
   const fatherPhone = document.getElementById('father-phone').value.trim();
@@ -2259,11 +2261,6 @@ async function loadVolSlots() {
   const notMet = allFamilies.filter(f => (signupsByEmail[f.email] || 0) < requiredSlots);
 
   summary.innerHTML = `
-    <div class="vol-req-row">
-      <label>Required slots per family:</label>
-      <input type="number" id="vol-required" min="1" max="20" value="${requiredSlots}">
-      <button onclick="saveVolRequired()">Save</button>
-    </div>
     <div class="vol-summary">
       <div class="vol-summary-pills">
         <span class="vol-pill green"><strong>${filledSpots}</strong> Filled</span>
