@@ -826,9 +826,13 @@
         </div>
       </div>
     </div>
-    <div class="events-list">
+    <div class="events-list" id="gbMyStudentsSection" style="display:none;">
       <h3>My Students <span class="family-count" id="gbStudentCount"></span></h3>
       <div id="gbStudentList"><p class="empty-state">Loading…</p></div>
+    </div>
+    <div class="events-list" id="gbReviewQueueSection" style="display:none;">
+      <h3>Review Queue <span class="family-count" id="gbQueueCount"></span></h3>
+      <div id="gbQueueList"><p class="empty-state">Loading…</p></div>
     </div>
   </div>
 
@@ -1245,7 +1249,7 @@ const ROLE_TABS = {
   super_admin: ALL_TABS,
   // Leader sees everything except the Board tab and Trash (Trash is Super Admin only)
   leader: ALL_TABS.filter(t => t !== 'boardmember' && t !== 'trash'),
-  staff: ['newsletter','families','yearly','infonights','volunteer'],
+  staff: ['newsletter','families','yearly','infonights','volunteer','gradebook'],
   admissions_committee: ['infonights'],
   teacher: ['gradebook'],
   board_member: ['newsletter','families','yearly','infonights','volunteer','boardmember']
@@ -3513,10 +3517,30 @@ function gbStatusLabel(status) {
   return { cls: 'not_started', text: 'Not Started' };
 }
 
+function gbVisibleSections() {
+  return {
+    showTeacher: hasRole('teacher'),
+    showReview: hasRole('leader') || hasRole('staff') || hasRole('super_admin')
+  };
+}
+
 async function loadGradebook() {
+  populateGbSchoolYearOptions();
+  const { showTeacher, showReview } = gbVisibleSections();
+  const teacherSection = document.getElementById('gbMyStudentsSection');
+  const reviewSection = document.getElementById('gbReviewQueueSection');
+  if (teacherSection) teacherSection.style.display = showTeacher ? 'block' : 'none';
+  if (reviewSection) reviewSection.style.display = showReview ? 'block' : 'none';
+
+  const tasks = [];
+  if (showTeacher) tasks.push(loadMyStudents());
+  if (showReview) tasks.push(loadReviewQueue());
+  await Promise.all(tasks);
+}
+
+async function loadMyStudents() {
   const list = document.getElementById('gbStudentList');
   if (!list) return;
-  populateGbSchoolYearOptions();
   const schoolYear = document.getElementById('gbSchoolYear').value || computeDefaultSchoolYear();
   const quarter = document.getElementById('gbQuarter').value || 'Q1';
 
@@ -3647,6 +3671,111 @@ async function loadGradebook() {
 
 window.toggleGbCard = (studentId) => {
   document.getElementById(`gb-card-${studentId}`).classList.toggle('expanded');
+};
+
+async function loadReviewQueue() {
+  const list = document.getElementById('gbQueueList');
+  if (!list) return;
+  const schoolYear = document.getElementById('gbSchoolYear').value || computeDefaultSchoolYear();
+  const quarter = document.getElementById('gbQuarter').value || 'Q1';
+
+  list.innerHTML = '<p class="empty-state">Loading…</p>';
+
+  const { data: reportCards, error } = await sb.from('report_cards')
+    .select('id, student_id, submitted_by, submitted_at, students(first_name, last_name, grade)')
+    .eq('school_year', schoolYear)
+    .eq('quarter', quarter)
+    .eq('status', 'submitted')
+    .order('submitted_at', { ascending: true });
+
+  if (error) {
+    list.innerHTML = `<p class="empty-state">Error loading queue: ${esc(error.message)}</p>`;
+    return;
+  }
+  document.getElementById('gbQueueCount').textContent = reportCards ? `(${reportCards.length})` : '';
+  if (!reportCards || reportCards.length === 0) {
+    list.innerHTML = '<p class="empty-state">Nothing waiting for review.</p>';
+    return;
+  }
+
+  const reportCardIds = reportCards.map(rc => rc.id);
+  const { data: grades } = await sb.from('report_card_grades')
+    .select('report_card_id, subject, academic_mark, effort_mark, conduct_mark, comment')
+    .in('report_card_id', reportCardIds);
+
+  const gradesByReportCard = {};
+  (grades || []).forEach(g => {
+    if (!gradesByReportCard[g.report_card_id]) gradesByReportCard[g.report_card_id] = [];
+    gradesByReportCard[g.report_card_id].push(g);
+  });
+
+  list.innerHTML = reportCards.map(rc => {
+    const student = rc.students || {};
+    const studentName = [student.first_name, student.last_name].filter(Boolean).join(' ');
+    const subjectGrades = gradesByReportCard[rc.id] || [];
+
+    const subjectsHTML = subjectGrades.map(g => `
+      <div class="gb-subject-row">
+        <div class="gb-subject-label">${esc(g.subject)}</div>
+        <div><span class="gb-mark-label">Academic</span>${esc(g.academic_mark || '—')}</div>
+        <div><span class="gb-mark-label">Effort</span>${esc(g.effort_mark || '—')}</div>
+        <div><span class="gb-mark-label">Conduct</span>${esc(g.conduct_mark || '—')}</div>
+      </div>
+      ${g.comment ? `<div class="gb-student-meta" style="margin:-4px 0 10px;">💬 ${esc(g.comment)}</div>` : ''}
+    `).join('');
+
+    const submittedDate = rc.submitted_at ? new Date(rc.submitted_at).toLocaleDateString() : '—';
+
+    return `
+    <div class="gb-student-card" id="gb-queue-card-${rc.id}">
+      <div class="gb-student-header" onclick="toggleGbQueueCard(${rc.id})">
+        <div>
+          <span class="gb-toggle-icon">▸</span>
+          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          ${student.grade ? `<span class="gb-student-meta"> · ${esc(student.grade)}</span>` : ''}
+        </div>
+        <span class="gb-status-badge submitted">Submitted</span>
+      </div>
+      <div class="gb-student-body">
+        <div class="gb-student-meta" style="margin-bottom:14px;">Submitted by ${esc(rc.submitted_by || '—')} on ${submittedDate}</div>
+        ${subjectsHTML}
+        <div class="gb-actions">
+          <button class="save-btn" data-name="${esc(studentName)}" onclick="approveAndSendQueueReport(${rc.id}, this.dataset.name)">Approve &amp; Send</button>
+          <button class="delete-btn" onclick="sendBackQueueReport(${rc.id})">Send Back</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleGbQueueCard = (id) => {
+  document.getElementById(`gb-queue-card-${id}`).classList.toggle('expanded');
+};
+
+window.approveAndSendQueueReport = async (reportCardId, studentName) => {
+  if (!confirm(`Approve and send ${studentName}'s report card to their family now?`)) return;
+  try {
+    const { error } = await sb.rpc('approve_and_send_report_card', { p_report_card_id: reportCardId });
+    if (error) throw error;
+    showSuccessCheckmark('Approved & sent!');
+    setTimeout(loadReviewQueue, 1200);
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 4000);
+  }
+};
+
+window.sendBackQueueReport = async (reportCardId) => {
+  const note = prompt('What needs to change? This note goes to the teacher.');
+  if (note === null) return;
+  if (!note.trim()) { showToast('Please add a note explaining what needs to change.'); return; }
+  try {
+    const { error } = await sb.rpc('send_back_report_card', { p_report_card_id: reportCardId, p_note: note.trim() });
+    if (error) throw error;
+    showToast('Sent back to the teacher.', 3000);
+    loadReviewQueue();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 4000);
+  }
 };
 
 async function ensureReportCard(studentId, schoolYear, quarter) {
