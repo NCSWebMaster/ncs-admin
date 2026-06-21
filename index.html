@@ -2253,20 +2253,36 @@ async function applyPersonalTabOrder() {
   restoreActiveTab();
 }
 
-// Expand only the category that contains the currently active tab; collapse the rest.
-// Runs every time the Apps menu is opened so it always reflects where you currently are.
+// Each category remembers its own expand/collapse state for this session.
+// Categories you've never manually touched still default to "only the one
+// holding your current tab is open" — but once you open something yourself,
+// it stays open until you close it, instead of resetting on every menu open.
+function appMenuCategoryStorageKey(categoryName) {
+  return `ncs_app_menu_cat_collapsed:${categoryName}`;
+}
+
 function expandActiveAppMenuCategory() {
   const activeBtn = document.querySelector('.admin-tab.active');
   const activeCategory = activeBtn ? activeBtn.closest('.app-menu-category') : null;
   document.querySelectorAll('.app-menu-category').forEach(cat => {
-    cat.classList.toggle('collapsed', cat !== activeCategory);
+    let saved;
+    try { saved = sessionStorage.getItem(appMenuCategoryStorageKey(cat.dataset.category)); } catch (e) {}
+    if (saved === 'true') {
+      cat.classList.add('collapsed');
+    } else if (saved === 'false') {
+      cat.classList.remove('collapsed');
+    } else {
+      cat.classList.toggle('collapsed', cat !== activeCategory);
+    }
   });
 }
 
 document.querySelectorAll('.app-menu-category-header').forEach(header => {
   header.addEventListener('click', (e) => {
     e.stopPropagation();
-    header.closest('.app-menu-category').classList.toggle('collapsed');
+    const cat = header.closest('.app-menu-category');
+    cat.classList.toggle('collapsed');
+    try { sessionStorage.setItem(appMenuCategoryStorageKey(cat.dataset.category), cat.classList.contains('collapsed')); } catch (e) {}
   });
 });
 
@@ -3779,7 +3795,7 @@ function clearAllGradebookSessionState() {
     sessionStorage.removeItem('ncs_gb_school_year');
     sessionStorage.removeItem('ncs_gb_quarter');
     Object.keys(sessionStorage)
-      .filter(k => k.startsWith('ncs_gradebook_draft:'))
+      .filter(k => k.startsWith('ncs_gradebook_draft:') || k.startsWith('ncs_app_menu_cat_collapsed:'))
       .forEach(k => sessionStorage.removeItem(k));
   } catch (e) {}
 }
