@@ -943,6 +943,19 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const FROM_EMAIL = 'office@northridgecommunityschool.com';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// Escapes any value before it's interpolated into an innerHTML template
+// string, so stored names/notes/emails/etc. can never be parsed as HTML —
+// closes stored-XSS paths throughout the admin dashboard.
+function esc(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function showToast(msg, duration = 3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1442,20 +1455,20 @@ async function loadStaffAccess() {
 
       <!-- VIEW MODE -->
       <div id="staff-view-${s.id}">
-        ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${[s.first_name, s.last_name].filter(Boolean).join(' ')}</p>` : '<p style="font-family:\'Trebuchet MS\',sans-serif;font-size:0.88rem;color:#aaa;font-style:italic;margin:0 0 2px;">No name on file</p>'}
-        <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${s.email}</p>
+        ${s.first_name || s.last_name ? `<p style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);margin:0 0 2px;">${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}</p>` : '<p style="font-family:\'Trebuchet MS\',sans-serif;font-size:0.88rem;color:#aaa;font-style:italic;margin:0 0 2px;">No name on file</p>'}
+        <p style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:#6b5e58;margin:0 0 12px;">${esc(s.email)}</p>
         ${canManageStaff ? `
         <div style="display:flex;gap:8px;">
           <button class="view-btn" onclick="showStaffEdit(${s.id})">Edit</button>
-          <button class="delete-btn" onclick="removeStaffRole(${s.id}, '${s.email}')">Remove</button>
+          <button class="delete-btn" data-email="${esc(s.email)}" onclick="removeStaffRole(${s.id}, this.dataset.email)">Remove</button>
         </div>` : ''}
       </div>
 
       <!-- EDIT MODE -->
       <div id="staff-edit-${s.id}" style="display:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-          <input type="text" id="edit-first-${s.id}" value="${s.first_name || ''}" placeholder="First name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
-          <input type="text" id="edit-last-${s.id}" value="${s.last_name || ''}" placeholder="Last name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
+          <input type="text" id="edit-first-${s.id}" value="${esc(s.first_name || '')}" placeholder="First name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
+          <input type="text" id="edit-last-${s.id}" value="${esc(s.last_name || '')}" placeholder="Last name" style="padding:8px 12px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.9rem;">
         </div>
         <p style="font-size:0.82rem;color:#9a8b84;margin-bottom:8px;">Roles (select one or more)</p>
         <div id="edit-roles-${s.id}" style="margin-bottom:10px;">${checkboxesHTML}</div>
@@ -1833,7 +1846,7 @@ function boardFormatBreadcrumb() {
   parts.forEach(p => {
     pathSoFar += p + '/';
     const target = pathSoFar;
-    html += ` / <span style="cursor:pointer;color:var(--bronze);font-weight:700;" onclick="boardNavigateTo('${target}')">${p}</span>`;
+    html += ` / <span style="cursor:pointer;color:var(--bronze);font-weight:700;" data-path="${esc(target)}" onclick="boardNavigateTo(this.dataset.path)">${esc(p)}</span>`;
   });
   crumb.innerHTML = html;
 }
@@ -1864,7 +1877,7 @@ async function loadBoardFileManager() {
   });
 
   if (error) {
-    list.innerHTML = `<p class="empty-state" style="color:var(--red);">⚠️ ${error.message}</p>`;
+    list.innerHTML = `<p class="empty-state" style="color:var(--red);">⚠️ ${esc(error.message)}</p>`;
     status.textContent = '';
     return;
   }
@@ -1915,8 +1928,8 @@ async function loadBoardFileManager() {
   folders.forEach(folder => {
     const fullPath = boardCurrentPath + folder.name + '/';
     html += `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;cursor:pointer;" onclick="boardNavigateTo('${fullPath}')">
-        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--ink);">📁 ${folder.name}</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;cursor:pointer;" data-path="${esc(fullPath)}" onclick="boardNavigateTo(this.dataset.path)">
+        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--ink);">📁 ${esc(folder.name)}</span>
         <span style="color:var(--bronze);">→</span>
       </div>`;
   });
@@ -1927,15 +1940,15 @@ async function loadBoardFileManager() {
       const fullPath = boardCurrentPath + file.name;
       const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
       filesHtml += `
-        <div class="board-file-row" data-filename="${file.name.replace(/"/g, '&quot;')}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
+        <div class="board-file-row" data-filename="${esc(file.name)}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
           <span class="board-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
-          <input type="checkbox" class="board-file-checkbox" data-path="${fullPath}" onchange="boardToggleFileSelect('${fullPath}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
+          <input type="checkbox" class="board-file-checkbox" data-path="${esc(fullPath)}" onchange="boardToggleFileSelect(this.dataset.path, this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
           <div style="flex:1;min-width:0;">
-            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${file.name}</div>
+            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${esc(file.name)}</div>
             <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
           </div>
-          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDownloadFile('${fullPath}', '${file.name}')">⬇️ Download</button>
-          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" onclick="boardDeleteFile('${fullPath}')">✕</button>
+          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" data-path="${esc(fullPath)}" data-name="${esc(file.name)}" onclick="boardDownloadFile(this.dataset.path, this.dataset.name)">⬇️ Download</button>
+          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" data-path="${esc(fullPath)}" onclick="boardDeleteFile(this.dataset.path)">✕</button>
         </div>`;
     });
     html += `<div id="boardFilesSortable">${filesHtml}</div>`;
@@ -2248,13 +2261,13 @@ async function loadNewsletters() {
   list.innerHTML = data.map(n => `
     <div class="event-row">
       <div class="event-row-info">
-        <strong>📰 ${n.date}</strong>
-        <span>${n.date} · Sent ${new Date(n.sent_at).toLocaleDateString()}</span>
+        <strong>📰 ${esc(n.date)}</strong>
+        <span>${esc(n.date)} · Sent ${new Date(n.sent_at).toLocaleDateString()}</span>
       </div>
       <div class="event-row-actions">
-        <a href="${n.file_url}" target="_blank" class="view-btn">View PDF</a>
-        <button class="resend-btn" onclick="resendNewsletter('${n.id}','${n.date}','${n.file_url}','${n.date}')">Resend</button>
-        <button class="delete-btn" onclick="deleteNewsletter(${n.id}, '${n.file_url}')">Delete</button>
+        <a href="${esc(n.file_url)}" target="_blank" class="view-btn">View PDF</a>
+        <button class="resend-btn" data-id="${n.id}" data-date="${esc(n.date)}" data-url="${esc(n.file_url)}" onclick="resendNewsletter(this.dataset.id, this.dataset.date, this.dataset.url, this.dataset.date)">Resend</button>
+        <button class="delete-btn" data-url="${esc(n.file_url)}" onclick="deleteNewsletter(${n.id}, this.dataset.url)">Delete</button>
       </div>
     </div>`).join('');
 }
@@ -2407,7 +2420,7 @@ async function loadFamilies() {
     const kidsHTML = kids.length > 0
       ? kids.map(s => `
           <div style="font-size:0.85rem;color:#6b5e58;background:#fff;border:1px solid var(--grey-line);border-radius:6px;padding:6px 12px;">
-            🎓 ${[s.first_name, s.last_name].filter(Boolean).join(' ')}${s.grade ? ' · ' + s.grade : ''}${s.dob ? ' · DOB ' + s.dob : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + s.assigned_teacher_email : ''}
+            🎓 ${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' · ' + esc(s.grade) : ''}${s.dob ? ' · DOB ' + esc(s.dob) : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + esc(s.assigned_teacher_email) : ''}
           </div>`).join('')
       : '<span style="font-size:0.85rem;color:#aaa;font-style:italic;">No students added</span>';
 
@@ -2415,19 +2428,24 @@ async function loadFamilies() {
       if (!name && !email && !phone && !dob) return '';
       return `
         <div style="font-size:0.85rem;color:#6b5e58;display:flex;flex-direction:column;gap:2px;">
-          <strong style="color:var(--ink);">${icon} ${label}${name ? ': ' + name : ''}</strong>
-          ${email ? `<span>📧 ${email}</span>` : ''}
-          ${phone ? `<span>📱 ${phone}</span>` : ''}
-          ${dob ? `<span>🎂 ${dob}</span>` : ''}
+          <strong style="color:var(--ink);">${icon} ${label}${name ? ': ' + esc(name) : ''}</strong>
+          ${email ? `<span>📧 ${esc(email)}</span>` : ''}
+          ${phone ? `<span>📱 ${esc(phone)}</span>` : ''}
+          ${dob ? `<span>🎂 ${esc(dob)}</span>` : ''}
         </div>`;
     };
 
-    const codeButton = `<button class="resend-btn" onclick="regenerateAccessCode(${f.id}, '${(f.name || 'this family').replace(/'/g, "\\'")}')">Regenerate &amp; Send Code</button>`;
+    // Only the numeric id is embedded in the handler — the family name is
+    // never put into an inline onclick attribute (that was its own injection
+    // risk independent of HTML-escaping, since attribute decoding happens
+    // before the JS string literal is parsed). regenerateAccessCode looks
+    // up the name itself when it needs it for the confirm dialog.
+    const codeButton = `<button class="resend-btn" onclick="regenerateAccessCode(${f.id})">Regenerate &amp; Send Code</button>`;
 
     return `
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
-        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
+        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${esc(f.name)}</strong>
         <div class="event-row-actions">
           ${codeButton}
           <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
@@ -2437,7 +2455,7 @@ async function loadFamilies() {
         ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
         ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
-      ${formatHomeAddress(f) ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${formatHomeAddress(f)}</span>` : ''}
+      ${formatHomeAddress(f) ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${esc(formatHomeAddress(f))}</span>` : ''}
       <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#9a8b84;">🔑 Access code hidden — use Regenerate &amp; Send Code to issue a new one</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
@@ -2462,7 +2480,7 @@ async function loadTeacherOptions() {
   const { data } = await sb.from('staff_roles').select('email, first_name, last_name').contains('roles', ['teacher']).order('first_name');
   teacherOptionsCache = '<option value="">— Not Assigned —</option>' +
     '<option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>' +
-    (data || []).map(t => `<option value="${t.email}">${[t.first_name, t.last_name].filter(Boolean).join(' ') || t.email}</option>`).join('');
+    (data || []).map(t => `<option value="${esc(t.email)}">${esc([t.first_name, t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('');
   // Refresh any rows already on screen
   document.querySelectorAll('.student-teacher-select').forEach(sel => {
     const current = sel.value;
@@ -2732,8 +2750,8 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   loadFamilies();
 });
 
-window.regenerateAccessCode = async (id, familyName) => {
-  if (!confirm(`Generate a new access code for ${familyName} and email it to them? Their old code will stop working immediately.`)) return;
+window.regenerateAccessCode = async (id) => {
+  if (!confirm('Generate a new access code for this family and email it to them? Their old code will stop working immediately.')) return;
   const { data, error } = await sb.rpc('regenerate_family_access_code', { p_family_id: id });
   if (error || data !== true) { showToast('Error: ' + (error ? error.message : 'Could not regenerate code')); return; }
   showToast('✅ New access code generated and sent!');
@@ -2757,8 +2775,8 @@ async function loadYearly() {
   list.innerHTML = data.map(e => `
     <div class="event-row">
       <div class="event-row-info">
-        <strong>${e.emoji || ''} ${e.title}</strong>
-        <span>${e.month} ${e.date}</span>
+        <strong>${esc(e.emoji || '')} ${esc(e.title)}</strong>
+        <span>${esc(e.month)} ${esc(e.date)}</span>
       </div>
       <div class="event-row-actions">
         <button class="delete-btn" onclick="deleteYearly(${e.id})">Delete</button>
@@ -2795,8 +2813,8 @@ async function loadInfoNights() {
   list.innerHTML = data.map(n => `
     <div class="event-row">
       <div class="event-row-info">
-        <strong>📣 ${n.date} at ${n.time}</strong>
-        <span>${n.location}${n.notes ? ' · ' + n.notes : ''}</span>
+        <strong>📣 ${esc(n.date)} at ${esc(n.time)}</strong>
+        <span>${esc(n.location)}${n.notes ? ' · ' + esc(n.notes) : ''}</span>
       </div>
       <div class="event-row-actions">
         <button class="delete-btn" onclick="deleteInfoNight(${n.id})">Delete</button>
@@ -2903,7 +2921,7 @@ async function loadVolSlots() {
           Outstanding Commitments (${notMet.length}) <span class="vol-collapsible-arrow" id="arrow-outstanding">▼</span>
         </div>
         <div class="vol-collapsible-body open" id="outstanding">
-          ${notMet.length > 0 ? notMet.map(f => `<span class="vol-unsigned-tag">${f.name} (${signupsByEmail[f.email] || 0}/${requiredSlots})</span>`).join('') : '<span style="color:#22c55e;font-size:0.82rem;font-weight:700;font-family:Trebuchet MS,sans-serif;">All families have met their commitment!</span>'}
+          ${notMet.length > 0 ? notMet.map(f => `<span class="vol-unsigned-tag">${esc(f.name)} (${signupsByEmail[f.email] || 0}/${requiredSlots})</span>`).join('') : '<span style="color:#22c55e;font-size:0.82rem;font-weight:700;font-family:Trebuchet MS,sans-serif;">All families have met their commitment!</span>'}
         </div>
       </div>
       <div class="vol-collapsible">
@@ -2911,7 +2929,7 @@ async function loadVolSlots() {
           Commitment Met (${metRequirement.length}) <span class="vol-collapsible-arrow" id="arrow-met">▶</span>
         </div>
         <div class="vol-collapsible-body" id="met">
-          ${metRequirement.length > 0 ? metRequirement.map(f => `<span class="vol-unsigned-tag" style="border-color:#22c55e;color:#22c55e;">${f.name} (${signupsByEmail[f.email] || 0}/${requiredSlots})</span>`).join('') : '<span style="color:#aaa;font-size:0.82rem;font-style:italic;">None yet</span>'}
+          ${metRequirement.length > 0 ? metRequirement.map(f => `<span class="vol-unsigned-tag" style="border-color:#22c55e;color:#22c55e;">${esc(f.name)} (${signupsByEmail[f.email] || 0}/${requiredSlots})</span>`).join('') : '<span style="color:#aaa;font-size:0.82rem;font-style:italic;">None yet</span>'}
         </div>
       </div>
     </div>`;
@@ -2919,8 +2937,8 @@ async function loadVolSlots() {
   list.innerHTML = data.map(s => `
     <div class="event-row">
       <div class="event-row-info">
-        <strong>${s.date} at ${s.time}</strong>
-        <span>${s.classroom}${s.teacher ? ' · ' + s.teacher : ''} · ${s.spots_filled}/${s.spots_total} filled · ⏰ ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'} ${s.reminder_sent ? '✅ Sent' : ''}</span>
+        <strong>${esc(s.date)} at ${esc(s.time)}</strong>
+        <span>${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${s.spots_filled}/${s.spots_total} filled · ⏰ ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'} ${s.reminder_sent ? '✅ Sent' : ''}</span>
       </div>
       <div class="event-row-actions">
         <button class="delete-btn" onclick="deleteVolSlot(${s.id})">Delete</button>
@@ -2937,14 +2955,14 @@ async function loadVolSignups() {
   list.innerHTML = data.map(s => `
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${s.parent_name}</strong>
+        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${esc(s.parent_name)}</strong>
         <button class="delete-btn" onclick="deleteVolSignup(${s.id}, ${s.slot_id})">Remove</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;width:100%;">
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📧 Email:</strong> ${s.parent_email}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">🙋 Role:</strong> ${s.volunteer_slots.role || s.role || '—'}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📅 Date:</strong> ${s.volunteer_slots.date} at ${s.volunteer_slots.time}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📍 Location:</strong> ${s.volunteer_slots.classroom}${s.volunteer_slots.teacher ? ' · ' + s.volunteer_slots.teacher : ''}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📧 Email:</strong> ${esc(s.parent_email)}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">🙋 Role:</strong> ${esc(s.volunteer_slots.role || s.role || '—')}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📅 Date:</strong> ${esc(s.volunteer_slots.date)} at ${esc(s.volunteer_slots.time)}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📍 Location:</strong> ${esc(s.volunteer_slots.classroom)}${s.volunteer_slots.teacher ? ' · ' + esc(s.volunteer_slots.teacher) : ''}</span>
       </div>
     </div>`).join('');
 }
@@ -3226,7 +3244,7 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
       <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:#22c55e;margin-bottom:10px;">✅ Ready to Copy (${mappedSlots.length} slots)</div>
       ${mappedSlots.map(s => `
         <div style="padding:8px 12px;border-bottom:1px solid #E6E1DC;font-size:0.82rem;color:#3A2E2A;">
-          <strong>${s.newDateFormatted}</strong> · ${s.time} · ${s.classroom}${s.teacher ? ' · ' + s.teacher : ''} · ${s.role || 'Volunteer'}
+          <strong>${s.newDateFormatted}</strong> · ${esc(s.time)} · ${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${esc(s.role || 'Volunteer')}
         </div>`).join('')}
     </div>`;
   }
@@ -3235,8 +3253,8 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
       <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:var(--red);margin-bottom:10px;">⚠️ Needs Review (${flaggedSlots.length} slots)</div>
       ${flaggedSlots.map((f, i) => `
         <div style="padding:10px 12px;border-bottom:1px solid #E6E1DC;font-size:0.82rem;">
-          <div style="color:#3A2E2A;margin-bottom:6px;"><strong>${f.slot.date}</strong> · ${f.slot.time} · ${f.slot.classroom} · ${f.slot.role || 'Volunteer'}</div>
-          <div style="color:var(--red);margin-bottom:6px;">⚠️ ${f.reason}</div>
+          <div style="color:#3A2E2A;margin-bottom:6px;"><strong>${esc(f.slot.date)}</strong> · ${esc(f.slot.time)} · ${esc(f.slot.classroom)} · ${esc(f.slot.role || 'Volunteer')}</div>
+          <div style="color:var(--red);margin-bottom:6px;">⚠️ ${esc(f.reason)}</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <input type="date" id="flag-${i}" style="padding:4px 8px;border:1px solid #E6E1DC;border-radius:4px;font-size:0.8rem;">
             <button onclick="useFlagDate(${i})" style="background:var(--bronze);color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:0.78rem;cursor:pointer;">Use This Date</button>
@@ -3350,16 +3368,16 @@ async function loadTrash() {
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;border-left:4px solid var(--red);">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">
-          🎓 ${studentName}
+          🎓 ${esc(studentName)}
         </strong>
         <div class="event-row-actions">
-          <button class="save-btn" onclick="restoreStudent(${student.id}, '${studentName.replace(/'/g, "\\'")}')">Restore</button>
-          <button class="delete-btn" onclick="permanentlyDeleteStudent(${student.id}, '${studentName.replace(/'/g, "\\'")}')">Delete Permanently</button>
+          <button class="save-btn" data-name="${esc(studentName)}" onclick="restoreStudent(${student.id}, this.dataset.name)">Restore</button>
+          <button class="delete-btn" data-name="${esc(studentName)}" onclick="permanentlyDeleteStudent(${student.id}, this.dataset.name)">Delete Permanently</button>
         </div>
       </div>
       <div style="font-size:0.82rem;color:#9a8b84;">
-        ${student.grade ? `<span>📚 ${student.grade}</span> · ` : ''}
-        ${student.assigned_teacher_email ? `<span>👩‍🏫 ${student.assigned_teacher_email}</span> · ` : ''}
+        ${student.grade ? `<span>📚 ${esc(student.grade)}</span> · ` : ''}
+        ${student.assigned_teacher_email ? `<span>👩‍🏫 ${esc(student.assigned_teacher_email)}</span> · ` : ''}
         <span style="color:var(--red);font-weight:700;">Deleted: ${deletedDateStr}</span>
         ${daysLeft > 0 ? `<span> · Auto-purge in ${daysLeft} days</span>` : `<span style="color:var(--red);"> · PURGING SOON!</span>`}
       </div>
