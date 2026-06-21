@@ -44,6 +44,29 @@
   .role-badge.admissions_committee{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
   .role-badge.teacher{ background:#fdf4ff; color:#9333ea; border:1px solid #9333ea; }
   .role-badge.board_member{ background:#eff6ff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .gb-status-badge{ display:inline-block; padding:3px 12px; border-radius:20px; font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .gb-status-badge.not_started{ background:#f3eee9; color:#9a8b84; border:1px solid #d9cfc7; }
+  .gb-status-badge.draft{ background:#fffbeb; color:#b45309; border:1px solid #b45309; }
+  .gb-status-badge.submitted{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
+  .gb-status-badge.sent{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
+  .gb-student-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; padding:16px 20px; margin-bottom:10px; }
+  .gb-student-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; flex-wrap:wrap; }
+  .gb-student-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.98rem; color:var(--ink); }
+  .gb-student-meta{ font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; color:#9a8b84; }
+  .gb-student-body{ margin-top:16px; padding-top:16px; border-top:1px solid var(--grey-line); display:none; }
+  .gb-student-card.expanded .gb-student-body{ display:block; }
+  .gb-toggle-icon{ transition:transform 0.2s; color:var(--bronze); display:inline-block; margin-right:6px; }
+  .gb-student-card.expanded .gb-toggle-icon{ transform:rotate(90deg); }
+  .gb-review-note{ background:#fff7ed; border:1px solid #fb923c; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; color:#9a3412; }
+  .gb-subject-row{ display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:8px; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--grey-line); }
+  .gb-subject-row:last-of-type{ border-bottom:none; }
+  .gb-subject-label{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:var(--ink); }
+  .gb-subject-row select, .gb-subject-row input{ width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; }
+  .gb-mark-label{ font-size:0.68rem; color:#9a8b84; text-transform:uppercase; letter-spacing:0.3px; display:block; margin-bottom:3px; }
+  .gb-comment-row{ margin-top:4px; margin-bottom:14px; }
+  .gb-comment-row textarea{ width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; min-height:50px; resize:vertical; }
+  .gb-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  @media(max-width:640px){ .gb-subject-row{ grid-template-columns:1fr 1fr; } .gb-subject-label{ grid-column:1 / -1; } }
   .section-menu-trigger{ display:flex; align-items:center; gap:6px; padding:9px 14px; background:none; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:#6b5e58; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
   .section-menu-trigger:hover{ background:var(--red); color:#fff; border-color:var(--red); }
   .section-menu-dropdown{ position:absolute; right:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:60; width:250px; max-width:85vw; max-height:70vh; overflow-y:auto; }
@@ -783,15 +806,29 @@
     </div>
   </div>
 
-  <!-- GRADEBOOK PANEL (teacher only — placeholder for future build) -->
+  <!-- GRADEBOOK PANEL (teacher — quarterly report cards) -->
   <div class="admin-panel" id="panel-gradebook">
-    <div class="admin-form" style="text-align:center;padding:48px 24px;">
-      <div style="font-size:2.5rem;margin-bottom:12px;">🗂️</div>
-      <h3 style="margin-bottom:8px;">Gradebook Coming Soon</h3>
-      <p style="color:#6b5e58;max-width:420px;margin:0 auto;">
-        This is where you'll see students assigned to your class and manage their grades.
-        Students get assigned to you automatically when the office enrolls their family.
-      </p>
+    <div class="admin-form">
+      <h3 style="margin-bottom:16px;">📝 Report Cards</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>School Year</label>
+          <select id="gbSchoolYear"></select>
+        </div>
+        <div class="form-group">
+          <label>Quarter</label>
+          <select id="gbQuarter">
+            <option value="Q1">Quarter 1</option>
+            <option value="Q2">Quarter 2</option>
+            <option value="Q3">Quarter 3</option>
+            <option value="Q4">Quarter 4</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="events-list">
+      <h3>My Students <span class="family-count" id="gbStudentCount"></span></h3>
+      <div id="gbStudentList"><p class="empty-state">Loading…</p></div>
     </div>
   </div>
 
@@ -1265,6 +1302,11 @@ function applyRolePermissions() {
     if (boardContent) boardContent.style.display = 'block';
     boardCurrentPath = '';
     loadBoardFileManager();
+  }
+
+  // Initialize gradebook for teachers
+  if (visibleTabs.includes('gradebook') && typeof loadGradebook === 'function') {
+    loadGradebook();
   }
 
   // Stat dashboard: hidden only for someone whose ONLY access is Teacher (no families/staff/board access);
@@ -3422,6 +3464,285 @@ document.addEventListener('click', (e) => {
     loadTrash();
   }
 });
+
+// ============================================================================
+// GRADEBOOK — TEACHER QUARTERLY REPORT CARDS
+// ============================================================================
+
+const REPORT_CARD_SUBJECTS = ['Bible','ELA','Math','Science','History','PE','Spelling/Handwriting'];
+
+const ACADEMIC_MARK_OPTIONS = `
+  <option value="">— Mark —</option>
+  <option value="A">A</option>
+  <option value="B">B</option>
+  <option value="C">C</option>
+  <option value="D">D</option>
+  <option value="F">F</option>
+  <option value="O">O – Outstanding</option>
+  <option value="S">S – Satisfactory</option>
+  <option value="NI">NI – Needs Improvement</option>
+`;
+
+const TIER_MARK_OPTIONS = `
+  <option value="">—</option>
+  <option value="O">O – Outstanding</option>
+  <option value="S">S – Satisfactory</option>
+  <option value="NI">NI – Needs Improvement</option>
+`;
+
+function computeDefaultSchoolYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+function populateGbSchoolYearOptions() {
+  const sel = document.getElementById('gbSchoolYear');
+  if (!sel || sel.options.length) return;
+  const def = computeDefaultSchoolYear();
+  const startY = parseInt(def.split('-')[0], 10);
+  const years = [startY - 1, startY, startY + 1].map(y => `${y}-${y + 1}`);
+  sel.innerHTML = years.map(y => `<option value="${y}" ${y === def ? 'selected' : ''}>${y}</option>`).join('');
+}
+
+function gbStatusLabel(status) {
+  if (status === 'submitted') return { cls: 'submitted', text: 'Submitted — Awaiting Review' };
+  if (status === 'sent') return { cls: 'sent', text: 'Sent to Parents' };
+  if (status === 'draft') return { cls: 'draft', text: 'Draft' };
+  return { cls: 'not_started', text: 'Not Started' };
+}
+
+async function loadGradebook() {
+  const list = document.getElementById('gbStudentList');
+  if (!list) return;
+  populateGbSchoolYearOptions();
+  const schoolYear = document.getElementById('gbSchoolYear').value || computeDefaultSchoolYear();
+  const quarter = document.getElementById('gbQuarter').value || 'Q1';
+
+  list.innerHTML = '<p class="empty-state">Loading…</p>';
+
+  const { data: students, error: studentsError } = await sb.from('students')
+    .select('id, first_name, last_name, grade')
+    .is('deleted_at', null)
+    .order('first_name');
+
+  if (studentsError) {
+    list.innerHTML = `<p class="empty-state">Error loading students: ${esc(studentsError.message)}</p>`;
+    return;
+  }
+  document.getElementById('gbStudentCount').textContent = students ? `(${students.length})` : '';
+  if (!students || students.length === 0) {
+    list.innerHTML = '<p class="empty-state">No students are assigned to you yet.</p>';
+    return;
+  }
+
+  const studentIds = students.map(s => s.id);
+  const { data: reportCards } = await sb.from('report_cards')
+    .select('id, student_id, status, review_note, sent_at')
+    .in('student_id', studentIds)
+    .eq('school_year', schoolYear)
+    .eq('quarter', quarter);
+
+  const rcByStudent = {};
+  (reportCards || []).forEach(rc => { rcByStudent[rc.student_id] = rc; });
+
+  const reportCardIds = (reportCards || []).map(rc => rc.id);
+  let gradesByReportCard = {};
+  if (reportCardIds.length) {
+    const { data: grades } = await sb.from('report_card_grades')
+      .select('report_card_id, subject, academic_mark, effort_mark, conduct_mark, comment')
+      .in('report_card_id', reportCardIds);
+    (grades || []).forEach(g => {
+      if (!gradesByReportCard[g.report_card_id]) gradesByReportCard[g.report_card_id] = {};
+      gradesByReportCard[g.report_card_id][g.subject] = g;
+    });
+  }
+
+  list.innerHTML = students.map(s => {
+    const rc = rcByStudent[s.id];
+    const grades = rc ? (gradesByReportCard[rc.id] || {}) : {};
+    const status = rc ? rc.status : null;
+    const statusInfo = gbStatusLabel(status);
+    const locked = status === 'submitted' || status === 'sent';
+    const studentName = [s.first_name, s.last_name].filter(Boolean).join(' ');
+
+    const subjectRowsHTML = REPORT_CARD_SUBJECTS.map(subject => {
+      const g = grades[subject] || {};
+      return `
+      <div class="gb-subject-row" data-subject="${esc(subject)}">
+        <div class="gb-subject-label">${esc(subject)}</div>
+        <div>
+          <span class="gb-mark-label">Academic</span>
+          <select class="gb-academic" ${locked ? 'disabled' : ''}>${ACADEMIC_MARK_OPTIONS}</select>
+        </div>
+        <div>
+          <span class="gb-mark-label">Effort</span>
+          <select class="gb-effort" ${locked ? 'disabled' : ''}>${TIER_MARK_OPTIONS}</select>
+        </div>
+        <div>
+          <span class="gb-mark-label">Conduct</span>
+          <select class="gb-conduct" ${locked ? 'disabled' : ''}>${TIER_MARK_OPTIONS}</select>
+        </div>
+      </div>
+      <div class="gb-comment-row">
+        <span class="gb-mark-label">Comment (optional)</span>
+        <textarea class="gb-comment" ${locked ? 'disabled' : ''} placeholder="Comment for ${esc(subject)}...">${esc(g.comment || '')}</textarea>
+      </div>`;
+    }).join('');
+
+    const reviewNoteHTML = (status === 'draft' && rc && rc.review_note)
+      ? `<div class="gb-review-note">🔁 Sent back for changes: ${esc(rc.review_note)}</div>` : '';
+
+    const actionsHTML = locked ? '' : `
+      <div class="gb-actions">
+        <button class="save-btn" style="padding:10px 20px;font-size:0.85rem;" onclick="saveGradebookDraft(${s.id})">Save Draft</button>
+        <button class="view-btn" style="padding:10px 20px;font-size:0.85rem;" onclick="submitGradebookReport(${s.id})">Submit for Review</button>
+        <button class="view-btn" style="padding:10px 20px;font-size:0.85rem;border-color:#16a34a;color:#16a34a;" onclick="sendGradebookReportDirect(${s.id})">Send Directly to Parents</button>
+      </div>`;
+
+    const sentMetaHTML = status === 'sent' && rc.sent_at
+      ? `<div class="gb-student-meta" style="margin-top:10px;">Sent ${new Date(rc.sent_at).toLocaleDateString()}</div>` : '';
+
+    return `
+    <div class="gb-student-card" id="gb-card-${s.id}">
+      <div class="gb-student-header" onclick="toggleGbCard(${s.id})">
+        <div>
+          <span class="gb-toggle-icon">▸</span>
+          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          ${s.grade ? `<span class="gb-student-meta"> · ${esc(s.grade)}</span>` : ''}
+        </div>
+        <span class="gb-status-badge ${statusInfo.cls}">${statusInfo.text}</span>
+      </div>
+      <div class="gb-student-body">
+        ${reviewNoteHTML}
+        ${subjectRowsHTML}
+        ${actionsHTML}
+        ${sentMetaHTML}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Second pass: set select values now the elements exist in the DOM
+  // (avoids hand-building "selected" logic into every <option> above)
+  students.forEach(s => {
+    const rc = rcByStudent[s.id];
+    if (!rc) return;
+    const grades = gradesByReportCard[rc.id] || {};
+    const card = document.getElementById(`gb-card-${s.id}`);
+    if (!card) return;
+    card.querySelectorAll('.gb-subject-row').forEach(row => {
+      const subject = row.dataset.subject;
+      const g = grades[subject];
+      if (!g) return;
+      const academicSel = row.querySelector('.gb-academic');
+      const effortSel = row.querySelector('.gb-effort');
+      const conductSel = row.querySelector('.gb-conduct');
+      if (academicSel) academicSel.value = g.academic_mark || '';
+      if (effortSel) effortSel.value = g.effort_mark || '';
+      if (conductSel) conductSel.value = g.conduct_mark || '';
+    });
+  });
+}
+
+window.toggleGbCard = (studentId) => {
+  document.getElementById(`gb-card-${studentId}`).classList.toggle('expanded');
+};
+
+async function ensureReportCard(studentId, schoolYear, quarter) {
+  const { data: existing, error: findError } = await sb.from('report_cards')
+    .select('id, status')
+    .eq('student_id', studentId).eq('school_year', schoolYear).eq('quarter', quarter)
+    .maybeSingle();
+  if (findError) throw findError;
+  if (existing) return existing;
+
+  const { data: created, error: createError } = await sb.from('report_cards')
+    .insert({ student_id: studentId, school_year: schoolYear, quarter, created_by: currentSession.user.email })
+    .select('id, status').single();
+  if (createError) throw createError;
+  return created;
+}
+
+function collectGbSubjectRows(studentId) {
+  const card = document.getElementById(`gb-card-${studentId}`);
+  const rows = [];
+  card.querySelectorAll('.gb-subject-row').forEach(row => {
+    rows.push({
+      subject: row.dataset.subject,
+      academic_mark: row.querySelector('.gb-academic').value || null,
+      effort_mark: row.querySelector('.gb-effort').value || null,
+      conduct_mark: row.querySelector('.gb-conduct').value || null,
+      comment: row.nextElementSibling.querySelector('.gb-comment').value.trim() || null
+    });
+  });
+  return rows;
+}
+
+async function saveGradebookGrades(reportCardId, studentId) {
+  const rows = collectGbSubjectRows(studentId).map(r => ({ report_card_id: reportCardId, ...r }));
+  const { error } = await sb.from('report_card_grades')
+    .upsert(rows, { onConflict: 'report_card_id,subject' });
+  if (error) throw error;
+}
+
+window.saveGradebookDraft = async (studentId) => {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  try {
+    const rc = await ensureReportCard(studentId, schoolYear, quarter);
+    await saveGradebookGrades(rc.id, studentId);
+    showToast('✅ Draft saved.', 2500);
+  } catch (err) {
+    showToast(`Error saving: ${err.message}`, 4000);
+  }
+};
+
+window.submitGradebookReport = async (studentId) => {
+  if (!confirm('Submit this report card for review? You won\'t be able to edit it until it\'s reviewed.')) return;
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  try {
+    const rc = await ensureReportCard(studentId, schoolYear, quarter);
+    await saveGradebookGrades(rc.id, studentId);
+    const { error } = await sb.rpc('submit_report_card', { p_report_card_id: rc.id });
+    if (error) throw error;
+    showToast('✅ Submitted for review.', 3000);
+    loadGradebook();
+  } catch (err) {
+    showToast(`Error submitting: ${err.message}`, 4500);
+  }
+};
+
+window.sendGradebookReportDirect = async (studentId) => {
+  if (!confirm('Send this report card directly to the family now? This skips review.')) return;
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  try {
+    const rc = await ensureReportCard(studentId, schoolYear, quarter);
+    await saveGradebookGrades(rc.id, studentId);
+    const { error } = await sb.rpc('send_report_card_direct', { p_report_card_id: rc.id });
+    if (error) throw error;
+    showSuccessCheckmark('Sent to family!');
+    setTimeout(loadGradebook, 1200);
+  } catch (err) {
+    showToast(`Error sending: ${err.message}`, 4500);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const yearSel = document.getElementById('gbSchoolYear');
+  const quarterSel = document.getElementById('gbQuarter');
+  if (yearSel) yearSel.addEventListener('change', loadGradebook);
+  if (quarterSel) quarterSel.addEventListener('change', loadGradebook);
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.admin-tab[data-tab="gradebook"]')) {
+    loadGradebook();
+  }
+});
+
 </script>
 </body>
 </html>
