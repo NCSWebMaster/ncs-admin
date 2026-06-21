@@ -3891,7 +3891,7 @@ window.approveAndSendQueueReport = async (reportCardId, studentName) => {
     const { error } = await sb.rpc('approve_and_send_report_card', { p_report_card_id: reportCardId });
     if (error) throw error;
     showSuccessCheckmark('Approved & sent!');
-    setTimeout(loadReviewQueue, 1200);
+    setTimeout(loadGradebook, 1200);
   } catch (err) {
     showToast(`Error: ${err.message}`, 4000);
   }
@@ -3905,7 +3905,7 @@ window.sendBackQueueReport = async (reportCardId) => {
     const { error } = await sb.rpc('send_back_report_card', { p_report_card_id: reportCardId, p_note: note.trim() });
     if (error) throw error;
     showToast('Sent back to the teacher.', 3000);
-    loadReviewQueue();
+    loadGradebook();
   } catch (err) {
     showToast(`Error: ${err.message}`, 4000);
   }
