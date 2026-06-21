@@ -29,6 +29,10 @@
   .mfa-resend-link{ display:block; margin:18px auto 0; background:none; border:none; color:var(--bronze); font-family:'Trebuchet MS',sans-serif; font-size:0.88rem; cursor:pointer; text-decoration:underline; }
   .mfa-resend-link:disabled{ opacity:0.5; cursor:not-allowed; text-decoration:none; }
   .mfa-error{ color:var(--red); font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; margin-bottom:12px; min-height:1.2em; }
+  .reauth-overlay{ position:fixed; inset:0; background:rgba(58,46,42,0.55); z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .reauth-box{ background:#fff; border-radius:12px; padding:32px 24px; max-width:380px; width:100%; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.25); }
+  .reauth-box h3{ color:var(--red); margin-top:0; }
+  .reauth-box p{ font-family:'Trebuchet MS',sans-serif; color:#3A2E2A; font-size:0.92rem; }
   .mfa-choice-btn{ display:flex; align-items:center; gap:16px; width:100%; padding:18px 20px; background:#fff; border:2px solid var(--grey-line); border-radius:10px; cursor:pointer; text-align:left; transition:border-color 0.2s, background 0.2s; }
   .mfa-choice-btn:hover{ border-color:var(--red); background:#fdf6f2; }
   .mfa-choice-btn strong{ display:block; font-family:'Trebuchet MS',sans-serif; font-size:1rem; color:var(--ink); }
@@ -295,6 +299,18 @@
   <h2>Access Not Authorized</h2>
   <p>Your account isn't on the NCS admin staff list. Contact a Super Admin to be granted access, or sign out and try a different account.</p>
   <button class="google-btn" id="notAuthSignOutBtn">Sign Out</button>
+</div>
+
+<!-- REAUTHENTICATION MODAL (Super Admin changes) -->
+<div id="reauthOverlay" class="reauth-overlay" style="display:none;">
+  <div class="reauth-box">
+    <h3>Confirm It's You</h3>
+    <p id="reauthModalMsg"></p>
+    <div class="mfa-error" id="reauthError"></div>
+    <input type="text" id="reauthCodeInput" class="mfa-code-input" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+    <button class="mfa-verify-btn" id="reauthVerifyBtn">Verify &amp; Continue</button>
+    <button class="mfa-resend-link" id="reauthCancelBtn">Cancel</button>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
@@ -1474,6 +1490,93 @@ async function isOnlyRemainingSuperAdmin(targetId) {
   return targetIsSuperAdmin && data.length <= 1;
 }
 
+// Re-verifies the CURRENTLY signed-in admin via whichever MFA method
+// they already use, before letting them remove or demote a Super Admin.
+// Returns true only on a real, freshly-verified code.
+let reauthPendingChallenge = null;
+async function requireReauth(message) {
+  return new Promise(async (resolve) => {
+    const overlay = document.getElementById('reauthOverlay');
+    const msgEl = document.getElementById('reauthModalMsg');
+    const errEl = document.getElementById('reauthError');
+    const input = document.getElementById('reauthCodeInput');
+    const verifyBtn = document.getElementById('reauthVerifyBtn');
+    const cancelBtn = document.getElementById('reauthCancelBtn');
+
+    msgEl.textContent = message;
+    errEl.textContent = '';
+    input.value = '';
+    overlay.style.display = 'flex';
+    reauthPendingChallenge = null;
+
+    const { data: factorsData } = await sb.auth.mfa.listFactors();
+    const totpFactor = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
+
+    if (totpFactor) {
+      msgEl.textContent = message + ' Enter the code from your authenticator app.';
+      const { data: challenge, error: challengeError } = await sb.auth.mfa.challenge({ factorId: totpFactor.id });
+      if (challengeError) {
+        errEl.textContent = 'Could not start verification. Please try again.';
+      } else {
+        reauthPendingChallenge = { type: 'totp', factorId: totpFactor.id, challengeId: challenge.id };
+      }
+    } else {
+      msgEl.textContent = message + ' A 6-digit code has been sent to your email.';
+      const { data: sent, error: sendError } = await sb.rpc('request_email_mfa_code');
+      if (sendError || sent !== true) {
+        errEl.textContent = 'Could not send a verification code. Please try again.';
+      } else {
+        reauthPendingChallenge = { type: 'email' };
+      }
+    }
+
+    function cleanup(result) {
+      overlay.style.display = 'none';
+      verifyBtn.onclick = null;
+      cancelBtn.onclick = null;
+      resolve(result);
+    }
+
+    cancelBtn.onclick = () => {
+      perform_log_audit('super_admin_reauth_cancelled');
+      cleanup(false);
+    };
+
+    verifyBtn.onclick = async () => {
+      const code = input.value.trim();
+      if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Enter the 6-digit code.'; return; }
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+
+      let ok = false;
+      if (reauthPendingChallenge && reauthPendingChallenge.type === 'totp') {
+        const { error } = await sb.auth.mfa.verify({
+          factorId: reauthPendingChallenge.factorId,
+          challengeId: reauthPendingChallenge.challengeId,
+          code
+        });
+        ok = !error;
+      } else if (reauthPendingChallenge && reauthPendingChallenge.type === 'email') {
+        const { data } = await sb.rpc('verify_email_mfa_code', { p_code: code });
+        ok = data === true;
+      }
+
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'Verify & Continue';
+
+      if (!ok) {
+        errEl.textContent = 'That code is incorrect or expired. Please try again.';
+        return;
+      }
+      cleanup(true);
+    };
+  });
+}
+
+function perform_log_audit(action) {
+  sb.rpc('log_audit_event', { p_action: action }).then(() => {}).catch(() => {});
+}
+
 window.saveStaffName = async (id) => {
   const firstName = document.getElementById(`edit-first-${id}`).value.trim();
   const lastName = document.getElementById(`edit-last-${id}`).value.trim();
@@ -1484,6 +1587,18 @@ window.saveStaffName = async (id) => {
   if (!roles.includes('super_admin') && await isOnlyRemainingSuperAdmin(id)) {
     showToast('⚠️ Cannot remove Super Admin role — this is the last remaining Super Admin');
     return;
+  }
+
+  // Require reauthentication before demoting ANY Super Admin (not just the last one)
+  const { data: beforeRow } = await sb.from('staff_roles').select('roles, email').eq('id', id).maybeSingle();
+  const wasSuperAdmin = beforeRow && beforeRow.roles && beforeRow.roles.includes('super_admin');
+  if (wasSuperAdmin && !roles.includes('super_admin')) {
+    const confirmed = await requireReauth(`You're about to remove Super Admin access from ${beforeRow.email}.`);
+    if (!confirmed) {
+      perform_log_audit('super_admin_demote_blocked_reauth_failed');
+      showToast('Cancelled — verification was not completed.');
+      return;
+    }
   }
 
   const btn = document.querySelector(`#staff-edit-${id} .save-btn`);
@@ -1576,7 +1691,20 @@ window.removeStaffRole = async (id, email) => {
     showToast('⚠️ Cannot remove this account — it is the last remaining Super Admin');
     return;
   }
+  const { data: targetRow } = await sb.from('staff_roles').select('roles').eq('id', id).maybeSingle();
+  const targetIsSuperAdmin = targetRow && targetRow.roles && targetRow.roles.includes('super_admin');
+
   if (!confirm(`Remove admin access for ${email}?`)) return;
+
+  if (targetIsSuperAdmin) {
+    const confirmed = await requireReauth(`You're about to permanently remove the Super Admin account for ${email}.`);
+    if (!confirmed) {
+      perform_log_audit('super_admin_removal_blocked_reauth_failed');
+      showToast('Cancelled — verification was not completed.');
+      return;
+    }
+  }
+
   const { error } = await sb.from('staff_roles').delete().eq('id', id);
   if (error) { showToast('Error: ' + error.message); return; }
   showToast('Access removed');
