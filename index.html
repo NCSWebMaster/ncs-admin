@@ -503,6 +503,13 @@
     <div class="admin-form">
       <h3>Enroll Family</h3>
 
+      <div class="form-row" style="margin-bottom:18px;">
+        <div class="form-group" style="max-width:260px;">
+          <label>Enrolling For School Year</label>
+          <select id="fam-school-year"></select>
+        </div>
+      </div>
+
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:22px;">
         <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:0.85rem;color:#6b5e58;cursor:pointer;margin:0;">
           <input type="checkbox" id="fam-new" style="width:17px;height:17px;cursor:pointer;margin:0;">
@@ -2548,6 +2555,34 @@ document.getElementById('famNewInfoBtn').addEventListener('click', () => {
 let teacherOptionsCache = '<option value="">— Not Assigned —</option><option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>';
 const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
 
+// Same "current school year" window used by the Gradebook tab — kept in
+// sync so a student enrolled today shows up under the right year there.
+function computeDefaultSchoolYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+// Same calculation, but for an arbitrary date — used when rolling students
+// forward into the new school year using the date entered in the reset flow.
+function schoolYearFromDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+function populateFamSchoolYearOptions() {
+  const sel = document.getElementById('fam-school-year');
+  if (!sel) return;
+  const def = computeDefaultSchoolYear();
+  const startY = parseInt(def.split('-')[0], 10);
+  const years = [startY - 1, startY, startY + 1].map(y => `${y}-${y + 1}`);
+  sel.innerHTML = years.map(y => `<option value="${y}" ${y === def ? 'selected' : ''}>${y}</option>`).join('');
+}
+populateFamSchoolYearOptions();
+
 const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 (function populateStateDropdown() {
   const sel = document.getElementById('fam-address-state');
@@ -2666,6 +2701,7 @@ const ENROLL_DRAFT_KEY = 'ncs_enroll_draft';
 
 function collectEnrollDraft() {
   return {
+    schoolYear: document.getElementById('fam-school-year').value,
     fatherName: document.getElementById('father-name').value,
     fatherEmail: document.getElementById('father-email').value,
     fatherPhone: document.getElementById('father-phone').value,
@@ -2702,6 +2738,7 @@ function restoreEnrollDraft() {
   try { draft = JSON.parse(sessionStorage.getItem(ENROLL_DRAFT_KEY)); } catch (e) { return false; }
   if (!draft) return false;
 
+  if (draft.schoolYear) document.getElementById('fam-school-year').value = draft.schoolYear;
   document.getElementById('father-name').value = draft.fatherName || '';
   document.getElementById('father-email').value = draft.fatherEmail || '';
   document.getElementById('father-phone').value = draft.fatherPhone || '';
@@ -2736,7 +2773,7 @@ function restoreEnrollDraft() {
 }
 
 // Autosave on any change within the Enroll Family form
-['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address-street','fam-address-city','fam-address-state','fam-address-zip','fam-new'].forEach(id => {
+['fam-school-year','father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address-street','fam-address-city','fam-address-state','fam-address-zip','fam-new'].forEach(id => {
   document.getElementById(id).addEventListener('input', saveEnrollDraft);
   document.getElementById(id).addEventListener('change', saveEnrollDraft);
 });
@@ -2805,8 +2842,10 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
 
   if (error) { btn.disabled = false; btn.textContent = 'Enroll Family'; showToast('Error: ' + error.message); return; }
 
+  const enrollSchoolYear = document.getElementById('fam-school-year').value || computeDefaultSchoolYear();
+
   const { error: studentsError } = await sb.from('students').insert(
-    studentRows.map(s => ({ ...s, family_email_id: famData.id }))
+    studentRows.map(s => ({ ...s, family_email_id: famData.id, school_year: enrollSchoolYear }))
   );
 
   btn.disabled = false;
@@ -3378,6 +3417,11 @@ document.getElementById('finalConfirmBtn').addEventListener('click', async () =>
   btn.textContent = 'Setting up new year...';
 
   try {
+    // Roll every currently-enrolled (non-trashed) student forward into the
+    // new school year — they're still here, no need to re-enroll them.
+    const newSchoolYear = schoolYearFromDate(document.getElementById('resetStartDate').value);
+    await sb.from('students').update({ school_year: newSchoolYear }).is('deleted_at', null);
+
     // Delete old data (keep families)
     await sb.from('volunteer_signups').delete().neq('id', 0);
     await sb.from('volunteer_slots').delete().neq('id', 0);
@@ -3527,12 +3571,8 @@ const TIER_MARK_OPTIONS = `
   <option value="NI">NI – Needs Improvement</option>
 `;
 
-function computeDefaultSchoolYear() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
-}
+// computeDefaultSchoolYear() is defined once, near GRADE_OPTIONS — shared
+// with the Enroll Family form so both stay in sync.
 
 function populateGbSchoolYearOptions() {
   const sel = document.getElementById('gbSchoolYear');
@@ -3597,6 +3637,7 @@ async function loadMyStudents() {
   const { data: students, error: studentsError } = await sb.from('students')
     .select('id, first_name, last_name, grade')
     .is('deleted_at', null)
+    .eq('school_year', schoolYear)
     .order('first_name');
 
   if (studentsError) {
@@ -3605,7 +3646,7 @@ async function loadMyStudents() {
   }
   document.getElementById('gbStudentCount').textContent = students ? `(${students.length})` : '';
   if (!students || students.length === 0) {
-    list.innerHTML = '<p class="empty-state">No students are assigned to you yet.</p>';
+    list.innerHTML = `<p class="empty-state">No students enrolled for ${esc(schoolYear)}.</p>`;
     return;
   }
 
