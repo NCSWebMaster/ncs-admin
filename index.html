@@ -1383,6 +1383,7 @@ document.getElementById('googleSignIn').addEventListener('click', async () => {
 });
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (currentSession) sessionStorage.removeItem('ncs_mfa_verified_' + currentSession.user.id);
+  clearAllGradebookSessionState();
   await sb.auth.signOut();
   showToast('Signed out');
 });
@@ -2160,6 +2161,7 @@ document.getElementById('boardFileInput').addEventListener('change', async (e) =
 });
 
 // ── TABS ──────────────────────────────────────────────────────
+const LAST_TAB_KEY = 'ncs_admin_last_tab';
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -2167,8 +2169,21 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
     document.getElementById('sectionMenuDropdown').style.display = 'none';
+    try { sessionStorage.setItem(LAST_TAB_KEY, tab.dataset.tab); } catch (e) {}
   });
 });
+
+// Restores whichever tab was active before the page reloaded — iOS Safari
+// reloads backgrounded tabs from scratch (app switch, screen lock, etc.),
+// and without this it silently dumps everyone back to Newsletter every time.
+function restoreActiveTab() {
+  let lastTab;
+  try { lastTab = sessionStorage.getItem(LAST_TAB_KEY); } catch (e) { return; }
+  if (!lastTab) return;
+  const btn = document.querySelector(`.admin-tab[data-tab="${lastTab}"]`);
+  if (!btn || btn.style.display === 'none') return; // not visible for this role — leave default
+  btn.click();
+}
 
 document.getElementById('sectionMenuBtn').addEventListener('click', (e) => {
   e.stopPropagation();
@@ -2228,12 +2243,14 @@ function applyTabOrderToDOM(orderedTabIds) {
 
 async function applyPersonalTabOrder() {
   const savedOrder = await loadTabOrder();
-  if (savedOrder.length === 0) return; // no custom order saved — leave default order as-is
-  const visibleTabs = getVisibleTabsForRoles(currentRoles);
-  const finalOrder = [];
-  savedOrder.forEach(t => { if (visibleTabs.includes(t)) finalOrder.push(t); });
-  visibleTabs.forEach(t => { if (!finalOrder.includes(t)) finalOrder.push(t); }); // newly-visible tabs go at the end
-  applyTabOrderToDOM(finalOrder);
+  if (savedOrder.length > 0) {
+    const visibleTabs = getVisibleTabsForRoles(currentRoles);
+    const finalOrder = [];
+    savedOrder.forEach(t => { if (visibleTabs.includes(t)) finalOrder.push(t); });
+    visibleTabs.forEach(t => { if (!finalOrder.includes(t)) finalOrder.push(t); }); // newly-visible tabs go at the end
+    applyTabOrderToDOM(finalOrder);
+  }
+  restoreActiveTab();
 }
 
 // Expand only the category that contains the currently active tab; collapse the rest.
@@ -3507,7 +3524,22 @@ function populateGbSchoolYearOptions() {
   const def = computeDefaultSchoolYear();
   const startY = parseInt(def.split('-')[0], 10);
   const years = [startY - 1, startY, startY + 1].map(y => `${y}-${y + 1}`);
-  sel.innerHTML = years.map(y => `<option value="${y}" ${y === def ? 'selected' : ''}>${y}</option>`).join('');
+  let saved;
+  try { saved = sessionStorage.getItem('ncs_gb_school_year'); } catch (e) {}
+  const selected = years.includes(saved) ? saved : def;
+  sel.innerHTML = years.map(y => `<option value="${y}" ${y === selected ? 'selected' : ''}>${y}</option>`).join('');
+
+  let savedQuarter;
+  try { savedQuarter = sessionStorage.getItem('ncs_gb_quarter'); } catch (e) {}
+  const quarterSel = document.getElementById('gbQuarter');
+  if (quarterSel && savedQuarter) quarterSel.value = savedQuarter;
+}
+
+function saveGbPeriodSelection() {
+  try {
+    sessionStorage.setItem('ncs_gb_school_year', document.getElementById('gbSchoolYear').value);
+    sessionStorage.setItem('ncs_gb_quarter', document.getElementById('gbQuarter').value);
+  } catch (e) {}
 }
 
 function gbStatusLabel(status) {
@@ -3667,11 +3699,96 @@ async function loadMyStudents() {
       if (conductSel) conductSel.value = g.conduct_mark || '';
     });
   });
+
+  // Overlay any unsaved local edits on top of what just loaded from the DB —
+  // these are more recent than the DB if the tab got reloaded mid-entry.
+  restoreGbDraftFromStorage();
 }
 
 window.toggleGbCard = (studentId) => {
   document.getElementById(`gb-card-${studentId}`).classList.toggle('expanded');
 };
+
+// ── GRADEBOOK DRAFT AUTOSAVE — survives iOS Safari reloading a
+// backgrounded tab, same problem the Enroll Family form already solved.
+// Scoped per school year + quarter so switching periods can't cross-bleed.
+function gbDraftStorageKey(schoolYear, quarter) {
+  return `ncs_gradebook_draft:${schoolYear}:${quarter}`;
+}
+
+function saveGbDraftToStorage() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  if (!schoolYear || !quarter) return;
+  const draft = {};
+  document.querySelectorAll('#gbStudentList .gb-student-card').forEach(card => {
+    const studentId = card.id.replace('gb-card-', '');
+    const subjects = {};
+    card.querySelectorAll('.gb-subject-row').forEach(row => {
+      const academicSel = row.querySelector('.gb-academic');
+      if (!academicSel) return; // locked (submitted/sent) — nothing editable to save
+      subjects[row.dataset.subject] = {
+        academic_mark: academicSel.value,
+        effort_mark: row.querySelector('.gb-effort').value,
+        conduct_mark: row.querySelector('.gb-conduct').value,
+        comment: row.nextElementSibling.querySelector('.gb-comment').value
+      };
+    });
+    if (Object.keys(subjects).length) draft[studentId] = subjects;
+  });
+  try { sessionStorage.setItem(gbDraftStorageKey(schoolYear, quarter), JSON.stringify(draft)); } catch (e) {}
+}
+
+function restoreGbDraftFromStorage() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  let draft;
+  try { draft = JSON.parse(sessionStorage.getItem(gbDraftStorageKey(schoolYear, quarter))); } catch (e) { return; }
+  if (!draft) return;
+  Object.keys(draft).forEach(studentId => {
+    const card = document.getElementById(`gb-card-${studentId}`);
+    if (!card) return;
+    card.querySelectorAll('.gb-subject-row').forEach(row => {
+      const saved = draft[studentId][row.dataset.subject];
+      if (!saved) return;
+      const academicSel = row.querySelector('.gb-academic');
+      if (!academicSel) return; // locked — nothing to restore into
+      academicSel.value = saved.academic_mark || '';
+      row.querySelector('.gb-effort').value = saved.effort_mark || '';
+      row.querySelector('.gb-conduct').value = saved.conduct_mark || '';
+      row.nextElementSibling.querySelector('.gb-comment').value = saved.comment || '';
+    });
+  });
+}
+
+function clearGbDraftForStudent(studentId) {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  let draft;
+  try { draft = JSON.parse(sessionStorage.getItem(gbDraftStorageKey(schoolYear, quarter))) || {}; } catch (e) { draft = {}; }
+  delete draft[studentId];
+  try { sessionStorage.setItem(gbDraftStorageKey(schoolYear, quarter), JSON.stringify(draft)); } catch (e) {}
+}
+
+// Wipes all gradebook session state — called on real sign-out since this
+// may be a shared device and the next person shouldn't see leftover drafts
+// or land on a tab that isn't relevant to them.
+function clearAllGradebookSessionState() {
+  try {
+    sessionStorage.removeItem(LAST_TAB_KEY);
+    sessionStorage.removeItem('ncs_gb_school_year');
+    sessionStorage.removeItem('ncs_gb_quarter');
+    Object.keys(sessionStorage)
+      .filter(k => k.startsWith('ncs_gradebook_draft:'))
+      .forEach(k => sessionStorage.removeItem(k));
+  } catch (e) {}
+}
+
+// Autosave on any change within the gradebook student list — event
+// delegation on the static container, so it keeps working through every
+// loadMyStudents() re-render without re-attaching listeners.
+document.getElementById('gbStudentList').addEventListener('input', saveGbDraftToStorage);
+document.getElementById('gbStudentList').addEventListener('change', saveGbDraftToStorage);
 
 async function loadReviewQueue() {
   const list = document.getElementById('gbQueueList');
@@ -3821,6 +3938,7 @@ window.saveGradebookDraft = async (studentId) => {
   try {
     const rc = await ensureReportCard(studentId, schoolYear, quarter);
     await saveGradebookGrades(rc.id, studentId);
+    clearGbDraftForStudent(studentId);
     showToast('✅ Draft saved.', 2500);
   } catch (err) {
     showToast(`Error saving: ${err.message}`, 4000);
@@ -3836,6 +3954,7 @@ window.submitGradebookReport = async (studentId) => {
     await saveGradebookGrades(rc.id, studentId);
     const { error } = await sb.rpc('submit_report_card', { p_report_card_id: rc.id });
     if (error) throw error;
+    clearGbDraftForStudent(studentId);
     showToast('✅ Submitted for review.', 3000);
     loadGradebook();
   } catch (err) {
@@ -3852,6 +3971,7 @@ window.sendGradebookReportDirect = async (studentId) => {
     await saveGradebookGrades(rc.id, studentId);
     const { error } = await sb.rpc('send_report_card_direct', { p_report_card_id: rc.id });
     if (error) throw error;
+    clearGbDraftForStudent(studentId);
     showSuccessCheckmark('Sent to family!');
     setTimeout(loadGradebook, 1200);
   } catch (err) {
@@ -3862,8 +3982,8 @@ window.sendGradebookReportDirect = async (studentId) => {
 document.addEventListener('DOMContentLoaded', () => {
   const yearSel = document.getElementById('gbSchoolYear');
   const quarterSel = document.getElementById('gbQuarter');
-  if (yearSel) yearSel.addEventListener('change', loadGradebook);
-  if (quarterSel) quarterSel.addEventListener('change', loadGradebook);
+  if (yearSel) yearSel.addEventListener('change', () => { saveGbPeriodSelection(); loadGradebook(); });
+  if (quarterSel) quarterSel.addEventListener('change', () => { saveGbPeriodSelection(); loadGradebook(); });
 });
 
 document.addEventListener('click', (e) => {
