@@ -966,38 +966,14 @@ function showMfaChoice() {
 }
 
 // ── EMAIL CODE MFA ──────────────────────────────────────────────
-function generateMfaCode() {
-  return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
-}
-
+// Code generation, hashing, storage, expiry and the email send all
+// happen server-side inside the request_email_mfa_code() Postgres
+// function. The browser never sees or sets the code.
 async function sendEmailMfaCode(email) {
-  const code = generateMfaCode();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
-  const { error: insertError } = await sb.from('admin_mfa_codes').insert({ email, code, expires_at: expiresAt });
-  if (insertError) {
-    document.getElementById('emailMfaError').textContent = 'Could not start verification. Please try again.';
-    console.error('MFA insert error:', insertError);
-    return false;
-  }
-  const { error: sendError } = await sb.rpc('send_email_via_resend', {
-    to_email: email,
-    subject: 'Your NCS Admin Verification Code',
-    from_email: 'NCS Admin <webmaster@northridgecommunityschool.com>',
-    html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-      <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
-      <h2 style="color:#C8102E;text-align:center;">Your Admin Verification Code</h2>
-      <p style="color:#3A2E2A;font-size:16px;">Use this code to finish signing in to the NCS admin site. It expires in 10 minutes.</p>
-      <div style="background:#fdf6f2;border-radius:8px;padding:24px;margin:24px 0;text-align:center;">
-        <p style="margin:0;font-size:2.5rem;font-weight:bold;color:#C8102E;letter-spacing:8px;">${code}</p>
-      </div>
-      <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
-        If you didn't request this, you can ignore this email — someone may have mistyped their address.
-      </p>
-    </div>`
-  });
-  if (sendError) {
-    document.getElementById('emailMfaError').textContent = 'Could not send the code. Please try again.';
-    console.error('MFA send error:', sendError);
+  const { data, error } = await sb.rpc('request_email_mfa_code');
+  if (error || data !== true) {
+    document.getElementById('emailMfaError').textContent = 'Could not send the code. Please wait a moment and try again.';
+    console.error('MFA request error:', error);
     return false;
   }
   return true;
@@ -1034,7 +1010,6 @@ async function beginEmailMfaChallenge() {
 
 async function verifyEmailMfaCode() {
   const code = document.getElementById('emailMfaCodeInput').value.trim();
-  const email = currentSession.user.email;
   if (!/^\d{6}$/.test(code)) {
     document.getElementById('emailMfaError').textContent = 'Enter the 6-digit code from your email.';
     return;
@@ -1043,24 +1018,16 @@ async function verifyEmailMfaCode() {
   btn.disabled = true;
   btn.textContent = 'Verifying...';
 
-  const { data, error } = await sb.from('admin_mfa_codes')
-    .select('*')
-    .eq('email', email)
-    .eq('code', code)
-    .eq('used', false)
-    .gt('expires_at', new Date().toISOString())
-    .order('created_at', { ascending: false })
-    .limit(1);
+  const { data: verified, error } = await sb.rpc('verify_email_mfa_code', { p_code: code });
 
   btn.disabled = false;
   btn.textContent = 'Verify & Continue';
 
-  if (error || !data || data.length === 0) {
+  if (error || verified !== true) {
     document.getElementById('emailMfaError').textContent = 'That code is incorrect or expired. Please try again or resend.';
     return;
   }
 
-  await sb.from('admin_mfa_codes').update({ used: true }).eq('id', data[0].id);
   sessionStorage.setItem('ncs_mfa_verified_' + currentSession.user.id, 'true');
   enterDashboard();
 }
@@ -2327,18 +2294,14 @@ async function loadFamilies() {
         </div>`;
     };
 
-    const resendButtons = `
-      ${f.father_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.father_email}', '${f.father_name || f.name}', '${f.access_code}')">Resend to Father</button>` : ''}
-      ${f.mother_email ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.mother_email}', '${f.mother_name || f.name}', '${f.access_code}')">Resend to Mother</button>` : ''}
-      ${(!f.father_email && !f.mother_email) ? `<button class="resend-btn" onclick="resendAccessCode(${f.id}, '${f.email}', '${f.name}', '${f.access_code}')">Resend Code</button>` : ''}
-    `;
+    const codeButton = `<button class="resend-btn" onclick="regenerateAccessCode(${f.id}, '${(f.name || 'this family').replace(/'/g, "\\'")}')">Regenerate &amp; Send Code</button>`;
 
     return `
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
         <div class="event-row-actions">
-          ${resendButtons}
+          ${codeButton}
           <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
         </div>
       </div>
@@ -2347,7 +2310,7 @@ async function loadFamilies() {
         ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
       </div>
       ${formatHomeAddress(f) ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${formatHomeAddress(f)}</span>` : ''}
-      <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--red);letter-spacing:3px;">🔑 ${f.access_code || 'No code'}</span>
+      <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#9a8b84;">🔑 Access code hidden — use Regenerate &amp; Send Code to issue a new one</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
   }).join('');
@@ -2641,28 +2604,11 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   loadFamilies();
 });
 
-window.resendAccessCode = async (id, email, name, code) => {
-  if (!confirm(`Resend access code to ${email}?`)) return;
-  const { error } = await sb.rpc('send_email_via_resend', {
-    to_email: email,
-    subject: 'Your NCS Volunteer Access Code',
-    html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-      <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
-      <h2 style="color:#C8102E;text-align:center;">Your Volunteer Access Code</h2>
-      <p style="color:#3A2E2A;font-size:16px;">Dear ${name},</p>
-      <p style="color:#3A2E2A;font-size:16px;">Here is your NCS volunteer access code:</p>
-      <div style="background:#fdf6f2;border-radius:8px;padding:24px;margin:24px 0;text-align:center;">
-        <p style="margin:0 0 8px;font-size:14px;color:#888;">Your Access Code</p>
-        <p style="margin:0;font-size:2.5rem;font-weight:bold;color:#C8102E;letter-spacing:8px;">${code}</p>
-      </div>
-      <p style="color:#3A2E2A;font-size:15px;">Use this code along with your email to sign in at <a href="https://ncswebmaster.github.io/NCS/volunteer.html" style="color:#B07D4F;">our volunteer page</a>.</p>
-      <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
-        Northridge Community School · Where Godly Character meets Great Academics
-      </p>
-    </div>`
-  });
-  if (error) { showToast('Error: ' + error.message); return; }
-  showToast('✅ Access code resent!');
+window.regenerateAccessCode = async (id, familyName) => {
+  if (!confirm(`Generate a new access code for ${familyName} and email it to them? Their old code will stop working immediately.`)) return;
+  const { data, error } = await sb.rpc('regenerate_family_access_code', { p_family_id: id });
+  if (error || data !== true) { showToast('Error: ' + (error ? error.message : 'Could not regenerate code')); return; }
+  showToast('✅ New access code generated and sent!');
 };
 
 window.deleteFamily = async (id) => {
