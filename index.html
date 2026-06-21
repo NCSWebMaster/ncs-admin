@@ -827,12 +827,19 @@
           <select id="gbSchoolYear"></select>
         </div>
         <div class="form-group">
-          <label>Quarter</label>
+          <label>Term / Quarter</label>
           <select id="gbQuarter">
-            <option value="Q1">Quarter 1</option>
-            <option value="Q2">Quarter 2</option>
-            <option value="Q3">Quarter 3</option>
-            <option value="Q4">Quarter 4</option>
+            <optgroup label="Elementary — Terms">
+              <option value="T1">Term 1</option>
+              <option value="T2">Term 2</option>
+              <option value="T3">Term 3 (Final)</option>
+            </optgroup>
+            <optgroup label="Jr High — Quarters">
+              <option value="Q1">Quarter 1</option>
+              <option value="Q2">Quarter 2</option>
+              <option value="Q3">Quarter 3</option>
+              <option value="Q4">Quarter 4 (Final)</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -3564,6 +3571,14 @@ document.addEventListener('click', (e) => {
 
 const REPORT_CARD_SUBJECTS = ['Bible','ELA','Math','Science','History','PE','Spelling/Handwriting'];
 
+// Elementary (TK-5th) runs 3 terms a year; Jr High (6th-8th) keeps the
+// existing 4-quarter model. Same grade-band split already used for the
+// jr_high_team / class_assignments distinction elsewhere in the app.
+const JR_HIGH_GRADES = ['6th Grade', '7th Grade', '8th Grade'];
+function isJrHighGrade(grade) {
+  return JR_HIGH_GRADES.includes(grade);
+}
+
 const ACADEMIC_MARK_OPTIONS = `
   <option value="">— Mark —</option>
   <option value="A">A</option>
@@ -3939,13 +3954,13 @@ async function loadFinalReportCards() {
   }
   document.getElementById('gbFinalCount').textContent = finals ? `(${finals.length})` : '';
   if (!finals || finals.length === 0) {
-    list.innerHTML = `<p class="empty-state">No final report cards yet for ${esc(schoolYear)} — these appear automatically once all four quarters are sent for a student.</p>`;
+    list.innerHTML = `<p class="empty-state">No final report cards yet for ${esc(schoolYear)} — these appear automatically once a student's year is complete (3 terms for Elementary, 4 quarters for Jr High).</p>`;
     return;
   }
 
   const finalIds = finals.map(f => f.id);
   const { data: subjects } = await sb.from('final_report_card_subjects')
-    .select('id, final_report_card_id, subject, q1_academic_mark, q2_academic_mark, q3_academic_mark, q4_academic_mark, final_comment')
+    .select('id, final_report_card_id, subject, period1_academic_mark, period2_academic_mark, period3_academic_mark, period4_academic_mark, final_comment')
     .in('final_report_card_id', finalIds);
 
   const subjectsByFinal = {};
@@ -3960,21 +3975,27 @@ async function loadFinalReportCards() {
     const subjectRows = subjectsByFinal[f.id] || [];
     const locked = f.status === 'sent';
     const gpaText = f.year_gpa === null || f.year_gpa === undefined ? '—' : Number(f.year_gpa).toFixed(2);
+    const jrHigh = isJrHighGrade(student.grade);
 
-    const subjectsHTML = subjectRows.map(s => `
+    const subjectsHTML = subjectRows.map(s => {
+      const periodMarksHTML = jrHigh
+        ? `<span>Q1: <strong>${esc(s.period1_academic_mark || '—')}</strong></span>
+           <span>Q2: <strong>${esc(s.period2_academic_mark || '—')}</strong></span>
+           <span>Q3: <strong>${esc(s.period3_academic_mark || '—')}</strong></span>
+           <span>Q4: <strong>${esc(s.period4_academic_mark || '—')}</strong></span>`
+        : `<span>Term 1: <strong>${esc(s.period1_academic_mark || '—')}</strong></span>
+           <span>Term 2: <strong>${esc(s.period2_academic_mark || '—')}</strong></span>
+           <span>Term 3: <strong>${esc(s.period3_academic_mark || '—')}</strong></span>`;
+      return `
       <div data-subject-id="${s.id}" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--grey-line);">
         <div class="gb-subject-label" style="margin-bottom:4px;">${esc(s.subject)}</div>
-        <div class="gb-quarter-marks">
-          <span>Q1: <strong>${esc(s.q1_academic_mark || '—')}</strong></span>
-          <span>Q2: <strong>${esc(s.q2_academic_mark || '—')}</strong></span>
-          <span>Q3: <strong>${esc(s.q3_academic_mark || '—')}</strong></span>
-          <span>Q4: <strong>${esc(s.q4_academic_mark || '—')}</strong></span>
-        </div>
+        <div class="gb-quarter-marks">${periodMarksHTML}</div>
         <div class="gb-final-comment-row">
           <span class="gb-mark-label">Final Comment</span>
           <textarea class="gb-final-comment" ${locked ? 'disabled' : ''} placeholder="Year-end comment for ${esc(s.subject)}...">${esc(s.final_comment || '')}</textarea>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     const actionsHTML = locked ? '' : `
       <div class="gb-actions">
