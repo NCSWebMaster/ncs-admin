@@ -49,6 +49,10 @@
   .gb-status-badge.draft{ background:#fffbeb; color:#b45309; border:1px solid #b45309; }
   .gb-status-badge.submitted{ background:#f0f4ff; color:#3b82f6; border:1px solid #3b82f6; }
   .gb-status-badge.sent{ background:#f0fdf4; color:#16a34a; border:1px solid #16a34a; }
+  .gb-gpa-badge{ display:inline-block; padding:3px 12px; border-radius:20px; font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; background:#fdf6f2; color:var(--bronze); border:1px solid var(--bronze); margin-left:6px; }
+  .gb-quarter-marks{ display:flex; gap:14px; flex-wrap:wrap; font-family:'Trebuchet MS',sans-serif; font-size:0.8rem; color:#6b5e58; margin-bottom:6px; }
+  .gb-quarter-marks strong{ color:var(--ink); }
+  .gb-final-comment-row textarea{ width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; min-height:60px; resize:vertical; }
   .gb-student-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; padding:16px 20px; margin-bottom:10px; }
   .gb-student-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; flex-wrap:wrap; }
   .gb-student-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.98rem; color:var(--ink); }
@@ -836,6 +840,10 @@
     <div class="events-list" id="gbMyStudentsSection" style="display:none;">
       <h3>My Students <span class="family-count" id="gbStudentCount"></span></h3>
       <div id="gbStudentList"><p class="empty-state">Loading…</p></div>
+    </div>
+    <div class="events-list" id="gbFinalReportsSection" style="display:none;">
+      <h3>Final Report Cards <span class="family-count" id="gbFinalCount"></span></h3>
+      <div id="gbFinalList"><p class="empty-state">Loading…</p></div>
     </div>
     <div class="events-list" id="gbReviewQueueSection" style="display:none;">
       <h3>Review Queue <span class="family-count" id="gbQueueCount"></span></h3>
@@ -2555,22 +2563,26 @@ document.getElementById('famNewInfoBtn').addEventListener('click', () => {
 let teacherOptionsCache = '<option value="">— Not Assigned —</option><option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>';
 const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
 
-// Same "current school year" window used by the Gradebook tab — kept in
-// sync so a student enrolled today shows up under the right year there.
-function computeDefaultSchoolYear() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+// NCS's school year starts the first Tuesday after Labor Day. Labor Day is
+// always the first Monday of September (US federal holiday definition), so
+// that boundary date is always Labor Day + 1 day — no separate lookup needed.
+function schoolYearStartDate(calendarYear) {
+  const d = new Date(calendarYear, 8, 1); // Sept 1
+  while (d.getDay() !== 1) d.setDate(d.getDate() + 1); // advance to first Monday = Labor Day
+  d.setDate(d.getDate() + 1); // Tuesday right after
+  return d;
 }
 
-// Same calculation, but for an arbitrary date — used when rolling students
-// forward into the new school year using the date entered in the reset flow.
-function schoolYearFromDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
+// Same "current school year" window used by the Gradebook tab — kept in
+// sync so a student enrolled today shows up under the right year there.
+function schoolYearFromDate(dateInput) {
+  const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput + 'T00:00:00');
   const y = d.getFullYear();
-  const m = d.getMonth() + 1;
-  return m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+  return d >= schoolYearStartDate(y) ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+function computeDefaultSchoolYear() {
+  return schoolYearFromDate(new Date());
 }
 
 function populateFamSchoolYearOptions() {
@@ -3598,6 +3610,25 @@ function saveGbPeriodSelection() {
   } catch (e) {}
 }
 
+const GRADE_POINTS = { A: 4.0, B: 3.0, C: 2.0, D: 1.0, F: 0.0 };
+
+function calcGpaFromCard(card) {
+  let total = 0, count = 0;
+  card.querySelectorAll('.gb-subject-row').forEach(row => {
+    const sel = row.querySelector('.gb-academic');
+    const val = sel ? sel.value : null;
+    if (val && GRADE_POINTS.hasOwnProperty(val)) { total += GRADE_POINTS[val]; count++; }
+  });
+  return count ? (total / count) : null;
+}
+
+function updateGbGpaDisplay(card) {
+  const badge = card.querySelector('.gb-gpa-badge');
+  if (!badge) return;
+  const gpa = calcGpaFromCard(card);
+  badge.textContent = gpa === null ? 'GPA: —' : `GPA: ${gpa.toFixed(2)}`;
+}
+
 function gbStatusLabel(status) {
   if (status === 'submitted') return { cls: 'submitted', text: 'Submitted — Awaiting Review' };
   if (status === 'sent') return { cls: 'sent', text: 'Sent to Parents' };
@@ -3616,12 +3647,15 @@ async function loadGradebook() {
   populateGbSchoolYearOptions();
   const { showTeacher, showReview } = gbVisibleSections();
   const teacherSection = document.getElementById('gbMyStudentsSection');
+  const finalSection = document.getElementById('gbFinalReportsSection');
   const reviewSection = document.getElementById('gbReviewQueueSection');
   if (teacherSection) teacherSection.style.display = showTeacher ? 'block' : 'none';
+  if (finalSection) finalSection.style.display = showTeacher ? 'block' : 'none';
   if (reviewSection) reviewSection.style.display = showReview ? 'block' : 'none';
 
   const tasks = [];
   if (showTeacher) tasks.push(loadMyStudents());
+  if (showTeacher) tasks.push(loadFinalReportCards());
   if (showReview) tasks.push(loadReviewQueue());
   await Promise.all(tasks);
 }
@@ -3725,7 +3759,7 @@ async function loadMyStudents() {
           <span class="gb-student-name">🎓 ${esc(studentName)}</span>
           ${s.grade ? `<span class="gb-student-meta"> · ${esc(s.grade)}</span>` : ''}
         </div>
-        <span class="gb-status-badge ${statusInfo.cls}">${statusInfo.text}</span>
+        <span class="gb-status-badge ${statusInfo.cls}">${statusInfo.text}</span><span class="gb-gpa-badge">GPA: —</span>
       </div>
       <div class="gb-student-body">
         ${reviewNoteHTML}
@@ -3760,10 +3794,42 @@ async function loadMyStudents() {
   // Overlay any unsaved local edits on top of what just loaded from the DB —
   // these are more recent than the DB if the tab got reloaded mid-entry.
   restoreGbDraftFromStorage();
+
+  // A card someone had open before a backgrounded-tab reload stays open —
+  // they're mid-entry on that student, not starting over.
+  restoreGbExpandedState();
+
+  document.querySelectorAll('#gbStudentList .gb-student-card').forEach(updateGbGpaDisplay);
+}
+
+function gbExpandedStorageKey(schoolYear, quarter) {
+  return `ncs_gradebook_expanded:${schoolYear}:${quarter}`;
+}
+
+function saveGbExpandedState() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  if (!schoolYear || !quarter) return;
+  const expandedIds = Array.from(document.querySelectorAll('#gbStudentList .gb-student-card.expanded'))
+    .map(card => card.id.replace('gb-card-', ''));
+  try { sessionStorage.setItem(gbExpandedStorageKey(schoolYear, quarter), JSON.stringify(expandedIds)); } catch (e) {}
+}
+
+function restoreGbExpandedState() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  const quarter = document.getElementById('gbQuarter').value;
+  let expandedIds;
+  try { expandedIds = JSON.parse(sessionStorage.getItem(gbExpandedStorageKey(schoolYear, quarter))); } catch (e) { return; }
+  if (!expandedIds || !expandedIds.length) return;
+  expandedIds.forEach(id => {
+    const card = document.getElementById(`gb-card-${id}`);
+    if (card) card.classList.add('expanded');
+  });
 }
 
 window.toggleGbCard = (studentId) => {
   document.getElementById(`gb-card-${studentId}`).classList.toggle('expanded');
+  saveGbExpandedState();
 };
 
 // ── GRADEBOOK DRAFT AUTOSAVE — survives iOS Safari reloading a
@@ -3836,7 +3902,9 @@ function clearAllGradebookSessionState() {
     sessionStorage.removeItem('ncs_gb_school_year');
     sessionStorage.removeItem('ncs_gb_quarter');
     Object.keys(sessionStorage)
-      .filter(k => k.startsWith('ncs_gradebook_draft:') || k.startsWith('ncs_app_menu_cat_collapsed:'))
+      .filter(k => k.startsWith('ncs_gradebook_draft:') || k.startsWith('ncs_gradebook_expanded:')
+        || k.startsWith('ncs_gradebook_final_draft:') || k.startsWith('ncs_gradebook_final_expanded:')
+        || k.startsWith('ncs_app_menu_cat_collapsed:'))
       .forEach(k => sessionStorage.removeItem(k));
   } catch (e) {}
 }
@@ -3846,6 +3914,197 @@ function clearAllGradebookSessionState() {
 // loadMyStudents() re-render without re-attaching listeners.
 document.getElementById('gbStudentList').addEventListener('input', saveGbDraftToStorage);
 document.getElementById('gbStudentList').addEventListener('change', saveGbDraftToStorage);
+document.getElementById('gbStudentList').addEventListener('change', (e) => {
+  const card = e.target.closest('.gb-student-card');
+  if (card) updateGbGpaDisplay(card);
+});
+
+// ── FINAL REPORT CARDS — auto-created server-side once all 4 quarters are
+// sent; teacher just writes final comments per subject and sends.
+async function loadFinalReportCards() {
+  const list = document.getElementById('gbFinalList');
+  if (!list) return;
+  const schoolYear = document.getElementById('gbSchoolYear').value || computeDefaultSchoolYear();
+
+  list.innerHTML = '<p class="empty-state">Loading…</p>';
+
+  const { data: finals, error } = await sb.from('final_report_cards')
+    .select('id, student_id, status, year_gpa, sent_at, students(first_name, last_name, grade)')
+    .eq('school_year', schoolYear)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    list.innerHTML = `<p class="empty-state">Error loading final report cards: ${esc(error.message)}</p>`;
+    return;
+  }
+  document.getElementById('gbFinalCount').textContent = finals ? `(${finals.length})` : '';
+  if (!finals || finals.length === 0) {
+    list.innerHTML = `<p class="empty-state">No final report cards yet for ${esc(schoolYear)} — these appear automatically once all four quarters are sent for a student.</p>`;
+    return;
+  }
+
+  const finalIds = finals.map(f => f.id);
+  const { data: subjects } = await sb.from('final_report_card_subjects')
+    .select('id, final_report_card_id, subject, q1_academic_mark, q2_academic_mark, q3_academic_mark, q4_academic_mark, final_comment')
+    .in('final_report_card_id', finalIds);
+
+  const subjectsByFinal = {};
+  (subjects || []).forEach(s => {
+    if (!subjectsByFinal[s.final_report_card_id]) subjectsByFinal[s.final_report_card_id] = [];
+    subjectsByFinal[s.final_report_card_id].push(s);
+  });
+
+  list.innerHTML = finals.map(f => {
+    const student = f.students || {};
+    const studentName = [student.first_name, student.last_name].filter(Boolean).join(' ');
+    const subjectRows = subjectsByFinal[f.id] || [];
+    const locked = f.status === 'sent';
+    const gpaText = f.year_gpa === null || f.year_gpa === undefined ? '—' : Number(f.year_gpa).toFixed(2);
+
+    const subjectsHTML = subjectRows.map(s => `
+      <div data-subject-id="${s.id}" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--grey-line);">
+        <div class="gb-subject-label" style="margin-bottom:4px;">${esc(s.subject)}</div>
+        <div class="gb-quarter-marks">
+          <span>Q1: <strong>${esc(s.q1_academic_mark || '—')}</strong></span>
+          <span>Q2: <strong>${esc(s.q2_academic_mark || '—')}</strong></span>
+          <span>Q3: <strong>${esc(s.q3_academic_mark || '—')}</strong></span>
+          <span>Q4: <strong>${esc(s.q4_academic_mark || '—')}</strong></span>
+        </div>
+        <div class="gb-final-comment-row">
+          <span class="gb-mark-label">Final Comment</span>
+          <textarea class="gb-final-comment" ${locked ? 'disabled' : ''} placeholder="Year-end comment for ${esc(s.subject)}...">${esc(s.final_comment || '')}</textarea>
+        </div>
+      </div>`).join('');
+
+    const actionsHTML = locked ? '' : `
+      <div class="gb-actions">
+        <button class="save-btn" style="padding:10px 20px;font-size:0.85rem;" onclick="saveFinalComments(${f.id})">Save Comments</button>
+        <button class="view-btn" style="padding:10px 20px;font-size:0.85rem;border-color:#16a34a;color:#16a34a;" onclick="sendFinalReportCard(${f.id})">Send Final Report Card to Parents</button>
+      </div>`;
+
+    const sentMetaHTML = locked && f.sent_at
+      ? `<div class="gb-student-meta" style="margin-top:10px;">Sent ${new Date(f.sent_at).toLocaleDateString()}</div>` : '';
+
+    return `
+    <div class="gb-student-card" id="gb-final-card-${f.id}">
+      <div class="gb-student-header" onclick="toggleGbFinalCard(${f.id})">
+        <div>
+          <span class="gb-toggle-icon">▸</span>
+          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          ${student.grade ? `<span class="gb-student-meta"> · ${esc(student.grade)}</span>` : ''}
+        </div>
+        <span class="gb-status-badge ${locked ? 'sent' : 'draft'}">${locked ? 'Sent to Parents' : 'Needs Final Comments'}</span><span class="gb-gpa-badge">Year GPA: ${gpaText}</span>
+      </div>
+      <div class="gb-student-body">
+        ${subjectsHTML}
+        ${actionsHTML}
+        ${sentMetaHTML}
+      </div>
+    </div>`;
+  }).join('');
+
+  restoreGbFinalDraftFromStorage();
+  restoreGbFinalExpandedState();
+}
+
+window.toggleGbFinalCard = (finalId) => {
+  document.getElementById(`gb-final-card-${finalId}`).classList.toggle('expanded');
+  saveGbFinalExpandedState();
+};
+
+function gbFinalDraftStorageKey(schoolYear) {
+  return `ncs_gradebook_final_draft:${schoolYear}`;
+}
+
+function saveGbFinalDraftToStorage() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  if (!schoolYear) return;
+  const draft = {};
+  document.querySelectorAll('#gbFinalList [data-subject-id]').forEach(row => {
+    const textarea = row.querySelector('.gb-final-comment');
+    if (!textarea) return; // locked — nothing editable
+    draft[row.dataset.subjectId] = textarea.value;
+  });
+  try { sessionStorage.setItem(gbFinalDraftStorageKey(schoolYear), JSON.stringify(draft)); } catch (e) {}
+}
+
+function restoreGbFinalDraftFromStorage() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  let draft;
+  try { draft = JSON.parse(sessionStorage.getItem(gbFinalDraftStorageKey(schoolYear))); } catch (e) { return; }
+  if (!draft) return;
+  Object.keys(draft).forEach(subjectId => {
+    const row = document.querySelector(`#gbFinalList [data-subject-id="${subjectId}"]`);
+    const textarea = row ? row.querySelector('.gb-final-comment') : null;
+    if (textarea) textarea.value = draft[subjectId];
+  });
+}
+
+function gbFinalExpandedStorageKey(schoolYear) {
+  return `ncs_gradebook_final_expanded:${schoolYear}`;
+}
+
+function saveGbFinalExpandedState() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  if (!schoolYear) return;
+  const expandedIds = Array.from(document.querySelectorAll('#gbFinalList .gb-student-card.expanded'))
+    .map(card => card.id.replace('gb-final-card-', ''));
+  try { sessionStorage.setItem(gbFinalExpandedStorageKey(schoolYear), JSON.stringify(expandedIds)); } catch (e) {}
+}
+
+function restoreGbFinalExpandedState() {
+  const schoolYear = document.getElementById('gbSchoolYear').value;
+  let expandedIds;
+  try { expandedIds = JSON.parse(sessionStorage.getItem(gbFinalExpandedStorageKey(schoolYear))); } catch (e) { return; }
+  if (!expandedIds || !expandedIds.length) return;
+  expandedIds.forEach(id => {
+    const card = document.getElementById(`gb-final-card-${id}`);
+    if (card) card.classList.add('expanded');
+  });
+}
+
+document.getElementById('gbFinalList').addEventListener('input', saveGbFinalDraftToStorage);
+
+async function saveFinalCommentsToDb(finalId) {
+  const card = document.getElementById(`gb-final-card-${finalId}`);
+  const updates = Array.from(card.querySelectorAll('[data-subject-id]')).map(row => {
+    const textarea = row.querySelector('.gb-final-comment');
+    return textarea ? { id: parseInt(row.dataset.subjectId, 10), final_comment: textarea.value.trim() || null } : null;
+  }).filter(Boolean);
+
+  for (const u of updates) {
+    const { error } = await sb.from('final_report_card_subjects').update({ final_comment: u.final_comment }).eq('id', u.id);
+    if (error) throw error;
+  }
+}
+
+function clearGbFinalDraft(schoolYear) {
+  try { sessionStorage.removeItem(gbFinalDraftStorageKey(schoolYear)); } catch (e) {}
+}
+
+window.saveFinalComments = async (finalId) => {
+  try {
+    await saveFinalCommentsToDb(finalId);
+    clearGbFinalDraft(document.getElementById('gbSchoolYear').value);
+    showToast('✅ Comments saved.', 2500);
+  } catch (err) {
+    showToast(`Error saving: ${err.message}`, 4000);
+  }
+};
+
+window.sendFinalReportCard = async (finalId) => {
+  if (!confirm('Send this Final Report Card to the family now? This cannot be edited after sending.')) return;
+  try {
+    await saveFinalCommentsToDb(finalId);
+    const { error } = await sb.rpc('send_final_report_card', { p_final_report_card_id: finalId });
+    if (error) throw error;
+    clearGbFinalDraft(document.getElementById('gbSchoolYear').value);
+    showSuccessCheckmark('Final Report Card sent!');
+    setTimeout(loadGradebook, 1200);
+  } catch (err) {
+    showToast(`Error sending: ${err.message}`, 4500);
+  }
+};
 
 async function loadReviewQueue() {
   const list = document.getElementById('gbQueueList');
