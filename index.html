@@ -2821,15 +2821,23 @@ async function loadFamilies() {
       if (!fatherName && motherName) return motherName.trim();
       const fParts = fatherName.trim().split(/\s+/);
       const mParts = motherName.trim().split(/\s+/);
-      const fFirst = fParts[0], fLast = fParts[fParts.length-1];
-      const mFirst = mParts[0], mLast = mParts[mParts.length-1];
-      if (fLast && fLast.toLowerCase() === mLast.toLowerCase()) {
+      const fFirst = fParts[0];
+      const fLast = fParts.length > 1 ? fParts[fParts.length-1] : '';
+      const mFirst = mParts[0];
+      const mLast = mParts.length > 1 ? mParts[mParts.length-1] : '';
+      if (fLast && mLast && fLast.toLowerCase() === mLast.toLowerCase()) {
+        // Same last name: "Paul & Angela Blount"
         return `${fFirst} & ${mFirst} ${fLast}`;
+      } else if (fLast && mLast) {
+        // Different last names: "Paul Blount & Angela Smith"
+        return `${fFirst} ${fLast} & ${mFirst} ${mLast}`;
+      } else {
+        // One or both have only first names
+        return `${fatherName.trim()} & ${motherName.trim()}`;
       }
-      return `${fatherName.trim()} & ${mFirst}`;
     }
     const autoName = smartFamilyName(f.father_name, f.mother_name);
-    const displayFamName = f.name || autoName;
+    const displayFamName = autoName || f.name || 'Family';
 
     const studentSummary = activeKids.length
       ? activeKids.map(s => `<span class="student-chip">${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' · ' + esc(s.grade) : ''}</span>`).join('')
@@ -2921,7 +2929,14 @@ async function loadStudentProfiles() {
     (classT.length  ? `<optgroup label="Classroom Teachers">${classT.map(t=>`<option value="${esc(t.email)}" title="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '');
 
   const familyOptions = `<option value="">— No Family —</option>` +
-    (families || []).map(f => `<option value="${f.id}">${esc(f.name || 'Family #' + f.id)}</option>`).join('');
+    (families || []).map(f => {
+      const fp = (f.father_name||'').trim().split(' '), mp = (f.mother_name||'').trim().split(' ');
+      const fF=fp[0],fL=fp.length>1?fp[fp.length-1]:'',mF=mp[0],mL=mp.length>1?mp[mp.length-1]:'';
+      let computed = f.father_name&&f.mother_name
+        ? (fL&&mL&&fL.toLowerCase()===mL.toLowerCase() ? `${fF} & ${mF} ${fL}` : fL&&mL ? `${fF} ${fL} & ${mF} ${mL}` : `${(f.father_name||'').trim()} & ${(f.mother_name||'').trim()}`)
+        : (f.father_name||f.mother_name||'').trim();
+      return `<option value="${f.id}">${esc(computed || f.name || 'Family #'+f.id)}</option>`;
+    }).join('');
 
   if (!students || students.length === 0) {
     list.innerHTML = '<p class="empty-state">No students enrolled yet.</p>';
@@ -3087,7 +3102,7 @@ window.openEditFamilyModal = async (id) => {
     if (fLast && fLast.toLowerCase() === mLast.toLowerCase()) return `${fp[0]} & ${mp[0]} ${fLast}`;
     return `${fn.trim()} & ${mp[0]}`;
   }
-  document.getElementById('efm-name').value = f.name || smartFamilyName(f.father_name, f.mother_name);
+  document.getElementById('efm-name').value = smartFamilyName(f.father_name, f.mother_name) || f.name || '';
   document.getElementById('efm-father-name').value = f.father_name || '';
   document.getElementById('efm-father-email').value = f.father_email || '';
   document.getElementById('efm-father-phone').value = f.father_phone || '';
@@ -3450,26 +3465,19 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   // whichever parent email is provided becomes the primary, the other (if both given) becomes secondary.
   const primaryEmail = fatherEmail || motherEmail;
   const secondaryEmail = (fatherEmail && motherEmail) ? motherEmail : null;
-  // Build smart family name: "LastName Family" if shared, else "Father & Mother"
-  function extractLast(fullName) {
-    if (!fullName) return '';
-    const parts = fullName.trim().split(/\s+/);
-    return parts.length > 1 ? parts[parts.length - 1] : '';
+  // Build smart family name
+  function enrollSmartName(fn, mn) {
+    if (!fn && !mn) return 'Family';
+    if (fn && !mn) return fn.trim();
+    if (!fn && mn) return mn.trim();
+    const fp = fn.trim().split(' '), mp = mn.trim().split(' ');
+    const fFirst = fp[0], fLast = fp.length > 1 ? fp[fp.length-1] : '';
+    const mFirst = mp[0], mLast = mp.length > 1 ? mp[mp.length-1] : '';
+    if (fLast && mLast && fLast.toLowerCase() === mLast.toLowerCase()) return `${fFirst} & ${mFirst} ${fLast}`;
+    if (fLast && mLast) return `${fFirst} ${fLast} & ${mFirst} ${mLast}`;
+    return `${fn.trim()} & ${mn.trim()}`;
   }
-  const fatherLast = extractLast(fatherName);
-  const motherLast = extractLast(motherName);
-  let displayName;
-  if (fatherName && motherName) {
-    if (fatherLast && fatherLast === motherLast) {
-      displayName = fatherLast + ' Family';
-    } else {
-      // "Paul Blount & Angela" — father full name & mother first name
-      const motherFirst = motherName.trim().split(/\s+/)[0];
-      displayName = fatherName + ' & ' + motherFirst;
-    }
-  } else {
-    displayName = fatherName || motherName || 'Family';
-  }
+  const displayName = enrollSmartName(fatherName, motherName);
 
   const { data: famData, error } = await sb.from('family_emails')
     .insert({
