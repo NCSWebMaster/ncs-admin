@@ -216,6 +216,13 @@
   .vol-form-row-btn{ grid-template-columns:1fr 1fr 1fr; }
   @media(max-width:700px){ .vol-form-row-3{ grid-template-columns:1fr 1fr; } .vol-form-row-btn{ grid-template-columns:1fr 1fr; } }
   @media(max-width:480px){ .vol-form-row-3{ grid-template-columns:1fr; } .vol-form-row-btn{ grid-template-columns:1fr; } }
+  .vol-cat-group{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:10px; overflow:hidden; }
+  .vol-cat-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#fdf6f2; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.9rem; color:var(--ink); user-select:none; gap:10px; }
+  .vol-cat-count{ font-size:0.78rem; color:#9a8b84; font-weight:400; margin-left:auto; }
+  .vol-cat-arrow{ color:var(--bronze); font-size:0.8rem; transition:transform 0.2s; flex-shrink:0; }
+  .vol-cat-group.collapsed .vol-cat-arrow{ transform:rotate(-90deg); }
+  .vol-cat-body{ padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .vol-cat-group.collapsed .vol-cat-body{ display:none; }
 
   .vol-req-row label{ font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; font-weight:700; color:var(--ink); white-space:nowrap; }
   .vol-req-row input{ width:60px; padding:6px 10px; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-size:0.9rem; text-align:center; }
@@ -753,12 +760,33 @@
   <!-- VOLUNTEER SLOTS PANEL -->
   <div class="admin-panel" id="panel-volunteer">
     <div class="admin-form">
-      <h3>Add Volunteer Slot</h3>
+      <h3>Add Sign Up Slot</h3>
       <div class="form-row vol-form-row-3">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="vol-category">
+            <option value="Classroom Helper">Classroom Helper</option>
+            <option value="Lunch Supervision">Lunch Supervision</option>
+            <option value="Special Events">Special Events</option>
+          </select>
+        </div>
         <div class="form-group">
           <label>Date</label>
           <input type="date" id="vol-date">
         </div>
+        <div class="form-group">
+          <label>Location</label>
+          <select id="vol-classroom">
+            <option value="TK/First Grade">TK/First Grade</option>
+            <option value="Second/Third Grade">Second/Third Grade</option>
+            <option value="Fourth/Fifth Grade">Fourth/Fifth Grade</option>
+            <option value="Junior High">Junior High</option>
+            <option value="Lunch Area">Lunch Area</option>
+            <option value="Main Campus">Main Campus</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row vol-form-row-3">
         <div class="form-group">
           <label>Start Time</label>
           <input type="time" id="vol-time-start">
@@ -767,19 +795,6 @@
           <label>End Time</label>
           <input type="time" id="vol-time-end">
         </div>
-      </div>
-      <div class="form-row vol-form-row-3">
-        <div class="form-group">
-          <label>Classroom Location</label>
-          <select id="vol-classroom">
-            <option value="TK/First Grade">TK/First Grade</option>
-            <option value="Second/Third Grade">Second/Third Grade</option>
-            <option value="Fourth/Fifth Grade">Fourth/Fifth Grade</option>
-            <option value="Junior High">Junior High</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row vol-form-row-btn">
         <div class="form-group">
           <label>Send Reminder</label>
           <select id="vol-reminder">
@@ -790,6 +805,8 @@
             <option value="0">No reminder</option>
           </select>
         </div>
+      </div>
+      <div class="form-row vol-form-row-btn">
         <div class="form-group" style="justify-content:flex-end;">
           <label style="visibility:hidden;">.</label>
           <button class="save-btn" id="saveVolSlot">Add Slot</button>
@@ -3071,6 +3088,11 @@ function saveVolRequired() {
   loadVolSlots();
 }
 
+function toggleVolCat(header) {
+  const group = header.closest('.vol-cat-group');
+  group.classList.toggle('collapsed');
+}
+
 function toggleVolSection(id) {
   const body = document.getElementById(id);
   const arrow = document.getElementById('arrow-' + id);
@@ -3149,21 +3171,45 @@ async function loadVolSlots() {
       </div>
     </div>`;
 
-  list.innerHTML = data.map(s => `
-    <div class="event-row">
-      <div class="event-row-info">
-        <strong>${esc(s.date)} at ${esc(s.time)}</strong>
-        <span>${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${s.spots_filled}/${s.spots_total} filled · ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'} ${s.reminder_sent ? 'Sent' : ''}</span>
-      </div>
-      <div class="event-row-actions">
-        <button class="delete-btn" onclick="deleteVolSlot(${s.id})">Delete</button>
-      </div>
-    </div>`).join('');
+  // Group slots by category
+  const CATEGORIES = ['Classroom Helper', 'Lunch Supervision', 'Special Events'];
+  let slotsByCategory = {};
+  CATEGORIES.forEach(c => { slotsByCategory[c] = []; });
+  data.forEach(s => {
+    const cat = s.category || 'Classroom Helper';
+    if (!slotsByCategory[cat]) slotsByCategory[cat] = [];
+    slotsByCategory[cat].push(s);
+  });
+
+  list.innerHTML = CATEGORIES.map(cat => {
+    const slots = slotsByCategory[cat];
+    if (slots.length === 0) return '';
+    return `
+      <div class="vol-cat-group">
+        <div class="vol-cat-header" onclick="toggleVolCat(this)">
+          <span>${esc(cat)}</span>
+          <span class="vol-cat-count">${slots.length} slot${slots.length !== 1 ? 's' : ''}</span>
+          <span class="vol-cat-arrow">▾</span>
+        </div>
+        <div class="vol-cat-body">
+          ${slots.map(s => `
+          <div class="event-row">
+            <div class="event-row-info">
+              <strong>${esc(s.date)} · ${esc(s.time)}${s.time_end ? ' – ' + esc(s.time_end) : ''}</strong>
+              <span>${esc(s.classroom)} · ${s.spots_filled}/${s.spots_total} filled · ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'}${s.reminder_sent ? ' · Sent' : ''}</span>
+            </div>
+            <div class="event-row-actions">
+              <button class="delete-btn" onclick="deleteVolSlot(${s.id})">Delete</button>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function loadVolSignups() {
   const { data } = await sb.from('volunteer_signups')
-    .select('*, volunteer_slots(date, time, classroom, teacher, role)')
+    .select('*, volunteer_slots(date, time, time_end, classroom, teacher, role, category)')
     .order('id', { ascending: false });
   const list = document.getElementById('volSignupList');
   if (!data || data.length === 0) { list.innerHTML = '<p class="empty-state">No signups yet.</p>'; return; }
@@ -3175,8 +3221,8 @@ async function loadVolSignups() {
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;width:100%;">
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Email:</strong> ${esc(s.parent_email)}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Role:</strong> ${esc(s.volunteer_slots.role || s.role || '—')}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Date:</strong> ${esc(s.volunteer_slots.date)} at ${esc(s.volunteer_slots.time)}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Category:</strong> ${esc(s.volunteer_slots.category || 'Classroom Helper')}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Date:</strong> ${esc(s.volunteer_slots.date)} · ${esc(s.volunteer_slots.time)}${s.volunteer_slots.time_end ? ' – ' + esc(s.volunteer_slots.time_end) : ''}</span>
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Location:</strong> ${esc(s.volunteer_slots.classroom)}${s.volunteer_slots.teacher ? ' · ' + esc(s.volunteer_slots.teacher) : ''}</span>
       </div>
     </div>`).join('');
@@ -3190,10 +3236,14 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
   const formatT = (raw) => { if (!raw) return ''; const [h,m] = raw.split(':'); const hour = parseInt(h); return `${hour%12||12}:${m} ${hour>=12?'PM':'AM'}`; };
   const startTime = document.getElementById('vol-time-start').value;
   const endTime = document.getElementById('vol-time-end').value;
-  const time = startTime ? (endTime ? `${formatT(startTime)} – ${formatT(endTime)}` : formatT(startTime)) : '';
+  const time = startTime ? formatT(startTime) : '';
+  const time_end = endTime ? formatT(endTime) : null;
+  const category = document.getElementById('vol-category').value;
   const { error } = await sb.from('volunteer_slots').insert({
     date,
     time,
+    time_end,
+    category,
     classroom: document.getElementById('vol-classroom').value,
     role: 'Volunteer',
     spots_total: 1,
@@ -3206,9 +3256,10 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
   document.getElementById('vol-date').value = '';
   document.getElementById('vol-time-start').value = '';
   document.getElementById('vol-time-end').value = '';
+  document.getElementById('vol-category').value = 'Classroom Helper';
   document.getElementById('vol-classroom').value = 'TK/First Grade';
   document.getElementById('vol-reminder').value = '48';
-  showToast('Volunteer slot added!');
+  showToast('Slot added!');
   loadVolSlots();
 });
 
