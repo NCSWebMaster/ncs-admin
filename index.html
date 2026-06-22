@@ -1187,8 +1187,9 @@ function showMfaChoice() {
 async function sendEmailMfaCode(email) {
   const { data, error } = await sb.rpc('request_email_mfa_code');
   if (error || data !== true) {
-    document.getElementById('emailMfaError').textContent = 'Could not send the code. Please wait a moment and try again.';
-    console.error('MFA request error:', error);
+    const msg = error ? error.message : ('data=' + JSON.stringify(data));
+    document.getElementById('emailMfaError').textContent = 'Error: ' + msg;
+    console.error('MFA request error:', error, 'data:', data);
     return false;
   }
   return true;
