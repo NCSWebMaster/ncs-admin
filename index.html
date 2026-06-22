@@ -254,6 +254,32 @@
   .vol-form-row-btn{ grid-template-columns:1fr 1fr 1fr; }
   @media(max-width:700px){ .vol-form-row-3{ grid-template-columns:1fr 1fr; } .vol-form-row-btn{ grid-template-columns:1fr 1fr; } }
   @media(max-width:480px){ .vol-form-row-3{ grid-template-columns:1fr; } .vol-form-row-btn{ grid-template-columns:1fr; } }
+  /* ── ENROLLMENT SUBTABS ───────────────────────────────────── */
+  .enroll-subtabs{ display:flex; gap:0; border-bottom:2px solid var(--grey-line); margin-bottom:24px; }
+  .enroll-subtab{ background:none; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; padding:10px 20px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.88rem; color:#9a8b84; cursor:pointer; transition:color 0.15s,border-color 0.15s; white-space:nowrap; }
+  .enroll-subtab:hover{ color:var(--ink); }
+  .enroll-subtab.active{ color:var(--red); border-bottom-color:var(--red); }
+  .enroll-subpanel{ display:none; }
+  .enroll-subpanel.active{ display:block; }
+  /* ── STUDENT PROFILE CARDS ────────────────────────────────── */
+  .profile-grade-group{ margin-bottom:20px; }
+  .profile-grade-header{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; color:#9a8b84; padding:8px 4px; border-bottom:1px solid var(--grey-line); margin-bottom:10px; }
+  .profile-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .profile-card-header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; }
+  .profile-card-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.95rem; color:var(--ink); }
+  .profile-card-meta{ font-size:0.8rem; color:#9a8b84; margin-top:2px; }
+  .profile-card-arrow{ color:var(--bronze); font-size:0.8rem; transition:transform 0.2s; }
+  .profile-card.collapsed .profile-card-arrow{ transform:rotate(-90deg); }
+  .profile-card-body{ padding:0 16px 16px; display:grid; gap:12px; }
+  .profile-card.collapsed .profile-card-body{ display:none; }
+  .profile-section-title{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--bronze); margin:8px 0 6px; }
+  .profile-field{ display:grid; gap:4px; }
+  .profile-field label{ font-size:0.78rem; font-weight:700; color:#9a8b84; font-family:'Trebuchet MS',sans-serif; }
+  .profile-field input,.profile-field select,.profile-field textarea{ padding:9px 12px; border:1px solid var(--grey-line); border-radius:7px; font-family:'Trebuchet MS',sans-serif; font-size:0.88rem; color:var(--ink); background:#fdf6f2; width:100%; box-sizing:border-box; }
+  .profile-field textarea{ min-height:72px; resize:vertical; }
+  .profile-save-btn{ background:var(--red); color:#fff; border:none; border-radius:8px; padding:10px 22px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; cursor:pointer; transition:opacity 0.2s; }
+  .profile-save-btn:hover{ opacity:0.88; }
+  .profile-regen-btn{ background:none; border:1.5px dashed #c9a876; color:#a8865f; border-radius:8px; padding:9px 16px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; cursor:pointer; }
   .vol-cat-group{ border:1px solid var(--grey-line); border-radius:8px; margin-bottom:10px; overflow:hidden; }
   .vol-cat-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#fdf6f2; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.9rem; color:var(--ink); user-select:none; gap:10px; }
   .vol-cat-count{ font-size:0.78rem; color:#9a8b84; font-weight:400; margin-left:auto; }
@@ -620,6 +646,14 @@
   <!-- FAMILY EMAILS PANEL -->
   <div class="admin-panel" id="panel-families">
     <div class="admin-form">
+      <div class="enroll-subtabs">
+        <button class="enroll-subtab active" data-subtab="enroll" onclick="switchEnrollSubtab('enroll')">Enroll</button>
+        <button class="enroll-subtab" data-subtab="families" onclick="switchEnrollSubtab('families')">Families</button>
+        <button class="enroll-subtab" data-subtab="profiles" onclick="switchEnrollSubtab('profiles')">Student Profiles</button>
+      </div>
+
+      <!-- ENROLL SUBPANEL -->
+      <div class="enroll-subpanel active" id="enroll-sub-enroll">
       <h3>Enrollment</h3>
 
       <div class="form-row" style="margin-bottom:18px;">
@@ -734,20 +768,32 @@
       <div id="studentRowsContainer"></div>
 
       <button class="save-btn" id="saveFamiliy" style="margin-top:8px;width:100%;display:block;text-align:center;font-size:0.95rem;font-weight:700;padding:13px;">Enroll</button>
-    </div>
-    <div class="events-list">
-      <div class="section-header-row">
-        <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
-        <div class="dot-menu-wrap">
-          <button class="dot-menu-btn" onclick="toggleDotMenu('famListMenu')" title="Actions">&#8942;</button>
-          <div id="famListMenu" class="dot-menu-dropdown" style="display:none;">
-            <button class="dot-menu-item" onclick="printFamilies();toggleDotMenu('famListMenu')">Print / Save as PDF</button>
+      </div><!-- /enroll-sub-enroll -->
+
+      <!-- FAMILIES SUBPANEL -->
+      <div class="enroll-subpanel" id="enroll-sub-families">
+        <div class="section-header-row">
+          <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
+          <div class="dot-menu-wrap">
+            <button class="dot-menu-btn" onclick="toggleDotMenu('famListMenu')" title="Actions">&#8942;</button>
+            <div id="famListMenu" class="dot-menu-dropdown" style="display:none;">
+              <button class="dot-menu-item" onclick="printFamilies();toggleDotMenu('famListMenu')">Print / Save as PDF</button>
+            </div>
           </div>
         </div>
-      </div>
-      <div id="familyList"></div>
-    </div>
-  </div>
+        <div id="familyList"></div>
+      </div><!-- /enroll-sub-families -->
+
+      <!-- STUDENT PROFILES SUBPANEL -->
+      <div class="enroll-subpanel" id="enroll-sub-profiles">
+        <div class="section-header-row" style="margin-bottom:16px;">
+          <h3>Student Profiles</h3>
+        </div>
+        <div id="studentProfilesList"></div>
+      </div><!-- /enroll-sub-profiles -->
+
+    </div><!-- /admin-form -->
+  </div><!-- /panel-families -->
 
   <!-- INFO NIGHTS PANEL -->
   <div class="admin-panel" id="panel-infonights">
@@ -2364,6 +2410,11 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
     closeNavDrawer();
     updateTopbarLabel(tab.dataset.tab);
+    // Load active enrollment subtab when switching to families panel
+    if (tab.dataset.tab === 'families') {
+      const activeSub = document.querySelector('.enroll-subtab.active');
+      if (activeSub) switchEnrollSubtab(activeSub.dataset.subtab);
+    }
     try { sessionStorage.setItem(LAST_TAB_KEY, tab.dataset.tab); } catch (e) {}
   });
 });
@@ -2714,6 +2765,177 @@ async function loadFamilies() {
     </div>`;
   }).join('');
 }
+
+// ── ENROLLMENT SUBTABS ────────────────────────────────────────
+function switchEnrollSubtab(name) {
+  document.querySelectorAll('.enroll-subtab').forEach(t => t.classList.toggle('active', t.dataset.subtab === name));
+  document.querySelectorAll('.enroll-subpanel').forEach(p => p.classList.toggle('active', p.id === 'enroll-sub-' + name));
+  if (name === 'families') loadFamilies();
+  if (name === 'profiles') loadStudentProfiles();
+}
+
+// ── STUDENT PROFILES ──────────────────────────────────────────
+async function loadStudentProfiles() {
+  const list = document.getElementById('studentProfilesList');
+  list.innerHTML = '<p style="color:#aaa;font-size:0.9rem;">Loading...</p>';
+
+  const { data: families } = await sb.from('family_emails').select('id,name,father_name,father_email,father_phone,mother_name,mother_email,mother_phone').order('name');
+  const { data: students } = await sb.from('students')
+    .select('*')
+    .is('deleted_at', null)
+    .order('last_name');
+
+  const { data: teachers } = await sb.from('staff_roles').select('email,first_name,last_name').order('last_name');
+  const teacherOptions = `<option value="">— Not Assigned —</option>` +
+    (teachers || []).map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('');
+
+  const familyOptions = `<option value="">— No Family —</option>` +
+    (families || []).map(f => `<option value="${f.id}">${esc(f.name || 'Family #' + f.id)}</option>`).join('');
+
+  if (!students || students.length === 0) {
+    list.innerHTML = '<p class="empty-state">No students enrolled yet.</p>';
+    return;
+  }
+
+  // Group by grade using GRADE_OPTIONS order
+  const grouped = {};
+  GRADE_OPTIONS.forEach(g => { grouped[g] = []; });
+  grouped['Unassigned'] = [];
+  students.forEach(s => {
+    const g = s.grade && GRADE_OPTIONS.includes(s.grade) ? s.grade : 'Unassigned';
+    grouped[g].push(s);
+  });
+
+  const allGroups = [...GRADE_OPTIONS, 'Unassigned'];
+  list.innerHTML = allGroups.map(grade => {
+    const kids = grouped[grade];
+    if (!kids || kids.length === 0) return '';
+    return `
+      <div class="profile-grade-group">
+        <div class="profile-grade-header">${esc(grade)} · ${kids.length} student${kids.length !== 1 ? 's' : ''}</div>
+        ${kids.map(s => renderProfileCard(s, teacherOptions, familyOptions, families || [])).join('')}
+      </div>`;
+  }).join('');
+}
+
+function renderProfileCard(s, teacherOptions, familyOptions, families) {
+  const fullName = [s.first_name, s.last_name].filter(Boolean).join(' ') || 'Unnamed Student';
+  const family = families.find(f => f.id === s.family_id);
+  const familyName = family ? (family.name || 'Family #' + family.id) : '—';
+  const selTeacher = (opt, val) => opt.replace(`value="${esc(val)}"`, `value="${esc(val)}" selected`);
+  const selFamily = (opt, val) => val ? opt.replace(`value="${val}"`, `value="${val}" selected`) : opt;
+  const selGrade = GRADE_OPTIONS.map(g => `<option value="${g}"${s.grade===g?' selected':''}>${g}</option>`).join('');
+
+  return `
+    <div class="profile-card collapsed" id="profile-card-${s.id}">
+      <div class="profile-card-header" onclick="toggleProfileCard(${s.id})">
+        <div>
+          <div class="profile-card-name">${esc(fullName)}</div>
+          <div class="profile-card-meta">${esc(s.grade || '—')} · ${esc(familyName)}</div>
+        </div>
+        <span class="profile-card-arrow">▾</span>
+      </div>
+      <div class="profile-card-body">
+        <div class="profile-section-title">Student Info</div>
+        <div class="form-row">
+          <div class="profile-field">
+            <label>First Name</label>
+            <input type="text" id="pf-first-${s.id}" value="${esc(s.first_name||'')}">
+          </div>
+          <div class="profile-field">
+            <label>Last Name</label>
+            <input type="text" id="pf-last-${s.id}" value="${esc(s.last_name||'')}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="profile-field">
+            <label>Date of Birth</label>
+            <input type="date" id="pf-dob-${s.id}" value="${esc(s.dob||'')}">
+          </div>
+          <div class="profile-field">
+            <label>Grade</label>
+            <select id="pf-grade-${s.id}">${selGrade}</select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="profile-field">
+            <label>Assigned Teacher</label>
+            <select id="pf-teacher-${s.id}">${selTeacher(teacherOptions, s.assigned_teacher_email||'')}</select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="profile-field">
+            <label>Family</label>
+            <select id="pf-family-${s.id}">${selFamily(familyOptions, s.family_id)}</select>
+          </div>
+        </div>
+
+        <div class="profile-section-title">Medical</div>
+        <div class="form-row single">
+          <div class="profile-field">
+            <label>Medical Notes</label>
+            <textarea id="pf-medical-${s.id}" placeholder="Allergies, conditions, medications...">${esc(s.medical_notes||'')}</textarea>
+          </div>
+        </div>
+
+        <div class="profile-section-title">Emergency Contact</div>
+        <div class="form-row">
+          <div class="profile-field">
+            <label>Name</label>
+            <input type="text" id="pf-ec-name-${s.id}" value="${esc(s.emergency_contact_name||'')}">
+          </div>
+          <div class="profile-field">
+            <label>Relationship</label>
+            <input type="text" id="pf-ec-rel-${s.id}" value="${esc(s.emergency_contact_relation||'')}">
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="profile-field">
+            <label>Phone</label>
+            <input type="tel" id="pf-ec-phone-${s.id}" value="${esc(s.emergency_contact_phone||'')}">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+          <button class="profile-save-btn" onclick="saveStudentProfile(${s.id})">Save Profile</button>
+          <button class="profile-regen-btn" onclick="profileRegenCode(${s.id})">Regenerate Access Code</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.toggleProfileCard = (id) => {
+  const card = document.getElementById('profile-card-' + id);
+  card.classList.toggle('collapsed');
+};
+
+window.saveStudentProfile = async (id) => {
+  const get = (field) => document.getElementById(`pf-${field}-${id}`)?.value?.trim() || null;
+  const updates = {
+    first_name: get('first'),
+    last_name: get('last'),
+    dob: get('dob') || null,
+    grade: get('grade') || null,
+    assigned_teacher_email: get('teacher') || null,
+    family_id: document.getElementById(`pf-family-${id}`)?.value || null,
+    medical_notes: get('medical'),
+    emergency_contact_name: get('ec-name'),
+    emergency_contact_relation: get('ec-rel'),
+    emergency_contact_phone: get('ec-phone'),
+  };
+  const { error } = await sb.from('students').update(updates).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Profile saved!');
+  loadStudentProfiles();
+  loadFamilies();
+};
+
+window.profileRegenCode = async (studentId) => {
+  // Find the family_id for this student then call regenerateAccessCode
+  const { data } = await sb.from('students').select('family_id').eq('id', studentId).maybeSingle();
+  if (!data || !data.family_id) { showToast('No family linked to this student.'); return; }
+  regenerateAccessCode(data.family_id);
+};
 
 document.getElementById('famNewInfoBtn').addEventListener('click', () => {
   showToast('Unchecked = returning family. This changes the wording of the welcome email they receive.', 5500);
