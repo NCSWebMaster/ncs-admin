@@ -335,7 +335,7 @@
     <span></span><span></span><span></span>
   </button>
 </header>
-<div class="oneplace-activebar">
+<div class="oneplace-activebar" id="oneplaceActivebar" style="display:none;">
   <span id="topbarActiveLabel">Newsletter</span>
 </div>
 
@@ -1495,6 +1495,7 @@ const ROLE_BADGE_ORDER = ['super_admin','leader','board_member','teacher','staff
 
 function enterDashboard() {
   showOnly('adminDashboard');
+  document.getElementById('oneplaceActivebar').style.display = 'block';
   // adminUserEmail removed from dashboard
   document.getElementById('drawerUserEmail').textContent = currentSession.user.email;
   const drawerName = document.getElementById('drawerUserName');
@@ -1531,6 +1532,7 @@ sb.auth.onAuthStateChange((event, session) => {
     currentRoles = [];
     currentSession = null;
     showOnly('loginScreen');
+    document.getElementById('oneplaceActivebar').style.display = 'none';
   }
 });
 
