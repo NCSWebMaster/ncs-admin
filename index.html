@@ -6,11 +6,12 @@
 <title>Admin | Northridge Community School</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-.brand-name{font-size:1.25rem;color:#C8102E;font-weight:700;}
-@media(max-width:900px){
-  .brand-name::after{content:"NCS";}
-  .brand-name-text{display:none;}
-}
+/* OnePlace persistent header */
+.oneplace-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#fff; border-bottom:1px solid var(--grey-line,#e8e0db); position:sticky; top:0; z-index:200; }
+.oneplace-brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
+.oneplace-brand img{ height:36px; width:auto; }
+.oneplace-brand-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:#C8102E; }
+.oneplace-activebar{ background:#fff; border-bottom:1px solid var(--grey-line,#e8e0db); padding:5px 20px 7px; font-family:'Trebuchet MS',sans-serif; font-size:0.78rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#a8865f; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -105,8 +106,8 @@
   .nav-drawer-action.danger{ color:var(--red); }
   .nav-drawer-action.muted{ color:#a8865f; border:1.5px dashed #c9a876; }
   /* Top bar */
-  .oneplace-topbar{ display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#fff; border-bottom:1px solid var(--grey-line); position:sticky; top:0; z-index:100; }
-  .oneplace-topbar-left{ display:flex; align-items:center; gap:14px; }
+  .oneplace-topbar{ display:none; }
+  .oneplace-topbar-left{ display:none; }
   .nav-hamburger{ background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; display:flex; flex-direction:column; gap:5px; transition:background 0.15s; flex-shrink:0; }
   .nav-hamburger:hover{ background:#fdf6f2; }
   .nav-hamburger span{ display:block; width:22px; height:2px; background:var(--ink); border-radius:2px; transition:all 0.2s; }
@@ -323,22 +324,18 @@
 </head>
 <body>
 
-<nav>
-  <a href="https://ncswebmaster.github.io/NCS/index.html" class="brand">
+<header class="oneplace-header">
+  <a href="https://ncswebmaster.github.io/NCS/index.html" class="oneplace-brand">
     <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Crest">
-    <span class="brand-name"><span class="brand-name-text">Northridge Community School</span></span>
+    <span class="oneplace-brand-name">NCS OnePlace</span>
   </a>
-      <ul class="nav-links" id="navLinks">
-    <li><a href="https://ncswebmaster.github.io/NCS/index.html">Home</a></li>
-    <li><a href="https://ncswebmaster.github.io/NCS/about.html">About</a></li>
-    <li><a href="https://ncswebmaster.github.io/NCS/admissions.html">Admissions</a></li>
-    <li><a href="https://ncswebmaster.github.io/NCS/index.html#donate">Donate</a></li>
-    <li class="nav-portal"><a href="https://ncswebmaster.github.io/NCS/volunteer.html">Parent Portal</a></li>
-  </ul>
-  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">
+  <button class="nav-hamburger" id="navDrawerOpen" aria-label="Open navigation">
     <span></span><span></span><span></span>
   </button>
-</nav>
+</header>
+<div class="oneplace-activebar">
+  <span id="topbarActiveLabel">Newsletter</span>
+</div>
 
 <!-- LOGIN -->
 <div id="loginScreen" class="admin-login">
@@ -442,19 +439,7 @@
     </div>
   </div>
 
-  <!-- TOP BAR -->
-  <div class="oneplace-topbar">
-    <div class="oneplace-topbar-left">
-      <button class="nav-hamburger" id="navDrawerOpen" aria-label="Open navigation">
-        <span></span><span></span><span></span>
-      </button>
-      <div>
-        <div class="oneplace-topbar-title">NCS OnePlace</div>
-        <div class="oneplace-topbar-active" id="topbarActiveLabel">Newsletter</div>
-      </div>
-    </div>
 
-  </div>
 
   <!-- NAV DRAWER OVERLAY -->
   <div class="nav-drawer-overlay" id="navDrawerOverlay"></div>
