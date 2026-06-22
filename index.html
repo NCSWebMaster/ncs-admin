@@ -914,7 +914,7 @@
   <div class="admin-panel" id="panel-boardmember">
     <div id="boardMemberContent" style="display:none;">
       <div class="admin-form">
-        <h3 style="margin-bottom:24px;">📁 Board Resources</h3>
+        <h3 style="margin-bottom:24px;">Board Resources</h3>
         <p style="color:#6b5e58;margin-bottom:20px;font-size:0.95rem;line-height:1.6;">
           Access shared board documents and resources from our Google Drive folder.
         </p>
@@ -924,15 +924,15 @@
            style="display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-weight:700;text-decoration:none;transition:opacity 0.2s;font-size:0.95rem;"
            onmouseover="this.style.opacity='0.9'"
            onmouseout="this.style.opacity='1'">
-          📂 Open NCS Board Folder on Google Drive
+          Open NCS Board Folder on Google Drive
         </a>
       </div>
 
-      <div class="admin-form" style="margin-top:24px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-          <h3 style="margin:0;flex:1;">🗂️ Board Minutes & Documents</h3>
-          <button class="save-btn" id="boardNewFolderBtn" style="padding:8px 16px;font-size:0.85rem;">+ New Folder</button>
-          <button class="save-btn" id="boardUploadBtn" style="padding:8px 16px;font-size:0.85rem;">⬆️ Upload File</button>
+      <div class="admin-form" style="margin-top:24px;box-sizing:border-box;overflow:hidden;">
+        <h3 style="margin:0 0 14px 0;">Board Minutes &amp; Documents</h3>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <button class="save-btn" id="boardNewFolderBtn" style="padding:10px 16px;font-size:0.85rem;flex:1;">+ New Folder</button>
+          <button class="save-btn" id="boardUploadBtn" style="padding:10px 16px;font-size:0.85rem;flex:1;">Upload File</button>
           <input type="file" id="boardFileInput" multiple style="display:none;">
         </div>
         <div id="boardBreadcrumb" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;margin-bottom:14px;"></div>
@@ -947,7 +947,6 @@
 
     <!-- Placeholder for non-board members -->
     <div id="boardPlaceholder" style="text-align:center;padding:48px 24px;">
-      <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
       <h3 style="margin-bottom:8px;">Board Resources</h3>
       <p style="color:#6b5e58;max-width:420px;margin:0 auto;font-size:0.95rem;">
         Board members can view and download shared resources from the NCS board folder.
@@ -2051,7 +2050,7 @@ async function loadBoardFileManager() {
     const fullPath = boardCurrentPath + folder.name + '/';
     html += `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fdf6f2;border:1px solid var(--grey-line);border-radius:8px;cursor:pointer;" data-path="${esc(fullPath)}" onclick="boardNavigateTo(this.dataset.path)">
-        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--ink);">📁 ${esc(folder.name)}</span>
+        <span style="font-family:'Trebuchet MS',sans-serif;font-weight:700;color:var(--ink);">${esc(folder.name)}</span>
         <span style="color:var(--bronze);">→</span>
       </div>`;
   });
