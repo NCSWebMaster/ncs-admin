@@ -2804,8 +2804,8 @@ async function loadStudentProfiles() {
   const jrHighT = (teachers||[]).filter(t => t.is_jr_high);
   const classT  = (teachers||[]).filter(t => !t.is_jr_high);
   const teacherOptions = '<option value="">— Not Assigned —</option>' +
-    (jrHighT.length ? `<optgroup label="Jr. High Team">${jrHighT.map(t=>`<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '') +
-    (classT.length  ? `<optgroup label="Classroom Teachers">${classT.map(t=>`<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '');
+    (jrHighT.length ? `<optgroup label="Jr. High Team">${jrHighT.map(t=>`<option value="${esc(t.email)}" title="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '') +
+    (classT.length  ? `<optgroup label="Classroom Teachers">${classT.map(t=>`<option value="${esc(t.email)}" title="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '');
 
   const familyOptions = `<option value="">— No Family —</option>` +
     (families || []).map(f => `<option value="${f.id}">${esc(f.name || 'Family #' + f.id)}</option>`).join('');
@@ -3009,11 +3009,11 @@ async function loadTeacherOptions() {
   const classroomTeachers = allTeachers.filter(t => !t.is_jr_high);
 
   const jrHighOptions = jrHighTeachers.length
-    ? `<optgroup label="Jr. High Team">${jrHighTeachers.map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
+    ? `<optgroup label="Jr. High Team">${jrHighTeachers.map(t => `<option value="${esc(t.email)}" title="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
     : '';
 
   const classroomOptions = classroomTeachers.length
-    ? `<optgroup label="Classroom Teachers">${classroomTeachers.map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
+    ? `<optgroup label="Classroom Teachers">${classroomTeachers.map(t => `<option value="${esc(t.email)}" title="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
     : '';
 
   teacherOptionsCache = '<option value="">— Not Assigned —</option>' + jrHighOptions + classroomOptions;
