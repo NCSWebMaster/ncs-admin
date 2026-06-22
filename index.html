@@ -2732,9 +2732,10 @@ async function loadFamilies() {
 
     const detailParent = (label, name, email, phone) => {
       if (!name && !email && !phone) return '';
+      const cleanName = name ? name.replace(/\s+/g, ' ').trim() : '';
       return `<div class="family-detail-section">
         <div class="family-detail-label">${label}</div>
-        ${name ? `<div class="family-detail-row"><strong>${esc(name)}</strong></div>` : ''}
+        ${cleanName ? `<div class="family-detail-row"><strong>${esc(cleanName)}</strong></div>` : ''}
         ${email ? `<div class="family-detail-row">${esc(email)}</div>` : ''}
         ${phone ? `<div class="family-detail-row">${esc(phone)}</div>` : ''}
       </div>`;
@@ -2754,13 +2755,25 @@ async function loadFamilies() {
     <div class="family-card" id="fam-card-${f.id}">
       <div class="family-card-header" onclick="toggleFamilyCard(${f.id})">
         <div style="flex:1;min-width:0;">
-          <div class="family-card-name">${esc(f.name || parentNames || 'Family')}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="family-card-name" id="fam-name-display-${f.id}">${esc(f.name || parentNames || 'Family')}</div>
+          </div>
+          <div id="fam-name-edit-${f.id}" style="display:none;display:flex;gap:6px;align-items:center;margin-bottom:4px;">
+            <input type="text" id="fam-name-input-${f.id}" value="${esc(f.name || parentNames || 'Family')}"
+              style="padding:6px 10px;border:1px solid var(--grey-line);border-radius:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;flex:1;"
+              onclick="event.stopPropagation()">
+            <button onclick="saveFamilyName(${f.id});event.stopPropagation();"
+              style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;">Save</button>
+            <button onclick="cancelFamilyNameEdit(${f.id});event.stopPropagation();"
+              style="background:none;border:1px solid var(--grey-line);border-radius:6px;padding:6px 10px;font-size:0.8rem;cursor:pointer;">✕</button>
+          </div>
           <div class="family-card-meta">${parentNames || ''}${activeKids.length ? ` · ${activeKids.length} student${activeKids.length !== 1 ? 's' : ''}` : ''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">
           <div class="dot-menu-wrap">
             <button class="dot-menu-btn" onclick="toggleDotMenu('fam-menu-${f.id}')" title="Actions">&#8942;</button>
             <div id="fam-menu-${f.id}" class="dot-menu-dropdown" style="display:none;">
+              <button class="dot-menu-item" onclick="editFamilyName(${f.id});toggleDotMenu('fam-menu-${f.id}')">Edit Family Name</button>
               <button class="dot-menu-item" onclick="regenerateAccessCode(${f.id});toggleDotMenu('fam-menu-${f.id}')">Regenerate Access Code</button>
               <button class="dot-menu-item danger" onclick="deleteFamily(${f.id});toggleDotMenu('fam-menu-${f.id}')">Unenroll Family</button>
             </div>
@@ -2954,6 +2967,39 @@ window.profileRegenCode = async (studentId) => {
   const { data } = await sb.from('students').select('family_email_id').eq('id', studentId).maybeSingle();
   if (!data || !data.family_email_id) { showToast('No family linked to this student.'); return; }
   regenerateAccessCode(data.family_email_id);
+};
+
+// ── FAMILY NAME EDITING ──────────────────────────────────────
+window.editFamilyName = (id) => {
+  const display = document.getElementById(`fam-name-display-${id}`);
+  const edit = document.getElementById(`fam-name-edit-${id}`);
+  if (display) display.style.display = 'none';
+  if (edit) { edit.style.display = 'flex'; }
+  const input = document.getElementById(`fam-name-input-${id}`);
+  if (input) { input.focus(); input.select(); }
+};
+
+window.cancelFamilyNameEdit = (id) => {
+  const display = document.getElementById(`fam-name-display-${id}`);
+  const edit = document.getElementById(`fam-name-edit-${id}`);
+  if (display) display.style.display = '';
+  if (edit) edit.style.display = 'none';
+};
+
+window.saveFamilyName = async (id) => {
+  const input = document.getElementById(`fam-name-input-${id}`);
+  const newName = input?.value.trim();
+  if (!newName) { showToast('Family name cannot be empty'); return; }
+  const { error } = await sb.from('family_emails').update({ name: newName }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  // Update display inline
+  const display = document.getElementById(`fam-name-display-${id}`);
+  if (display) { display.textContent = newName; display.style.display = ''; }
+  const edit = document.getElementById(`fam-name-edit-${id}`);
+  if (edit) edit.style.display = 'none';
+  showToast('Family name updated');
+  // Refresh student profiles too since family name shows there
+  if (document.getElementById('enroll-sub-profiles').classList.contains('active')) loadStudentProfiles();
 };
 
 document.getElementById('famNewInfoBtn').addEventListener('click', () => {
@@ -3237,7 +3283,26 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   // whichever parent email is provided becomes the primary, the other (if both given) becomes secondary.
   const primaryEmail = fatherEmail || motherEmail;
   const secondaryEmail = (fatherEmail && motherEmail) ? motherEmail : null;
-  const displayName = [fatherName, motherName].filter(Boolean).join(' & ') || 'Family';
+  // Build smart family name: "LastName Family" if shared, else "Father & Mother"
+  function extractLast(fullName) {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(/\s+/);
+    return parts.length > 1 ? parts[parts.length - 1] : '';
+  }
+  const fatherLast = extractLast(fatherName);
+  const motherLast = extractLast(motherName);
+  let displayName;
+  if (fatherName && motherName) {
+    if (fatherLast && fatherLast === motherLast) {
+      displayName = fatherLast + ' Family';
+    } else {
+      // "Paul Blount & Angela" — father full name & mother first name
+      const motherFirst = motherName.trim().split(/\s+/)[0];
+      displayName = fatherName + ' & ' + motherFirst;
+    }
+  } else {
+    displayName = fatherName || motherName || 'Family';
+  }
 
   const { data: famData, error } = await sb.from('family_emails')
     .insert({
