@@ -71,18 +71,53 @@
   .gb-comment-row textarea{ width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; min-height:50px; resize:vertical; }
   .gb-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
   @media(max-width:640px){ .gb-subject-row{ grid-template-columns:1fr 1fr; } .gb-subject-label{ grid-column:1 / -1; } }
-  .section-menu-trigger{ display:flex; align-items:center; gap:6px; padding:9px 14px; background:none; border:1px solid var(--grey-line); border-radius:6px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.85rem; color:#6b5e58; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-  .section-menu-trigger:hover{ background:var(--red); color:#fff; border-color:var(--red); }
-  .section-menu-dropdown{ position:absolute; right:0; background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.12); padding:8px; z-index:60; width:250px; max-width:85vw; max-height:70vh; overflow-y:auto; }
-  .section-menu-dropdown .admin-tab{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; margin-bottom:4px; }
-  .section-menu-dropdown .admin-tab:last-child{ margin-bottom:0; }
+  .section-menu-trigger{ display:none; }
+  .section-menu-dropdown{ display:none !important; }
+  /* ── NAV DRAWER ──────────────────────────────────────────── */
+  .nav-drawer-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0); z-index:400; pointer-events:none; transition:background 0.28s ease; }
+  .nav-drawer-overlay.open{ background:rgba(0,0,0,0.35); pointer-events:all; }
+  .nav-drawer{ position:fixed; top:0; left:0; bottom:0; width:300px; max-width:80vw; background:#fff; z-index:401; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; box-shadow:4px 0 24px rgba(0,0,0,0.15); }
+  .nav-drawer.open{ transform:translateX(0); }
+  .nav-drawer-top{ padding:20px 20px 0; flex-shrink:0; }
+  .nav-drawer-back{ display:flex; align-items:center; gap:8px; background:none; border:none; color:var(--bronze); font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.88rem; cursor:pointer; padding:8px 0; margin-bottom:16px; }
+  .nav-drawer-back:hover{ color:var(--red); }
+  .nav-drawer-back svg{ flex-shrink:0; }
+  .nav-drawer-user{ padding:14px 16px; background:#fdf6f2; border-radius:10px; margin-bottom:20px; }
+  .nav-drawer-user-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.9rem; color:var(--ink); margin-bottom:2px; }
+  .nav-drawer-user-email{ font-size:0.78rem; color:#9a8b84; font-family:'Trebuchet MS',sans-serif; }
+  .nav-drawer-scroll{ flex:1; overflow-y:auto; padding:0 12px 16px; -webkit-overflow-scrolling:touch; }
+  .nav-drawer-section{ margin-bottom:8px; }
+  .nav-drawer-section-header{ display:flex; align-items:center; justify-content:space-between; padding:10px 10px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.72rem; text-transform:uppercase; letter-spacing:1.2px; color:#9a8b84; cursor:pointer; user-select:none; border-radius:8px; transition:background 0.15s; }
+  .nav-drawer-section-header:hover{ background:#fdf6f2; }
+  .nav-drawer-section-arrow{ font-size:0.65rem; transition:transform 0.2s; color:var(--bronze); }
+  .nav-drawer-section.collapsed .nav-drawer-section-arrow{ transform:rotate(-90deg); }
+  .nav-drawer-section-items{ overflow:hidden; max-height:500px; transition:max-height 0.25s ease, opacity 0.2s ease; opacity:1; }
+  .nav-drawer-section.collapsed .nav-drawer-section-items{ max-height:0; opacity:0; }
+  .nav-drawer-item{ display:flex; align-items:center; gap:12px; width:100%; padding:13px 14px; background:none; border:none; border-radius:10px; font-family:'Trebuchet MS',sans-serif; font-weight:600; font-size:0.92rem; color:var(--ink); cursor:pointer; text-align:left; transition:background 0.15s; margin-bottom:2px; }
+  .nav-drawer-item:hover{ background:#fdf6f2; }
+  .nav-drawer-item.active{ background:var(--red); color:#fff; }
+  .nav-drawer-item .nav-drag-handle{ color:#c9bdb4; font-size:1rem; cursor:grab; flex-shrink:0; touch-action:none; -webkit-user-select:none; user-select:none; }
+  .nav-drawer-item.active .nav-drag-handle{ color:rgba(255,255,255,0.5); }
+  .nav-drawer-divider{ height:1px; background:var(--grey-line); margin:10px 4px; }
+  .nav-drawer-bottom{ padding:16px; flex-shrink:0; border-top:1px solid var(--grey-line); display:flex; flex-direction:column; gap:8px; }
+  .nav-drawer-action{ display:flex; align-items:center; gap:10px; width:100%; padding:11px 14px; border-radius:8px; background:none; border:none; font-family:'Trebuchet MS',sans-serif; font-weight:600; font-size:0.88rem; cursor:pointer; text-align:left; transition:background 0.15s; }
+  .nav-drawer-action:hover{ background:#fdf6f2; }
+  .nav-drawer-action.danger{ color:var(--red); }
+  .nav-drawer-action.muted{ color:#a8865f; border:1.5px dashed #c9a876; }
+  /* Top bar */
+  .oneplace-topbar{ display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#fff; border-bottom:1px solid var(--grey-line); position:sticky; top:0; z-index:100; }
+  .oneplace-topbar-left{ display:flex; align-items:center; gap:14px; }
+  .nav-hamburger{ background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; display:flex; flex-direction:column; gap:5px; transition:background 0.15s; flex-shrink:0; }
+  .nav-hamburger:hover{ background:#fdf6f2; }
+  .nav-hamburger span{ display:block; width:22px; height:2px; background:var(--ink); border-radius:2px; transition:all 0.2s; }
+  .oneplace-topbar-title{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:1rem; color:var(--ink); }
+  .oneplace-topbar-active{ font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; color:var(--bronze); margin-top:1px; }
+  /* Legacy classes kept for compatibility */
   .app-menu-category{ margin-bottom:6px; }
   .app-menu-category:last-child{ margin-bottom:0; }
-  .app-menu-category-header{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:10px 12px; background:#fdf6f2; border:1px solid var(--grey-line); border-radius:8px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.82rem; color:#6b5e58; cursor:pointer; user-select:none; }
-  .app-menu-category-arrow{ transition:transform 0.2s; color:var(--bronze); }
-  .app-menu-category.collapsed .app-menu-category-arrow{ transform:rotate(-90deg); }
-  .app-menu-category-items{ overflow:hidden; max-height:1000px; transition:max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease; opacity:1; margin-top:6px; }
-  .app-menu-category.collapsed .app-menu-category-items{ max-height:0; opacity:0; margin-top:0; }
+  .app-menu-category-header{ display:none; }
+  .app-menu-category-items{ display:contents; }
+  .app-menu-category.collapsed .app-menu-category-items{ display:contents; }
   .tab-drag-handle, .board-drag-handle{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   .tab-drag-handle{ cursor:grab; color:#c9bdb4; font-size:1.1rem; flex-shrink:0; touch-action:none; line-height:1; }
   .admin-tab.active .tab-drag-handle{ color:rgba(255,255,255,0.65); }
@@ -407,54 +442,89 @@
     </div>
   </div>
 
-  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:16px;">
-    <div style="position:relative;">
-      <button id="moreActionsBtn" class="signout-btn">⋯ More</button>
-      <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
-        <button id="signOutBtn" style="display:block;width:100%;text-align:left;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">Sign Out</button>
-        <div style="border-top:1px solid var(--grey-line);margin:4px 0 8px;"></div>
-        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">Reset Authenticator</button>
-        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">Start New School Year</button>
+  <!-- TOP BAR -->
+  <div class="oneplace-topbar">
+    <div class="oneplace-topbar-left">
+      <button class="nav-hamburger" id="navDrawerOpen" aria-label="Open navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <div class="oneplace-topbar-title">NCS OnePlace</div>
+        <div class="oneplace-topbar-active" id="topbarActiveLabel">Newsletter</div>
       </div>
     </div>
-    <div style="position:relative;">
-      <button id="sectionMenuBtn" class="section-menu-trigger">Apps <span style="font-size:0.7rem;">&#9662;</span></button>
-      <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;top:calc(100% + 8px);">
-        <div class="app-menu-category" data-category="family">
-          <button class="app-menu-category-header" data-category="family">
-            <span>Family &amp; Community</span>
-            <span class="app-menu-category-arrow">▾</span>
-          </button>
-          <div class="app-menu-category-items" data-category-items="family">
-            <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Newsletter</span></button>
-            <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Enrollment</span></button>
-            <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Year at a Glance</span></button>
-            <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Info Nights</span></button>
-            <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Sign Ups</span></button>
-          </div>
+    <button id="signOutBtn" style="background:none;border:1px solid var(--grey-line);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-size:0.82rem;font-weight:700;color:#6b5e58;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--red)';this.style.color='#fff';this.style.borderColor='var(--red)';" onmouseout="this.style.background='none';this.style.color='#6b5e58';this.style.borderColor='var(--grey-line)';">Sign Out</button>
+  </div>
+
+  <!-- NAV DRAWER OVERLAY -->
+  <div class="nav-drawer-overlay" id="navDrawerOverlay"></div>
+
+  <!-- NAV DRAWER -->
+  <div class="nav-drawer" id="navDrawer" role="navigation" aria-label="Main navigation">
+    <div class="nav-drawer-top">
+      <button class="nav-drawer-back" id="navDrawerBack">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+      <div class="nav-drawer-user">
+        <div class="nav-drawer-user-name" id="drawerUserName">OnePlace</div>
+        <div class="nav-drawer-user-email" id="drawerUserEmail"></div>
+      </div>
+    </div>
+
+    <div class="nav-drawer-scroll">
+      <!-- Family & Community -->
+      <div class="nav-drawer-section" data-drawer-section="family">
+        <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
+          <span>Family &amp; Community</span>
+          <span class="nav-drawer-section-arrow">▾</span>
         </div>
-        <div class="app-menu-category" data-category="academics">
-          <button class="app-menu-category-header" data-category="academics">
-            <span>Academics</span>
-            <span class="app-menu-category-arrow">▾</span>
-          </button>
-          <div class="app-menu-category-items" data-category-items="academics">
-            <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Gradebook</span></button>
-          </div>
+        <div class="nav-drawer-section-items" data-drawer-section-items="family">
+          <button class="nav-drawer-item admin-tab active" data-tab="newsletter"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Newsletter</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="families"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Enrollment</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="yearly"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Year at a Glance</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="infonights"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Info Nights</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="volunteer"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Sign Ups</span></button>
         </div>
-        <div class="app-menu-category" data-category="admin">
-          <button class="app-menu-category-header" data-category="admin">
-            <span>Admin &amp; Governance</span>
-            <span class="app-menu-category-arrow">▾</span>
-          </button>
-          <div class="app-menu-category-items" data-category-items="admin">
-            <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Staff Access</span></button>
-            <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Board Member</span></button>
-            <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Trash</span></button>
-          </div>
+      </div>
+
+      <!-- Academics -->
+      <div class="nav-drawer-section" data-drawer-section="academics">
+        <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
+          <span>Academics</span>
+          <span class="nav-drawer-section-arrow">▾</span>
+        </div>
+        <div class="nav-drawer-section-items" data-drawer-section-items="academics">
+          <button class="nav-drawer-item admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Gradebook</span></button>
+        </div>
+      </div>
+
+      <!-- Admin & Governance -->
+      <div class="nav-drawer-section" data-drawer-section="admin">
+        <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
+          <span>Admin &amp; Governance</span>
+          <span class="nav-drawer-section-arrow">▾</span>
+        </div>
+        <div class="nav-drawer-section-items" data-drawer-section-items="admin">
+          <button class="nav-drawer-item admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Staff Access</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Board Member</span></button>
+          <button class="nav-drawer-item admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Trash</span></button>
         </div>
       </div>
     </div>
+
+    <!-- Bottom actions -->
+    <div class="nav-drawer-bottom">
+      <button class="nav-drawer-action" id="resetAuthenticatorBtn">Reset Authenticator</button>
+      <button class="nav-drawer-action reset-btn" id="resetYearBtn" style="display:none;">Start New School Year</button>
+    </div>
+  </div>
+
+  <!-- legacy hidden dropdown kept so existing JS refs don't crash -->
+  <div id="sectionMenuDropdown" style="display:none;">
+    <div class="app-menu-category" data-category="family"><div class="app-menu-category-items" data-category-items="family"></div></div>
+    <div class="app-menu-category" data-category="academics"><div class="app-menu-category-items" data-category-items="academics"></div></div>
+    <div class="app-menu-category" data-category="admin"><div class="app-menu-category-items" data-category-items="admin"></div></div>
   </div>
 
   <div class="verse-card" id="verseCard">
@@ -1367,10 +1437,10 @@ function applyRolePermissions() {
     if (btn) btn.style.display = visibleTabs.includes(tab) ? 'block' : 'none';
   });
 
-  // Hide a category card entirely if none of its tabs are visible for this role
-  document.querySelectorAll('.app-menu-category').forEach(cat => {
-    const anyVisible = Array.from(cat.querySelectorAll('.admin-tab')).some(btn => btn.style.display !== 'none');
-    cat.style.display = anyVisible ? 'block' : 'none';
+  // Hide drawer sections entirely if none of their tabs are visible for this role
+  document.querySelectorAll('.nav-drawer-section').forEach(section => {
+    const anyVisible = Array.from(section.querySelectorAll('.admin-tab')).some(btn => btn.style.display !== 'none');
+    section.style.display = anyVisible ? 'block' : 'none';
   });
 
   // Activate the first available tab for this role
@@ -1436,6 +1506,9 @@ const ROLE_BADGE_ORDER = ['super_admin','leader','board_member','teacher','staff
 function enterDashboard() {
   showOnly('adminDashboard');
   document.getElementById('adminUserEmail').textContent = currentSession.user.email;
+  document.getElementById('drawerUserEmail').textContent = currentSession.user.email;
+  const drawerName = document.getElementById('drawerUserName');
+  if (drawerName) drawerName.textContent = currentSession.user.email.split('@')[0];
   const badgeContainer = document.getElementById('adminRoleBadge');
   const orderedRoles = ROLE_BADGE_ORDER.filter(r => hasRole(r));
   badgeContainer.innerHTML = orderedRoles.map(r =>
@@ -1516,21 +1589,10 @@ document.getElementById('emailMfaResendBtn').addEventListener('click', async () 
   if (ok) { startEmailResendCooldown(); showToast('New code sent'); }
 });
 
-document.getElementById('moreActionsBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const menu = document.getElementById('moreActionsMenu');
-  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-});
-document.addEventListener('click', (e) => {
-  const menu = document.getElementById('moreActionsMenu');
-  const btn = document.getElementById('moreActionsBtn');
-  if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
-    menu.style.display = 'none';
-  }
-});
+// moreActionsBtn removed — actions now live in nav drawer bottom
 
 document.getElementById('resetAuthenticatorBtn').addEventListener('click', async () => {
-  document.getElementById('moreActionsMenu').style.display = 'none';
+  closeNavDrawer();
   if (!confirm('This will remove your current authenticator and ask you to set up a new one right now. Continue?')) return;
   const { data: factorsData } = await sb.auth.mfa.listFactors();
   const verifiedTotp = factorsData && factorsData.totp ? factorsData.totp.find(f => f.status === 'verified') : null;
@@ -2247,48 +2309,57 @@ document.getElementById('boardFileInput').addEventListener('change', async (e) =
 
 // ── TABS ──────────────────────────────────────────────────────
 const LAST_TAB_KEY = 'ncs_admin_last_tab';
+// ── NAV DRAWER ───────────────────────────────────────────────
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navDrawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navDrawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('navDrawerOpen').addEventListener('click', openNavDrawer);
+document.getElementById('navDrawerBack').addEventListener('click', closeNavDrawer);
+document.getElementById('navDrawerOverlay').addEventListener('click', closeNavDrawer);
+
+function toggleDrawerSection(header) {
+  const section = header.closest('.nav-drawer-section');
+  section.classList.toggle('collapsed');
+}
+
+function updateTopbarLabel(tabName) {
+  const btn = document.querySelector(`.admin-tab[data-tab="${tabName}"]`);
+  const label = btn ? btn.querySelector('.tab-label') : null;
+  const el = document.getElementById('topbarActiveLabel');
+  if (el && label) el.textContent = label.textContent;
+}
+
+// ── ADMIN TAB CLICKS ──────────────────────────────────────────
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    document.getElementById('sectionMenuDropdown').style.display = 'none';
+    closeNavDrawer();
+    updateTopbarLabel(tab.dataset.tab);
     try { sessionStorage.setItem(LAST_TAB_KEY, tab.dataset.tab); } catch (e) {}
   });
 });
 
-// Restores whichever tab was active before the page reloaded — iOS Safari
-// reloads backgrounded tabs from scratch (app switch, screen lock, etc.),
-// and without this it silently dumps everyone back to Newsletter every time.
 function restoreActiveTab() {
   let lastTab;
   try { lastTab = sessionStorage.getItem(LAST_TAB_KEY); } catch (e) { return; }
   if (!lastTab) return;
   const btn = document.querySelector(`.admin-tab[data-tab="${lastTab}"]`);
-  if (!btn || btn.style.display === 'none') return; // not visible for this role — leave default
+  if (!btn || btn.style.display === 'none') return;
   btn.click();
 }
 
-document.getElementById('sectionMenuBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const menu = document.getElementById('sectionMenuDropdown');
-  if (menu.style.display === 'block') {
-    menu.style.display = 'none';
-  } else {
-    expandActiveAppMenuCategory();
-    menu.style.display = 'block';
-  }
-});
-document.addEventListener('click', (e) => {
-  const menu = document.getElementById('sectionMenuDropdown');
-  const btn = document.getElementById('sectionMenuBtn');
-  if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
-    menu.style.display = 'none';
-  }
-});
-
-// ── PER-PERSON TAB ORDER (saved to this account, follows them anywhere) ──
+// ── PER-PERSON TAB ORDER ──────────────────────────────────────
 async function loadTabOrder() {
   if (!currentSession) return [];
   const { data } = await sb.from('tab_order').select('tab_order').eq('user_email', currentSession.user.email).maybeSingle();
@@ -2303,26 +2374,23 @@ async function saveTabOrder(order) {
   }, { onConflict: 'user_email' });
 }
 
-// Re-syncs each category's internal tab order + active tab/panel to match a given flat order.
-// Tabs always stay within their own category card — only their order *within* that card changes.
 function applyTabOrderToDOM(orderedTabIds) {
-  document.querySelectorAll('.app-menu-category-items').forEach(categoryContainer => {
-    const tabsHere = Array.from(categoryContainer.children).map(el => el.dataset.tab);
+  // Re-order nav-drawer-item buttons within each section
+  document.querySelectorAll('.nav-drawer-section-items').forEach(container => {
+    const tabsHere = Array.from(container.querySelectorAll('.admin-tab')).map(el => el.dataset.tab);
     const ordered = orderedTabIds.filter(t => tabsHere.includes(t));
-    tabsHere.forEach(t => { if (!ordered.includes(t)) ordered.push(t); }); // newly-added tabs go at the end
+    tabsHere.forEach(t => { if (!ordered.includes(t)) ordered.push(t); });
     ordered.forEach(tabId => {
-      const btn = categoryContainer.querySelector(`.admin-tab[data-tab="${tabId}"]`);
-      if (btn) categoryContainer.appendChild(btn);
+      const btn = container.querySelector(`.admin-tab[data-tab="${tabId}"]`);
+      if (btn) container.appendChild(btn);
     });
   });
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   const firstTab = orderedTabIds[0];
   const firstBtn = document.querySelector(`.admin-tab[data-tab="${firstTab}"]`);
+  if (firstBtn) firstBtn.classList.add('active');
   const firstPanel = document.getElementById('panel-' + firstTab);
-  if (firstBtn) {
-    firstBtn.classList.add('active');
-  }
   if (firstPanel) firstPanel.classList.add('active');
 }
 
@@ -2332,43 +2400,22 @@ async function applyPersonalTabOrder() {
     const visibleTabs = getVisibleTabsForRoles(currentRoles);
     const finalOrder = [];
     savedOrder.forEach(t => { if (visibleTabs.includes(t)) finalOrder.push(t); });
-    visibleTabs.forEach(t => { if (!finalOrder.includes(t)) finalOrder.push(t); }); // newly-visible tabs go at the end
+    visibleTabs.forEach(t => { if (!finalOrder.includes(t)) finalOrder.push(t); });
     applyTabOrderToDOM(finalOrder);
   }
   restoreActiveTab();
 }
 
-// Each category remembers its own expand/collapse state for this session.
-// Categories you've never manually touched still default to "only the one
-// holding your current tab is open" — but once you open something yourself,
-// it stays open until you close it, instead of resetting on every menu open.
-function appMenuCategoryStorageKey(categoryName) {
-  return `ncs_app_menu_cat_collapsed:${categoryName}`;
-}
-
+// Drawer section collapse (all start collapsed, open on tap)
 function expandActiveAppMenuCategory() {
-  // Always start fully collapsed — user opens as needed
-  document.querySelectorAll('.app-menu-category').forEach(cat => {
-    cat.classList.add('collapsed');
-  });
+  document.querySelectorAll('.nav-drawer-section').forEach(s => s.classList.add('collapsed'));
 }
 
-document.querySelectorAll('.app-menu-category-header').forEach(header => {
-  header.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const cat = header.closest('.app-menu-category');
-    const isCollapsed = cat.classList.contains('collapsed');
-    // Close all first
-    document.querySelectorAll('.app-menu-category').forEach(c => c.classList.add('collapsed'));
-    // If it was collapsed, open it; if it was open, leave it closed (toggle)
-    if (isCollapsed) {
-      cat.classList.remove('collapsed');
-    }
-  });
-});
+// Legacy compat stubs
+function appMenuCategoryStorageKey(n) { return `ncs_app_menu_cat_collapsed:${n}`; }
+const sectionMenuDropdown = document.getElementById('sectionMenuDropdown');
 
-// Drag tabs directly within their category card to reorder them — saves automatically per-person.
-// One Sortable instance per category (dragging is scoped to within a category, not across categories).
+// ── SORTABLE: drag to reorder within each drawer section ──────
 let sectionMenuSortableInstances = [];
 function initSectionMenuSortable() {
   if (sectionMenuSortableInstances.length) {
@@ -2376,9 +2423,9 @@ function initSectionMenuSortable() {
     sectionMenuSortableInstances = [];
   }
   if (typeof Sortable === 'undefined') return;
-  document.querySelectorAll('.app-menu-category-items').forEach(container => {
+  document.querySelectorAll('.nav-drawer-section-items').forEach(container => {
     const instance = Sortable.create(container, {
-      handle: '.tab-drag-handle',
+      handle: '.nav-drag-handle',
       animation: 220,
       easing: 'cubic-bezier(0.2, 0, 0.2, 1)',
       delay: 120,
@@ -2390,7 +2437,7 @@ function initSectionMenuSortable() {
       chosenClass: 'sortable-chosen',
       dragClass: 'sortable-drag',
       onEnd: async () => {
-        const newOrder = Array.from(document.querySelectorAll('.app-menu-category-items .admin-tab')).map(el => el.dataset.tab);
+        const newOrder = Array.from(document.querySelectorAll('.nav-drawer-section-items .admin-tab')).map(el => el.dataset.tab);
         await saveTabOrder(newOrder);
         showToast('Tab order saved');
       }
@@ -2399,15 +2446,6 @@ function initSectionMenuSortable() {
   });
 }
 initSectionMenuSortable();
-
-// Safety net: close either dropdown if the page scrolls while one is open, so it never
-// ends up looking detached from its trigger button.
-window.addEventListener('scroll', () => {
-  const appsMenu = document.getElementById('sectionMenuDropdown');
-  const moreMenu = document.getElementById('moreActionsMenu');
-  if (appsMenu && appsMenu.style.display === 'block') appsMenu.style.display = 'none';
-  if (moreMenu && moreMenu.style.display === 'block') moreMenu.style.display = 'none';
-}, { passive: true });
 
 // ── NEWSLETTER ───────────────────────────────────────────────
 async function loadNewsletters() {
@@ -3438,7 +3476,7 @@ function formatDateNice(dateStr) {
 }
 
 document.getElementById('resetYearBtn').addEventListener('click', () => {
-  document.getElementById('moreActionsMenu').style.display = 'none';
+  closeNavDrawer();
   holidayDates = [];
   mappedSlots = [];
   flaggedSlots = [];
