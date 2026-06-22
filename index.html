@@ -267,10 +267,15 @@
   .board-dl-btn{ padding:7px 14px; font-size:0.82rem; white-space:nowrap; }
   .board-dl-icon{ display:none; font-size:1.1rem; font-weight:700; }
   .board-dl-label{ display:inline; }
+  .board-file-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:#fff; border:1px solid var(--grey-line); border-radius:8px; gap:10px; box-sizing:border-box; width:100%; min-width:0; }
   @media(max-width:600px){
-    .board-dl-btn{ padding:7px 10px; }
+    .board-file-row{ padding:12px 12px; gap:8px; }
+    .board-dl-btn{ padding:8px 12px; font-size:1rem; line-height:1; }
     .board-dl-label{ display:none; }
     .board-dl-icon{ display:inline; }
+    .board-drag-handle{ display:none !important; }
+    .board-file-checkbox{ display:none !important; }
+    #boardSelectAllRow{ display:none !important; }
   }
 </style>
 </head>
@@ -2028,7 +2033,7 @@ async function loadBoardFileManager() {
 
   if (files.length > 0) {
     html += `
-      <div style="display:flex;align-items:center;gap:10px;padding:0 4px;">
+      <div id="boardSelectAllRow" style="display:flex;align-items:center;gap:10px;padding:0 4px;">
         <label style="display:flex;align-items:center;gap:6px;font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;cursor:pointer;">
           <input type="checkbox" id="boardSelectAllCb" onchange="boardToggleSelectAll(this.checked)"> Select All
         </label>
@@ -2051,7 +2056,7 @@ async function loadBoardFileManager() {
       const fullPath = boardCurrentPath + file.name;
       const sizeKB = file.metadata && file.metadata.size ? Math.round(file.metadata.size / 1024) + ' KB' : '';
       filesHtml += `
-        <div class="board-file-row" data-filename="${esc(file.name)}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;box-sizing:border-box;width:100%;min-width:0;">
+        <div class="board-file-row" data-filename="${esc(file.name)}">
           <span class="board-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
           <input type="checkbox" class="board-file-checkbox" data-path="${esc(fullPath)}" onchange="boardToggleFileSelect(this.dataset.path, this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
           <div style="flex:1;min-width:0;overflow:hidden;">
