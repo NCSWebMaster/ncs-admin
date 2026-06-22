@@ -94,11 +94,12 @@
   .nav-drawer-section.collapsed .nav-drawer-section-arrow{ transform:rotate(-90deg); }
   .nav-drawer-section-items{ overflow:hidden; max-height:500px; transition:max-height 0.25s ease, opacity 0.2s ease; opacity:1; }
   .nav-drawer-section.collapsed .nav-drawer-section-items{ max-height:0; opacity:0; }
-  .nav-drawer-item{ display:flex; align-items:center; gap:12px; width:100%; padding:13px 14px; background:none; border:none; border-radius:10px; font-family:'Trebuchet MS',sans-serif; font-weight:600; font-size:0.92rem; color:var(--ink); cursor:pointer; text-align:left; transition:background 0.15s; margin-bottom:2px; }
+  .nav-drawer-item{ display:flex; align-items:center; gap:0; width:100%; padding:13px 14px; background:none; border:none; border-radius:10px; font-family:'Trebuchet MS',sans-serif; font-weight:600; font-size:0.92rem; color:var(--ink); cursor:pointer; text-align:left; transition:background 0.15s; margin-bottom:2px; }
   .nav-drawer-item:hover{ background:#fdf6f2; }
   .nav-drawer-item.active{ background:var(--red); color:#fff; }
-  .nav-drawer-item .nav-drag-handle{ color:#c9bdb4; font-size:1rem; cursor:grab; flex-shrink:0; touch-action:none; -webkit-user-select:none; user-select:none; }
-  .nav-drawer-item.active .nav-drag-handle{ color:rgba(255,255,255,0.5); }
+  .nav-drawer-item .nav-drag-handle{ color:#d4c8c2; font-size:0.8rem; cursor:grab; flex-shrink:0; touch-action:none; -webkit-user-select:none; user-select:none; width:24px; letter-spacing:-1px; }
+  .nav-drawer-item.active .nav-drag-handle{ color:rgba(255,255,255,0.35); }
+  .nav-drawer-item .tab-label{ margin-left:14px; }
   .nav-drawer-divider{ height:1px; background:var(--grey-line); margin:10px 4px; }
   .nav-drawer-bottom{ padding:16px; flex-shrink:0; border-top:1px solid var(--grey-line); display:flex; flex-direction:column; gap:8px; }
   .nav-drawer-action{ display:flex; align-items:center; gap:10px; width:100%; padding:11px 14px; border-radius:8px; background:none; border:none; font-family:'Trebuchet MS',sans-serif; font-weight:600; font-size:0.88rem; cursor:pointer; text-align:left; transition:background 0.15s; }
