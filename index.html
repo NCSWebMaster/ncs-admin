@@ -2967,7 +2967,20 @@ async function loadStudentProfiles() {
 function renderProfileCard(s, teacherOptions, familyOptions, families) {
   const fullName = [s.first_name, s.last_name].filter(Boolean).join(' ') || 'Unnamed Student';
   const family = families.find(f => f.id === s.family_email_id);
-  const familyName = family ? (family.name || 'Family #' + family.id) : '—';
+  function computeName(f) {
+    if (!f) return '—';
+    const fn = (f.father_name||'').trim(), mn = (f.mother_name||'').trim();
+    if (!fn && !mn) return f.name || 'Family #' + f.id;
+    if (fn && !mn) return fn;
+    if (!fn && mn) return mn;
+    const fp=fn.split(' '), mp=mn.split(' ');
+    const fF=fp[0], fL=fp.length>1?fp[fp.length-1]:'';
+    const mF=mp[0], mL=mp.length>1?mp[mp.length-1]:'';
+    if (fL && mL && fL.toLowerCase()===mL.toLowerCase()) return `${fF} & ${mF} ${fL}`;
+    if (fL && mL) return `${fF} ${fL} & ${mF} ${mL}`;
+    return `${fn} & ${mn}`;
+  }
+  const familyName = computeName(family);
   const selTeacher = (opt, val) => opt.replace(`value="${esc(val)}"`, `value="${esc(val)}" selected`);
   const selFamily = (opt, val) => val ? opt.replace(`value="${val}"`, `value="${val}" selected`) : opt;
   const famId = s.family_email_id;
@@ -2994,11 +3007,13 @@ function renderProfileCard(s, teacherOptions, familyOptions, families) {
             <input type="text" id="pf-last-${s.id}" value="${esc(s.last_name||'')}">
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row single">
           <div class="profile-field">
             <label>Date of Birth</label>
-            <input type="date" id="pf-dob-${s.id}" value="${esc(s.dob||'')}">
+            <input type="date" id="pf-dob-${s.id}" value="${esc(s.dob||'')}" style="width:100%;box-sizing:border-box;">
           </div>
+        </div>
+        <div class="form-row single">
           <div class="profile-field">
             <label>Grade</label>
             <select id="pf-grade-${s.id}">${selGrade}</select>
