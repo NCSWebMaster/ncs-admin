@@ -2800,7 +2800,7 @@ async function loadStudentProfiles() {
     .is('deleted_at', null)
     .order('last_name');
 
-  const { data: teachers } = await sb.from('staff_roles').select('email,first_name,last_name,is_jr_high').order('last_name');
+  const { data: teachers } = await sb.from('staff_roles').select('email,first_name,last_name,is_jr_high').contains('roles', ['teacher']).order('last_name');
   const jrHighT = (teachers||[]).filter(t => t.is_jr_high);
   const classT  = (teachers||[]).filter(t => !t.is_jr_high);
   const teacherOptions = '<option value="">— Not Assigned —</option>' +
@@ -2838,10 +2838,11 @@ async function loadStudentProfiles() {
 
 function renderProfileCard(s, teacherOptions, familyOptions, families) {
   const fullName = [s.first_name, s.last_name].filter(Boolean).join(' ') || 'Unnamed Student';
-  const family = families.find(f => f.id === s.family_id);
+  const family = families.find(f => f.id === s.family_email_id);
   const familyName = family ? (family.name || 'Family #' + family.id) : '—';
   const selTeacher = (opt, val) => opt.replace(`value="${esc(val)}"`, `value="${esc(val)}" selected`);
   const selFamily = (opt, val) => val ? opt.replace(`value="${val}"`, `value="${val}" selected`) : opt;
+  const famId = s.family_email_id;
   const selGrade = GRADE_OPTIONS.map(g => `<option value="${g}"${s.grade===g?' selected':''}>${g}</option>`).join('');
 
   return `
@@ -2884,7 +2885,7 @@ function renderProfileCard(s, teacherOptions, familyOptions, families) {
         <div class="form-row single">
           <div class="profile-field">
             <label>Family</label>
-            <select id="pf-family-${s.id}">${selFamily(familyOptions, s.family_id)}</select>
+            <select id="pf-family-${s.id}">${selFamily(familyOptions, s.family_email_id)}</select>
           </div>
         </div>
 
@@ -2935,7 +2936,7 @@ window.saveStudentProfile = async (id) => {
     dob: get('dob') || null,
     grade: get('grade') || null,
     assigned_teacher_email: get('teacher') || null,
-    family_id: document.getElementById(`pf-family-${id}`)?.value || null,
+    family_email_id: document.getElementById(`pf-family-${id}`)?.value || null,
     medical_notes: get('medical'),
     emergency_contact_name: get('ec-name'),
     emergency_contact_relation: get('ec-rel'),
@@ -2950,9 +2951,9 @@ window.saveStudentProfile = async (id) => {
 
 window.profileRegenCode = async (studentId) => {
   // Find the family_id for this student then call regenerateAccessCode
-  const { data } = await sb.from('students').select('family_id').eq('id', studentId).maybeSingle();
-  if (!data || !data.family_id) { showToast('No family linked to this student.'); return; }
-  regenerateAccessCode(data.family_id);
+  const { data } = await sb.from('students').select('family_email_id').eq('id', studentId).maybeSingle();
+  if (!data || !data.family_email_id) { showToast('No family linked to this student.'); return; }
+  regenerateAccessCode(data.family_email_id);
 };
 
 document.getElementById('famNewInfoBtn').addEventListener('click', () => {
