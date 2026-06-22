@@ -228,6 +228,40 @@
   .progress-bar{ height:6px; background:var(--grey-line); border-radius:3px; margin-top:12px; overflow:hidden; display:none; }
   .progress-bar-fill{ height:100%; background:var(--red); border-radius:3px; transition:width 0.3s; width:0%; }
   .family-count{ font-size:0.85rem; color:var(--bronze); font-family:'Trebuchet MS',sans-serif; font-weight:600; margin-left:8px; }
+  /* Three-dot contextual menus */
+  .dot-menu-wrap{ position:relative; display:inline-block; }
+  .dot-menu-btn{ background:none; border:none; cursor:pointer; font-size:1.1rem; line-height:1; padding:4px 8px; color:#9a8b84; border-radius:6px; }
+  .dot-menu-btn:hover{ background:#f5ede6; color:var(--ink); }
+  .dot-menu-dropdown{ position:absolute; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--grey-line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.13); padding:6px; z-index:80; min-width:200px; max-width:85vw; }
+  .dot-menu-item{ display:block; width:100%; text-align:left; background:none; border:none; padding:9px 14px; font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; color:var(--ink); cursor:pointer; border-radius:6px; white-space:nowrap; }
+  .dot-menu-item:hover{ background:#f5ede6; }
+  .dot-menu-item.danger{ color:var(--red); }
+  .dot-menu-item.danger:hover{ background:#fff0f0; }
+  /* Section header rows with inline action menus */
+  .section-header-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+  .section-header-row h3{ margin:0; }
+  /* Family accordion cards */
+  .family-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; margin-bottom:10px; }
+  .family-card-header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; gap:10px; user-select:none; }
+  .family-card-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.95rem; color:var(--ink); }
+  .family-card-meta{ font-family:'Trebuchet MS',sans-serif; font-size:0.8rem; color:#9a8b84; margin-top:2px; }
+  .family-card-toggle{ color:var(--bronze); font-size:0.85rem; transition:transform 0.2s; flex-shrink:0; margin-right:2px; }
+  .family-card.expanded .family-card-toggle{ transform:rotate(90deg); }
+  .family-card-body{ display:none; padding:0 16px 16px; border-top:1px solid var(--grey-line); }
+  .family-card.expanded .family-card-body{ display:block; }
+  .family-detail-section{ margin-top:14px; }
+  .family-detail-label{ font-family:'Trebuchet MS',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#9a8b84; margin-bottom:6px; }
+  .family-detail-row{ font-family:'Trebuchet MS',sans-serif; font-size:0.85rem; color:#3a2e2a; margin-bottom:3px; }
+  .student-chip{ display:inline-block; background:#fdf6f2; border:1px solid var(--grey-line); border-radius:6px; padding:5px 12px; font-family:'Trebuchet MS',sans-serif; font-size:0.82rem; color:var(--ink); margin:3px 3px 0 0; }
+  /* Newsletter month grouping */
+  .nl-month-group{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+  .nl-month-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.88rem; color:var(--ink); user-select:none; }
+  .nl-month-arrow{ color:var(--bronze); transition:transform 0.2s; }
+  .nl-month-group.expanded .nl-month-arrow{ transform:rotate(90deg); }
+  .nl-month-body{ display:none; border-top:1px solid var(--grey-line); }
+  .nl-month-group.expanded .nl-month-body{ display:block; }
+  .nl-item{ display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--grey-line); gap:10px; flex-wrap:wrap; }
+  .nl-item:last-child{ border-bottom:none; }
   @media(max-width:600px){ .form-row{ grid-template-columns:1fr; } .admin-tabs{ grid-template-columns:1fr 1fr; } .event-row{ flex-direction:column; align-items:flex-start; } }
 </style>
 </head>
@@ -363,7 +397,7 @@
       </div>
     </div>
     <div style="position:relative;">
-      <button id="sectionMenuBtn" class="section-menu-trigger">🗂️ Apps <span style="font-size:0.7rem;">▾</span></button>
+      <button id="sectionMenuBtn" class="section-menu-trigger">Apps <span style="font-size:0.7rem;">&#9662;</span></button>
       <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;top:calc(100% + 8px);">
         <div class="app-menu-category" data-category="family">
           <button class="app-menu-category-header" data-category="family">
@@ -371,11 +405,11 @@
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="family">
-            <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📰 Newsletter</span></button>
-            <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">👨‍👩‍👧 Enroll Family</span></button>
-            <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📆 Year at a Glance</span></button>
-            <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📣 Info Nights</span></button>
-            <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🙋 Classroom Helper</span></button>
+            <button class="admin-tab active" data-tab="newsletter"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Newsletter</span></button>
+            <button class="admin-tab" data-tab="families"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Enrollment</span></button>
+            <button class="admin-tab" data-tab="yearly"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Year at a Glance</span></button>
+            <button class="admin-tab" data-tab="infonights"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Info Nights</span></button>
+            <button class="admin-tab" data-tab="volunteer"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Sign Ups</span></button>
           </div>
         </div>
         <div class="app-menu-category" data-category="academics">
@@ -384,7 +418,7 @@
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="academics">
-            <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗂️ Gradebook</span></button>
+            <button class="admin-tab" data-tab="gradebook" id="gradebookTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Gradebook</span></button>
           </div>
         </div>
         <div class="app-menu-category" data-category="admin">
@@ -393,9 +427,9 @@
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="admin">
-            <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🔐 Staff Access</span></button>
-            <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">📋 Board Member</span></button>
-            <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">🗑️ Trash</span></button>
+            <button class="admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Staff Access</span></button>
+            <button class="admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Board Member</span></button>
+            <button class="admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="tab-drag-handle">⋮⋮</span><span class="tab-label">Trash</span></button>
           </div>
         </div>
       </div>
@@ -505,10 +539,10 @@
   <!-- FAMILY EMAILS PANEL -->
   <div class="admin-panel" id="panel-families">
     <div class="admin-form">
-      <h3>Enroll Family</h3>
+      <h3>Enrollment</h3>
 
       <div class="form-row" style="margin-bottom:18px;">
-        <div class="form-group" style="max-width:260px;">
+        <div class="form-group">
           <label>Enrolling For School Year</label>
           <select id="fam-school-year"></select>
         </div>
@@ -618,11 +652,18 @@
       </div>
       <div id="studentRowsContainer"></div>
 
-      <button class="save-btn" id="saveFamiliy" style="margin-top:8px;width:100%;display:block;text-align:center;font-size:0.95rem;font-weight:700;padding:13px;">Enroll Family</button>
+      <button class="save-btn" id="saveFamiliy" style="margin-top:8px;width:100%;display:block;text-align:center;font-size:0.95rem;font-weight:700;padding:13px;">Enroll</button>
     </div>
     <div class="events-list">
-      <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
-      <button class="print-btn" onclick="printFamilies()">🖨️ Print / Save as PDF</button>
+      <div class="section-header-row">
+        <h3>Enrolled Families <span class="family-count" id="familyCount"></span></h3>
+        <div class="dot-menu-wrap">
+          <button class="dot-menu-btn" onclick="toggleDotMenu('famListMenu')" title="Actions">&#8942;</button>
+          <div id="famListMenu" class="dot-menu-dropdown" style="display:none;">
+            <button class="dot-menu-item" onclick="printFamilies();toggleDotMenu('famListMenu')">Print / Save as PDF</button>
+          </div>
+        </div>
+      </div>
       <div id="familyList"></div>
     </div>
   </div>
@@ -698,7 +739,7 @@
   <!-- VOLUNTEER SLOTS PANEL -->
   <div class="admin-panel" id="panel-volunteer">
     <div class="admin-form">
-      <h3>Add Classroom Helper Slot</h3>
+      <h3>Add Volunteer Slot</h3>
       <div class="form-row vol-form-row-3">
         <div class="form-group">
           <label>Date</label>
@@ -742,7 +783,7 @@
       </div>
     </div>
     <div class="events-list">
-      <h3>Current Classroom Helper Slots</h3>
+      <h3>Current Volunteer Slots</h3>
       <div class="vol-req-row" style="margin-bottom:16px;">
         <label>Required slots per family:</label>
         <input type="number" id="vol-required" min="1" max="20" placeholder="2">
@@ -752,8 +793,15 @@
       <div id="volSlotList"></div>
     </div>
     <div class="events-list" style="margin-top:32px;">
-      <h3>All Signups</h3>
-      <button class="print-btn" onclick="printVolunteers()">🖨️ Print / Save as PDF</button>
+      <div class="section-header-row">
+        <h3>All Signups</h3>
+        <div class="dot-menu-wrap">
+          <button class="dot-menu-btn" onclick="toggleDotMenu('signupListMenu')" title="Actions">&#8942;</button>
+          <div id="signupListMenu" class="dot-menu-dropdown" style="display:none;">
+            <button class="dot-menu-item" onclick="printVolunteers();toggleDotMenu('signupListMenu')">Print / Save as PDF</button>
+          </div>
+        </div>
+      </div>
       <div id="volSignupList"></div>
     </div>
   </div>
@@ -891,7 +939,7 @@
         <div id="boardFileManagerStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;margin-bottom:10px;"></div>
         <div id="boardBulkDeleteBar" style="display:none;align-items:center;justify-content:space-between;background:#fdf6f2;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:12px;">
           <span id="boardBulkDeleteCount" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;font-weight:700;color:var(--ink);"></span>
-          <button class="delete-btn" style="padding:7px 16px;font-size:0.82rem;" onclick="boardDeleteSelected()">🗑️ Delete Selected</button>
+          <button class="delete-btn" style="padding:7px 16px;font-size:0.82rem;" onclick="boardDeleteSelected()">Delete Selected</button>
         </div>
         <div id="boardFileManagerList" style="display:grid;gap:10px;"></div>
       </div>
@@ -1134,7 +1182,7 @@ async function chooseTotpMethod() {
   const { data: factorsData, error: listError } = await sb.auth.mfa.listFactors();
   btn.disabled = false;
   if (listError) {
-    showToast('⚠️ Authenticator setup failed: ' + listError.message, 6000);
+    showToast('Warning: Authenticator setup failed: ' + listError.message, 6000);
     console.error('listFactors error:', listError);
     return;
   }
@@ -1165,7 +1213,7 @@ async function beginTotpEnrollment() {
   const uniqueName = 'NCS Admin Authenticator ' + Date.now();
   const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: uniqueName });
   if (error) {
-    showToast('⚠️ Could not start setup: ' + error.message, 6000);
+    showToast('Warning: Could not start setup: ' + error.message, 6000);
     console.error('TOTP enroll error:', error);
     return;
   }
@@ -1289,6 +1337,7 @@ function getVisibleTabsForRoles(roles) {
 }
 
 function applyRolePermissions() {
+  resetInactivityTimer(); // start 10-minute idle-logout clock
   const isSuperAdmin = hasRole('super_admin');
   const isLeader = hasRole('leader');
   const isBoardMember = hasRole('board_member');
@@ -1671,7 +1720,7 @@ window.saveStaffName = async (id) => {
 
   // Block demoting the last remaining Super Admin
   if (!roles.includes('super_admin') && await isOnlyRemainingSuperAdmin(id)) {
-    showToast('⚠️ Cannot remove Super Admin role — this is the last remaining Super Admin');
+    showToast('Warning: Cannot remove Super Admin role — this is the last remaining Super Admin');
     return;
   }
 
@@ -1705,7 +1754,7 @@ window.saveStaffName = async (id) => {
     }
   }
 
-  showToast('✅ Staff member updated');
+  showToast('Staff member updated');
   loadStaffAccess();
 };
 
@@ -1768,13 +1817,13 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
   document.getElementById('staff-last').value = '';
   document.getElementById('staff-email').value = '';
   document.querySelectorAll('#staff-roles-checkboxes .role-checkbox').forEach(cb => cb.checked = false);
-  showToast('✅ Access granted and welcome email sent to ' + email, 4000);
+  showToast('Access granted and welcome email sent to ' + email, 4000);
   loadStaffAccess();
 });
 
 window.removeStaffRole = async (id, email) => {
   if (await isOnlyRemainingSuperAdmin(id)) {
-    showToast('⚠️ Cannot remove this account — it is the last remaining Super Admin');
+    showToast('Warning: Cannot remove this account — it is the last remaining Super Admin');
     return;
   }
   const { data: targetRow } = await sb.from('staff_roles').select('roles').eq('id', id).maybeSingle();
@@ -1914,7 +1963,7 @@ function boardFormatBreadcrumb() {
   const crumb = document.getElementById('boardBreadcrumb');
   if (!crumb) return;
   const parts = boardCurrentPath.split('/').filter(Boolean);
-  let html = `<span style="cursor:pointer;color:var(--bronze);font-weight:700;" onclick="boardNavigateTo('')">🏠 Board Files</span>`;
+  let html = `<span style="cursor:pointer;color:var(--bronze);font-weight:700;" onclick="boardNavigateTo('')">Board Files</span>`;
   let pathSoFar = '';
   parts.forEach(p => {
     pathSoFar += p + '/';
@@ -2016,12 +2065,12 @@ async function loadBoardFileManager() {
         <div class="board-file-row" data-filename="${esc(file.name)}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--grey-line);border-radius:8px;gap:10px;">
           <span class="board-drag-handle" style="cursor:grab;color:#c9bdb4;font-size:1.2rem;flex-shrink:0;touch-action:none;padding:4px;line-height:1;">⋮⋮</span>
           <input type="checkbox" class="board-file-checkbox" data-path="${esc(fullPath)}" onchange="boardToggleFileSelect(this.dataset.path, this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.92rem;word-break:break-word;">📄 ${esc(file.name)}</div>
-            <div style="font-size:0.78rem;color:#aaa;margin-top:2px;">${sizeKB}</div>
+          <div style="flex:1;min-width:0;overflow:hidden;">
+            <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(file.name)}">${esc(file.name)}</div>
+            ${sizeKB ? `<div style="font-size:0.75rem;color:#aaa;margin-top:2px;">${sizeKB}</div>` : ''}
           </div>
-          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;" data-path="${esc(fullPath)}" data-name="${esc(file.name)}" onclick="boardDownloadFile(this.dataset.path, this.dataset.name)">⬇️ Download</button>
-          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;" data-path="${esc(fullPath)}" onclick="boardDeleteFile(this.dataset.path)">✕</button>
+          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;white-space:nowrap;flex-shrink:0;" data-path="${esc(fullPath)}" data-name="${esc(file.name)}" onclick="boardDownloadFile(this.dataset.path, this.dataset.name)">Download</button>
+          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;flex-shrink:0;" data-path="${esc(fullPath)}" onclick="boardDeleteFile(this.dataset.path)">Remove</button>
         </div>`;
     });
     html += `<div id="boardFilesSortable">${filesHtml}</div>`;
@@ -2114,7 +2163,7 @@ window.boardDeleteSelected = async () => {
   if (!confirm(`Delete ${paths.length} file${paths.length !== 1 ? 's' : ''}? This cannot be undone.`)) return;
   const { error } = await sb.storage.from(BOARD_BUCKET).remove(paths);
   if (error) { showToast('Error: ' + error.message); return; }
-  showToast(`✅ ${paths.length} file${paths.length !== 1 ? 's' : ''} deleted`);
+  showToast(`${paths.length} file${paths.length !== 1 ? 's' : ''} deleted`);
   loadBoardFileManager();
 };
 
@@ -2146,7 +2195,7 @@ document.getElementById('boardNewFolderBtn').addEventListener('click', async () 
   const emptyFile = new Blob([''], { type: 'text/plain' });
   const { error } = await sb.storage.from(BOARD_BUCKET).upload(placeholderPath, emptyFile);
   if (error) { showToast('Error: ' + error.message); return; }
-  showToast('✅ Folder created');
+  showToast('Folder created');
   loadBoardFileManager();
 });
 
@@ -2177,10 +2226,10 @@ document.getElementById('boardFileInput').addEventListener('change', async (e) =
   e.target.value = '';
 
   if (successCount > 0) {
-    showToast(`✅ ${successCount} file${successCount !== 1 ? 's' : ''} uploaded`);
+    showToast(`${successCount} file${successCount !== 1 ? 's' : ''} uploaded`);
   }
   if (errors.length > 0) {
-    showToast(`⚠️ ${errors.length} file${errors.length !== 1 ? 's' : ''} failed: ${errors[0]}`, 5000);
+    showToast(`${errors.length} file${errors.length !== 1 ? 's' : ''} failed: ${errors[0]}`, 5000);
   }
 
   loadBoardFileManager();
@@ -2337,7 +2386,7 @@ function initSectionMenuSortable() {
       onEnd: async () => {
         const newOrder = Array.from(document.querySelectorAll('.app-menu-category-items .admin-tab')).map(el => el.dataset.tab);
         await saveTabOrder(newOrder);
-        showToast('✅ Tab order saved');
+        showToast('Tab order saved');
       }
     });
     sectionMenuSortableInstances.push(instance);
@@ -2363,18 +2412,39 @@ async function loadNewsletters() {
     list.innerHTML = '<p class="empty-state">No newsletters yet.</p>';
     return;
   }
-  list.innerHTML = data.map(n => `
-    <div class="event-row">
-      <div class="event-row-info">
-        <strong>📰 ${esc(n.date)}</strong>
-        <span>${esc(n.date)} · Sent ${new Date(n.sent_at).toLocaleDateString()}</span>
+
+  // Group by Month Year derived from sent_at or date field
+  const groups = {};
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  data.forEach(n => {
+    const d = n.sent_at ? new Date(n.sent_at) : (n.date ? new Date(n.date + 'T12:00:00') : null);
+    const key = d ? `${MONTHS[d.getMonth()]} ${d.getFullYear()}` : 'Undated';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(n);
+  });
+
+  list.innerHTML = Object.keys(groups).map((key, i) => {
+    const items = groups[key].map(n => `
+      <div class="nl-item">
+        <span style="font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;color:var(--ink);font-weight:600;">${esc(n.date || key)}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="${esc(n.file_url)}" target="_blank" class="view-btn" style="padding:6px 14px;font-size:0.82rem;">View PDF</a>
+          <button class="resend-btn" style="padding:6px 14px;font-size:0.82rem;" data-id="${n.id}" data-date="${esc(n.date)}" data-url="${esc(n.file_url)}" onclick="resendNewsletter(this.dataset.id, this.dataset.date, this.dataset.url, this.dataset.date)">Resend</button>
+          <button class="delete-btn" style="padding:6px 14px;font-size:0.82rem;" data-url="${esc(n.file_url)}" onclick="deleteNewsletter(${n.id}, this.dataset.url)">Delete</button>
+        </div>
+      </div>`).join('');
+
+    // Most recent month starts expanded
+    const expanded = i === 0 ? 'expanded' : '';
+    return `
+    <div class="nl-month-group ${expanded}" id="nl-group-${i}">
+      <div class="nl-month-header" onclick="toggleNlGroup('nl-group-${i}')">
+        <span>${esc(key)} <span class="family-count">(${groups[key].length})</span></span>
+        <span class="nl-month-arrow">&#9658;</span>
       </div>
-      <div class="event-row-actions">
-        <a href="${esc(n.file_url)}" target="_blank" class="view-btn">View PDF</a>
-        <button class="resend-btn" data-id="${n.id}" data-date="${esc(n.date)}" data-url="${esc(n.file_url)}" onclick="resendNewsletter(this.dataset.id, this.dataset.date, this.dataset.url, this.dataset.date)">Resend</button>
-        <button class="delete-btn" data-url="${esc(n.file_url)}" onclick="deleteNewsletter(${n.id}, this.dataset.url)">Delete</button>
-      </div>
-    </div>`).join('');
+      <div class="nl-month-body">${items}</div>
+    </div>`;
+  }).join('');
 }
 
 async function uploadNewsletter(sendEmail) {
@@ -2474,7 +2544,7 @@ async function sendNewsletterEmail(title, date, fileUrl) {
   const emailPromises = families.map(async family => {
     const result = await sb.rpc('send_email_via_resend', {
       to_email: family.email,
-      subject: `📰 NCS Newsletter — ${title}`,
+      subject: `NCS Newsletter — ${title}`,
       html_body: htmlBody(family.name)
     });
     console.log(`Email to ${family.email}:`, result);
@@ -2484,10 +2554,10 @@ async function sendNewsletterEmail(title, date, fileUrl) {
   const results = await Promise.all(emailPromises);
   const errors = results.filter(r => r.error);
   if (errors.length > 0) {
-    showToast(`⚠️ Error: ${errors[0].error.message}`, 6000);
+    showToast(`Error: ${errors[0].error.message}`, 6000);
     console.error('Email errors:', errors);
   } else {
-    showToast('✅ Emails sent successfully!', 4000);
+    showToast('Emails sent successfully!', 4000);
   }
 }
 
@@ -2495,7 +2565,7 @@ window.resendNewsletter = async (id, title, fileUrl, date) => {
   if (!confirm(`Resend "${title}" to all families?`)) return;
   showToast('Sending...', 10000);
   await sendNewsletterEmail(title, date, fileUrl);
-  showToast('✅ Newsletter resent to all families!', 4000);
+  showToast('Newsletter resent to all families!', 4000);
 };
 
 window.deleteNewsletter = async (id, fileUrl) => {
@@ -2517,52 +2587,67 @@ async function loadFamilies() {
   const list = document.getElementById('familyList');
   document.getElementById('familyCount').textContent = data ? `(${data.length} families)` : '';
   if (!data || data.length === 0) {
-    list.innerHTML = '<p class="empty-state">No families added yet.</p>';
+    list.innerHTML = '<p class="empty-state">No families enrolled yet.</p>';
     return;
   }
   list.innerHTML = data.map(f => {
     const kids = f.students || [];
-    const kidsHTML = kids.length > 0
-      ? kids.map(s => `
-          <div style="font-size:0.85rem;color:#6b5e58;background:#fff;border:1px solid var(--grey-line);border-radius:6px;padding:6px 12px;">
-            🎓 ${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' · ' + esc(s.grade) : ''}${s.dob ? ' · DOB ' + esc(s.dob) : ''}${s.assigned_teacher_email ? ' · 👩‍🏫 ' + esc(s.assigned_teacher_email) : ''}
-          </div>`).join('')
-      : '<span style="font-size:0.85rem;color:#aaa;font-style:italic;">No students added</span>';
+    const activeKids = kids.filter(s => !s.deleted_at);
 
-    const parentBlock = (label, icon, name, email, phone, dob) => {
-      if (!name && !email && !phone && !dob) return '';
-      return `
-        <div style="font-size:0.85rem;color:#6b5e58;display:flex;flex-direction:column;gap:2px;">
-          <strong style="color:var(--ink);">${icon} ${label}${name ? ': ' + esc(name) : ''}</strong>
-          ${email ? `<span>📧 ${esc(email)}</span>` : ''}
-          ${phone ? `<span>📱 ${esc(phone)}</span>` : ''}
-          ${dob ? `<span>🎂 ${esc(dob)}</span>` : ''}
-        </div>`;
+    // Summary line: parent names
+    const parentNames = [f.father_name, f.mother_name].filter(Boolean).join(' & ');
+    // Student chips summary
+    const studentSummary = activeKids.length
+      ? activeKids.map(s => `<span class="student-chip">${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}${s.grade ? ' · ' + esc(s.grade) : ''}</span>`).join('')
+      : '<span style="font-size:0.82rem;color:#aaa;font-style:italic;">No students</span>';
+
+    const detailParent = (label, name, email, phone) => {
+      if (!name && !email && !phone) return '';
+      return `<div class="family-detail-section">
+        <div class="family-detail-label">${label}</div>
+        ${name ? `<div class="family-detail-row"><strong>${esc(name)}</strong></div>` : ''}
+        ${email ? `<div class="family-detail-row">${esc(email)}</div>` : ''}
+        ${phone ? `<div class="family-detail-row">${esc(phone)}</div>` : ''}
+      </div>`;
     };
 
-    // Only the numeric id is embedded in the handler — the family name is
-    // never put into an inline onclick attribute (that was its own injection
-    // risk independent of HTML-escaping, since attribute decoding happens
-    // before the JS string literal is parsed). regenerateAccessCode looks
-    // up the name itself when it needs it for the confirm dialog.
-    const codeButton = `<button class="resend-btn" onclick="regenerateAccessCode(${f.id})">Regenerate &amp; Send Code</button>`;
+    const detailStudents = activeKids.map(s => `
+      <div class="family-detail-row" style="padding:6px 0;border-bottom:1px dashed var(--grey-line);">
+        <strong>${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}</strong>
+        ${s.grade ? ` · ${esc(s.grade)}` : ''}
+        ${s.school_year ? ` · ${esc(s.school_year)}` : ''}
+        ${s.assigned_teacher_email ? `<span style="display:block;font-size:0.8rem;color:#9a8b84;margin-top:2px;">${esc(s.assigned_teacher_email)}</span>` : '<span style="display:block;font-size:0.8rem;color:#c0392b;margin-top:2px;">No teacher assigned</span>'}
+      </div>`).join('');
+
+    const addr = formatHomeAddress(f);
 
     return `
-    <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
-        <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${esc(f.name)}</strong>
-        <div class="event-row-actions">
-          ${codeButton}
-          <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
+    <div class="family-card" id="fam-card-${f.id}">
+      <div class="family-card-header" onclick="toggleFamilyCard(${f.id})">
+        <div style="flex:1;min-width:0;">
+          <div class="family-card-name">${esc(f.name || parentNames || 'Family')}</div>
+          <div class="family-card-meta">${parentNames || ''}${activeKids.length ? ` · ${activeKids.length} student${activeKids.length !== 1 ? 's' : ''}` : ''}</div>
         </div>
+        <div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">
+          <div class="dot-menu-wrap">
+            <button class="dot-menu-btn" onclick="toggleDotMenu('fam-menu-${f.id}')" title="Actions">&#8942;</button>
+            <div id="fam-menu-${f.id}" class="dot-menu-dropdown" style="display:none;">
+              <button class="dot-menu-item" onclick="regenerateAccessCode(${f.id});toggleDotMenu('fam-menu-${f.id}')">Regenerate Access Code</button>
+              <button class="dot-menu-item danger" onclick="deleteFamily(${f.id});toggleDotMenu('fam-menu-${f.id}')">Unenroll Family</button>
+            </div>
+          </div>
+        </div>
+        <span class="family-card-toggle">&#9658;</span>
       </div>
-      <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        ${parentBlock('Father', '👨', f.father_name, f.father_email, f.father_phone, f.father_dob)}
-        ${parentBlock('Mother', '👩', f.mother_name, f.mother_email, f.mother_phone, f.mother_dob)}
+      <div class="family-card-body">
+        <div style="display:flex;flex-wrap:wrap;gap:0 32px;">
+          ${detailParent('Father', f.father_name, f.father_email, f.father_phone)}
+          ${detailParent('Mother', f.mother_name, f.mother_email, f.mother_phone)}
+        </div>
+        ${addr ? `<div class="family-detail-section"><div class="family-detail-label">Address</div><div class="family-detail-row">${esc(addr)}</div></div>` : ''}
+        ${activeKids.length ? `<div class="family-detail-section"><div class="family-detail-label">Students</div>${detailStudents}</div>` : ''}
+        <div style="margin-top:12px;">${studentSummary}</div>
       </div>
-      ${formatHomeAddress(f) ? `<span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#6b5e58;">🏠 ${esc(formatHomeAddress(f))}</span>` : ''}
-      <span style="font-size:0.85rem;font-family:'Trebuchet MS',sans-serif;color:#9a8b84;">🔑 Access code hidden — use Regenerate &amp; Send Code to issue a new one</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">${kidsHTML}</div>
     </div>`;
   }).join('');
 }
@@ -2640,7 +2725,7 @@ function addStudentRow(startCollapsed) {
   div.id = `student-row-${id}`;
   div.innerHTML = `
     <div class="student-row-header" onclick="toggleStudentRow(${id}, event)">
-      <span class="student-row-title"><span class="student-toggle-icon">▾</span> 🎓 Student</span>
+      <span class="student-row-title"><span class="student-toggle-icon">▾</span> Student</span>
       <button type="button" class="student-row-remove" onclick="removeStudentRow(${id}, event)">✕ Remove</button>
     </div>
     <div class="student-row-body">
@@ -2863,7 +2948,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
     .select()
     .single();
 
-  if (error) { btn.disabled = false; btn.textContent = 'Enroll Family'; showToast('Error: ' + error.message); return; }
+  if (error) { btn.disabled = false; btn.textContent = 'Enroll'; showToast('Error: ' + error.message); return; }
 
   const enrollSchoolYear = document.getElementById('fam-school-year').value || computeDefaultSchoolYear();
 
@@ -2872,7 +2957,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   );
 
   btn.disabled = false;
-  btn.textContent = 'Enroll Family';
+  btn.textContent = 'Enroll';
   if (studentsError) { showToast('Family saved, but students failed: ' + studentsError.message); return; }
 
   ['father-name','father-email','father-phone','father-dob','mother-name','mother-email','mother-phone','mother-dob','fam-address-street','fam-address-city','fam-address-zip'].forEach(id => {
@@ -2887,7 +2972,7 @@ document.getElementById('saveFamiliy').addEventListener('click', async () => {
   addStudentRow(true);
   clearEnrollDraft();
 
-  showToast('✅ Family enrolled and welcome email sent!', 4000);
+  showToast('Family enrolled and welcome email sent!', 4000);
   loadFamilies();
 });
 
@@ -2895,7 +2980,7 @@ window.regenerateAccessCode = async (id) => {
   if (!confirm('Generate a new access code for this family and email it to them? Their old code will stop working immediately.')) return;
   const { data, error } = await sb.rpc('regenerate_family_access_code', { p_family_id: id });
   if (error || data !== true) { showToast('Error: ' + (error ? error.message : 'Could not regenerate code')); return; }
-  showToast('✅ New access code generated and sent!');
+  showToast('New access code generated and sent!');
 };
 
 window.deleteFamily = async (id) => {
@@ -2993,7 +3078,7 @@ function saveVolRequired() {
   const val = document.getElementById('vol-required').value;
   if (!val || parseInt(val) < 1) { showToast('Please enter a valid number'); return; }
   localStorage.setItem('ncs_vol_required', val);
-  showToast(`✅ Requirement set to ${val} slot${val > 1 ? 's' : ''} per family`);
+  showToast(`Requirement set to ${val} slot${val > 1 ? 's' : ''} per family`);
   loadVolSlots();
 }
 
@@ -3079,7 +3164,7 @@ async function loadVolSlots() {
     <div class="event-row">
       <div class="event-row-info">
         <strong>${esc(s.date)} at ${esc(s.time)}</strong>
-        <span>${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${s.spots_filled}/${s.spots_total} filled · ⏰ ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'} ${s.reminder_sent ? '✅ Sent' : ''}</span>
+        <span>${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${s.spots_filled}/${s.spots_total} filled · ${s.reminder_hours === 0 ? 'No reminder' : s.reminder_hours + 'hr reminder'} ${s.reminder_sent ? 'Sent' : ''}</span>
       </div>
       <div class="event-row-actions">
         <button class="delete-btn" onclick="deleteVolSlot(${s.id})">Delete</button>
@@ -3100,7 +3185,7 @@ async function loadVolSignups() {
         <button class="delete-btn" onclick="deleteVolSignup(${s.id}, ${s.slot_id})">Remove</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;width:100%;">
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📧 Email:</strong> ${esc(s.parent_email)}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Email:</strong> ${esc(s.parent_email)}</span>
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">🙋 Role:</strong> ${esc(s.volunteer_slots.role || s.role || '—')}</span>
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📅 Date:</strong> ${esc(s.volunteer_slots.date)} at ${esc(s.volunteer_slots.time)}</span>
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📍 Location:</strong> ${esc(s.volunteer_slots.classroom)}${s.volunteer_slots.teacher ? ' · ' + esc(s.volunteer_slots.teacher) : ''}</span>
@@ -3121,7 +3206,7 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
     date,
     time,
     classroom: document.getElementById('vol-classroom').value,
-    role: 'Classroom Helper',
+    role: 'Volunteer',
     spots_total: 1,
     spots_filled: 0,
     reminder_hours: parseInt(document.getElementById('vol-reminder').value),
@@ -3134,7 +3219,7 @@ document.getElementById('saveVolSlot').addEventListener('click', async () => {
   document.getElementById('vol-time-end').value = '';
   document.getElementById('vol-classroom').value = 'TK/First Grade';
   document.getElementById('vol-reminder').value = '48';
-  showToast('Classroom Helper slot added!');
+  showToast('Volunteer slot added!');
   loadVolSlots();
 });
 
@@ -3444,6 +3529,7 @@ document.getElementById('finalConfirmBtn').addEventListener('click', async () =>
     // new school year — they're still here, no need to re-enroll them.
     const newSchoolYear = schoolYearFromDate(document.getElementById('resetStartDate').value);
     await sb.from('students').update({ school_year: newSchoolYear }).is('deleted_at', null);
+    await advanceStudentGradesForNewYear();
 
     // Delete old data (keep families)
     await sb.from('volunteer_signups').delete().neq('id', 0);
@@ -3514,7 +3600,7 @@ async function loadTrash() {
     <div class="event-row" style="flex-direction:column;align-items:flex-start;gap:8px;border-left:4px solid var(--red);">
       <div style="display:flex;justify-content:space-between;width:100%;align-items:center;flex-wrap:wrap;gap:8px;">
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">
-          🎓 ${esc(studentName)}
+          ${esc(studentName)}
         </strong>
         <div class="event-row-actions">
           <button class="save-btn" data-name="${esc(studentName)}" onclick="restoreStudent(${student.id}, this.dataset.name)">Restore</button>
@@ -3522,8 +3608,8 @@ async function loadTrash() {
         </div>
       </div>
       <div style="font-size:0.82rem;color:#9a8b84;">
-        ${student.grade ? `<span>📚 ${esc(student.grade)}</span> · ` : ''}
-        ${student.assigned_teacher_email ? `<span>👩‍🏫 ${esc(student.assigned_teacher_email)}</span> · ` : ''}
+        ${student.grade ? `<span>${esc(student.grade)}</span> · ` : ''}
+        ${student.assigned_teacher_email ? `<span style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;">${esc(student.assigned_teacher_email)}</span> · ` : ''}
         <span style="color:var(--red);font-weight:700;">Deleted: ${deletedDateStr}</span>
         ${daysLeft > 0 ? `<span> · Auto-purge in ${daysLeft} days</span>` : `<span style="color:var(--red);"> · PURGING SOON!</span>`}
       </div>
@@ -3541,7 +3627,7 @@ window.restoreStudent = async (studentId, studentName) => {
   if (error) {
     showToast(`Error restoring student: ${error.message}`, 3000);
   } else {
-    showToast(`✅ ${studentName} restored!`, 3000);
+    showToast(`${studentName} restored!`, 3000);
     loadTrash();
     loadFamilies();
   }
@@ -3557,7 +3643,7 @@ window.permanentlyDeleteStudent = async (studentId, studentName) => {
   if (error) {
     showToast(`Error deleting student: ${error.message}`, 3000);
   } else {
-    showToast(`🗑️ ${studentName} permanently deleted.`, 3000);
+    showToast(`${studentName} permanently deleted.`, 3000);
     loadTrash();
     loadFamilies();
   }
@@ -3789,7 +3875,7 @@ async function loadMyStudents() {
       <div class="gb-student-header" onclick="toggleGbCard(${s.id})">
         <div>
           <span class="gb-toggle-icon">▸</span>
-          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          <span class="gb-student-name">${esc(studentName)}</span>
           ${s.grade ? `<span class="gb-student-meta"> · ${esc(s.grade)}</span>` : ''}
         </div>
         <span class="gb-status-badge ${statusInfo.cls}">${statusInfo.text}</span><span class="gb-gpa-badge">GPA: —</span>
@@ -4000,7 +4086,7 @@ async function loadFinalReportCards() {
       <div class="gb-student-header" onclick="toggleGbFinalCard(${f.id})">
         <div>
           <span class="gb-toggle-icon">▸</span>
-          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          <span class="gb-student-name">${esc(studentName)}</span>
           ${student.grade ? `<span class="gb-student-meta"> · ${esc(student.grade)}</span>` : ''}
         </div>
         <span class="gb-status-badge ${locked ? 'sent' : 'draft'}">${locked ? 'Sent to Parents' : 'Needs Final Comments'}</span><span class="gb-gpa-badge">Year GPA: ${gpaText}</span>
@@ -4071,7 +4157,7 @@ window.saveFinalComments = async (finalId) => {
   try {
     await saveFinalCommentsToDb(finalId);
     clearGbFinalDraft(document.getElementById('gbSchoolYear').value);
-    showToast('✅ Comments saved.', 2500);
+    showToast('Comments saved.', 2500);
   } catch (err) {
     showToast(`Error saving: ${err.message}`, 4000);
   }
@@ -4149,7 +4235,7 @@ async function loadReviewQueue() {
       <div class="gb-student-header" onclick="toggleGbQueueCard(${rc.id})">
         <div>
           <span class="gb-toggle-icon">▸</span>
-          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          <span class="gb-student-name">${esc(studentName)}</span>
           ${student.grade ? `<span class="gb-student-meta"> · ${esc(student.grade)}</span>` : ''}
         </div>
         <span class="gb-status-badge submitted">Submitted</span>
@@ -4257,7 +4343,7 @@ async function loadSentReportCards() {
       <div class="gb-student-header" onclick="toggleGbSentCard(${rc.id})">
         <div>
           <span class="gb-toggle-icon">▸</span>
-          <span class="gb-student-name">🎓 ${esc(studentName)}</span>
+          <span class="gb-student-name">${esc(studentName)}</span>
           ${student.grade ? `<span class="gb-student-meta"> · ${esc(student.grade)}</span>` : ''}
         </div>
         <span class="gb-status-badge sent">Sent to Parents</span><span class="gb-gpa-badge">GPA: ${gpaText}</span>
@@ -4318,7 +4404,7 @@ window.saveGradebookDraft = async (studentId) => {
     const rc = await ensureReportCard(studentId, schoolYear, quarter);
     await saveGradebookGrades(rc.id, studentId);
     clearGbDraftForStudent(studentId);
-    showToast('✅ Draft saved.', 2500);
+    showToast('Draft saved.', 2500);
   } catch (err) {
     showToast(`Error saving: ${err.message}`, 4000);
   }
@@ -4334,7 +4420,7 @@ window.submitGradebookReport = async (studentId) => {
     const { error } = await sb.rpc('submit_report_card', { p_report_card_id: rc.id });
     if (error) throw error;
     clearGbDraftForStudent(studentId);
-    showToast('✅ Submitted for review.', 3000);
+    showToast('Submitted for review.', 3000);
     loadGradebook();
   } catch (err) {
     showToast(`Error submitting: ${err.message}`, 4500);
@@ -4370,6 +4456,112 @@ document.addEventListener('click', (e) => {
     loadGradebook();
   }
 });
+
+// ── ACCORDION & DOT MENU HELPERS ──────────────────────────────
+
+window.toggleFamilyCard = (id) => {
+  document.getElementById(`fam-card-${id}`).classList.toggle('expanded');
+};
+
+window.toggleNlGroup = (id) => {
+  document.getElementById(id).classList.toggle('expanded');
+};
+
+// Generic dot-menu toggle — closes all other open dot menus first so only
+// one is ever open at a time; also closes when you click outside anywhere.
+function toggleDotMenu(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  const isOpen = target.style.display !== 'none';
+  document.querySelectorAll('.dot-menu-dropdown').forEach(d => d.style.display = 'none');
+  if (!isOpen) {
+    target.style.display = 'block';
+    // Flip to open upward if it would overflow the bottom of the viewport
+    const rect = target.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 20) {
+      target.style.top = 'auto';
+      target.style.bottom = 'calc(100% + 4px)';
+    } else {
+      target.style.top = '';
+      target.style.bottom = '';
+    }
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dot-menu-wrap')) {
+    document.querySelectorAll('.dot-menu-dropdown').forEach(d => d.style.display = 'none');
+  }
+});
+
+// ── AUTO-LOGOUT AFTER 10 MINUTES OF INACTIVITY ────────────────
+// Resets on any mouse, touch, or keyboard activity. After 10 minutes idle
+// the user is signed out and lands back on the login screen — same as
+// pressing Sign Out manually. Scoped to authenticated sessions only;
+// the timer starts the moment applyRolePermissions() runs (post-login).
+
+let inactivityTimer = null;
+const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutes
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(async () => {
+    if (!currentSession) return;
+    clearAllGradebookSessionState();
+    await sb.auth.signOut();
+    showToast('Signed out due to inactivity.');
+  }, INACTIVITY_MS);
+}
+
+['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(evt => {
+  document.addEventListener(evt, resetInactivityTimer, { passive: true });
+});
+
+// ── RE-ENROLLMENT GRADE ADVANCEMENT ───────────────────────────
+// When Start New School Year rolls students forward, check any student
+// whose grade can be auto-advanced and show a reminder to assign teachers.
+function advanceGradeLevel(current) {
+  const idx = GRADE_OPTIONS.indexOf(current);
+  if (idx < 0 || idx >= GRADE_OPTIONS.length - 1) return current;
+  return GRADE_OPTIONS[idx + 1];
+}
+
+// Called by the Start New School Year reset flow — updates grades in DB
+// and surfaces the teacher-assignment reminder toast.
+async function advanceStudentGradesForNewYear() {
+  const { data: students } = await sb.from('students')
+    .select('id, grade, assigned_teacher_email')
+    .is('deleted_at', null);
+  if (!students || !students.length) return;
+
+  const updates = students
+    .filter(s => s.grade && GRADE_OPTIONS.includes(s.grade) && GRADE_OPTIONS.indexOf(s.grade) < GRADE_OPTIONS.length - 1)
+    .map(s => ({ id: s.id, grade: advanceGradeLevel(s.grade), assigned_teacher_email: null }));
+
+  if (updates.length) {
+    for (const u of updates) {
+      await sb.from('students').update({ grade: u.grade, assigned_teacher_email: null }).eq('id', u.id);
+    }
+    showToast(`${updates.length} student${updates.length !== 1 ? 's' : ''} advanced to next grade. Please assign teachers.`, 7000);
+  }
+}
+
+// ── EASTER EGGS ────────────────────────────────────────────────
+// Hidden in plain sight. None of these affect any functionality.
+// Konami code: Up Up Down Down Left Right Left Right B A → small surprise
+(function() {
+  const KONAMI = [38,38,40,40,37,39,37,39,66,65];
+  let pos = 0;
+  document.addEventListener('keydown', (e) => {
+    if (e.keyCode === KONAMI[pos]) {
+      pos++;
+      if (pos === KONAMI.length) {
+        pos = 0;
+        showToast('Proverbs 9:10  \u2728', 4000);
+      }
+    } else { pos = 0; }
+  });
+})();
 
 </script>
 </body>
