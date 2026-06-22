@@ -85,7 +85,8 @@
   .nav-drawer-back svg{ flex-shrink:0; }
   .nav-drawer-user{ padding:14px 16px; background:#fdf6f2; border-radius:10px; margin-bottom:20px; }
   .nav-drawer-user-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.9rem; color:var(--ink); margin-bottom:2px; }
-  .nav-drawer-user-email{ font-size:0.78rem; color:#9a8b84; font-family:'Trebuchet MS',sans-serif; }
+  .nav-drawer-user-email{ font-size:0.78rem; color:#9a8b84; font-family:'Trebuchet MS',sans-serif; margin-bottom:8px; }
+  #adminRoleBadge .role-badge{ font-size:0.65rem !important; padding:3px 9px !important; margin-left:0 !important; }
   .nav-drawer-scroll{ flex:1; overflow-y:auto; padding:0 12px 16px; -webkit-overflow-scrolling:touch; }
   .nav-drawer-section{ margin-bottom:8px; }
   .nav-drawer-section-header{ display:flex; align-items:center; justify-content:space-between; padding:10px 10px; font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.72rem; text-transform:uppercase; letter-spacing:1.2px; color:#9a8b84; cursor:pointer; user-select:none; border-radius:8px; transition:background 0.15s; }
@@ -1516,8 +1517,8 @@ function enterDashboard() {
 function updateGreetingName(firstName) {
   if (!firstName) return;
   const title = document.getElementById('greetingTitle');
-  const current = title.textContent; // e.g. "Good afternoon!"
-  title.textContent = current.replace('!', `, ${firstName}!`);
+  const base = title.textContent.replace(/,?\s*$/, ''); // strip any trailing comma/space
+  title.textContent = `${base}, ${firstName}!`;
 }
 
 sb.auth.onAuthStateChange((event, session) => {
@@ -1983,10 +1984,39 @@ const VERSES = [
 ];
 
 async function loadGreetingAndStats() {
-  // Greeting by time of day
-  const hour = new Date().getHours();
-  let greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('greetingTitle').textContent = `${greeting}!`;
+  // ── GREETING POOL ────────────────────────────────────────────
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const day = now.getDate();
+
+  function nearHoliday(m, d, rangeDays) {
+    const target = new Date(now.getFullYear(), m - 1, d);
+    const diff = (target - now) / 86400000;
+    return diff >= -2 && diff <= rangeDays;
+  }
+
+  let holidayGreeting = null;
+  if (nearHoliday(12, 25, 7))      holidayGreeting = 'Joy to the world, ';
+  else if (nearHoliday(4, 20, 7))  holidayGreeting = 'He is risen, ';   // approx Easter window
+  else if (nearHoliday(11, 28, 5)) holidayGreeting = 'Grateful for you, ';
+  else if (nearHoliday(1, 1, 4))   holidayGreeting = 'New year, new grace, ';
+  else if (month === 8 && day >= 20) holidayGreeting = 'New year, new purpose, ';
+
+  const pool = [
+    'Good morning, ',
+    'Welcome back, ',
+    'Great to see you, ',
+    'Ready to serve, ',
+    'Do it heartily, ',
+    'Called for this, ',
+    'Let your light shine, ',
+    'Walk in faith, ',
+    'Serving well today, ',
+    'Grace and peace, ',
+  ];
+
+  const greetingBase = holidayGreeting || pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('greetingTitle').textContent = greetingBase.trimEnd();
   updateGreetingName(currentSession && currentSession._staffName);
 
   // Daily verse — rotates by day of year
