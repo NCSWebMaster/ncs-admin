@@ -453,7 +453,7 @@
         <div class="oneplace-topbar-active" id="topbarActiveLabel">Newsletter</div>
       </div>
     </div>
-    <button id="signOutBtn" style="background:none;border:1px solid var(--grey-line);border-radius:6px;padding:7px 14px;font-family:'Trebuchet MS',sans-serif;font-size:0.82rem;font-weight:700;color:#6b5e58;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--red)';this.style.color='#fff';this.style.borderColor='var(--red)';" onmouseout="this.style.background='none';this.style.color='#6b5e58';this.style.borderColor='var(--grey-line)';">Sign Out</button>
+
   </div>
 
   <!-- NAV DRAWER OVERLAY -->
@@ -474,7 +474,7 @@
 
     <div class="nav-drawer-scroll">
       <!-- Family & Community -->
-      <div class="nav-drawer-section" data-drawer-section="family">
+      <div class="nav-drawer-section collapsed" data-drawer-section="family">
         <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
           <span>Family &amp; Community</span>
           <span class="nav-drawer-section-arrow">▾</span>
@@ -489,7 +489,7 @@
       </div>
 
       <!-- Academics -->
-      <div class="nav-drawer-section" data-drawer-section="academics">
+      <div class="nav-drawer-section collapsed" data-drawer-section="academics">
         <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
           <span>Academics</span>
           <span class="nav-drawer-section-arrow">▾</span>
@@ -500,7 +500,7 @@
       </div>
 
       <!-- Admin & Governance -->
-      <div class="nav-drawer-section" data-drawer-section="admin">
+      <div class="nav-drawer-section collapsed" data-drawer-section="admin">
         <div class="nav-drawer-section-header" onclick="toggleDrawerSection(this)">
           <span>Admin &amp; Governance</span>
           <span class="nav-drawer-section-arrow">▾</span>
@@ -517,6 +517,7 @@
     <div class="nav-drawer-bottom">
       <button class="nav-drawer-action" id="resetAuthenticatorBtn">Reset Authenticator</button>
       <button class="nav-drawer-action reset-btn" id="resetYearBtn" style="display:none;">Start New School Year</button>
+      <button class="nav-drawer-action danger" id="signOutBtn">Sign Out</button>
     </div>
   </div>
 
@@ -1508,7 +1509,14 @@ function enterDashboard() {
   document.getElementById('adminUserEmail').textContent = currentSession.user.email;
   document.getElementById('drawerUserEmail').textContent = currentSession.user.email;
   const drawerName = document.getElementById('drawerUserName');
-  if (drawerName) drawerName.textContent = currentSession.user.email.split('@')[0];
+  if (drawerName) {
+    const meta = currentSession.user.user_metadata;
+    const firstName = (meta && (meta.first_name || meta.full_name))
+      ? (meta.first_name || meta.full_name.split(' ')[0])
+      : currentSession.user.email.split('@')[0].split('.')[0];
+    const display = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+    drawerName.textContent = 'Welcome, ' + display;
+  }
   const badgeContainer = document.getElementById('adminRoleBadge');
   const orderedRoles = ROLE_BADGE_ORDER.filter(r => hasRole(r));
   badgeContainer.innerHTML = orderedRoles.map(r =>
@@ -2327,7 +2335,11 @@ document.getElementById('navDrawerOverlay').addEventListener('click', closeNavDr
 
 function toggleDrawerSection(header) {
   const section = header.closest('.nav-drawer-section');
-  section.classList.toggle('collapsed');
+  const isCollapsed = section.classList.contains('collapsed');
+  // Close all sections first
+  document.querySelectorAll('.nav-drawer-section').forEach(s => s.classList.add('collapsed'));
+  // If it was collapsed, open it; if it was open, leave it closed (toggle)
+  if (isCollapsed) section.classList.remove('collapsed');
 }
 
 function updateTopbarLabel(tabName) {
