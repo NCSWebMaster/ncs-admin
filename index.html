@@ -1187,8 +1187,7 @@ function showMfaChoice() {
 async function sendEmailMfaCode(email) {
   const { data, error } = await sb.rpc('request_email_mfa_code');
   if (error || data !== true) {
-    const msg = error ? error.message : ('data=' + JSON.stringify(data));
-    document.getElementById('emailMfaError').textContent = 'Error: ' + msg;
+    document.getElementById('emailMfaError').textContent = 'Could not send the code. Please wait a moment and try again.';
     console.error('MFA request error:', error, 'data:', data);
     return false;
   }
@@ -1863,25 +1862,11 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
     .map(r => `As ${/^[aeiou]/i.test(getRoleLabel(r)) ? 'an' : 'a'} ${getRoleLabel(r)}, you can ${getRoleAccessDescription(r)}.`)
     .join(' ');
 
-  await sb.rpc('send_email_via_resend', {
-    to_email: email,
-    subject: 'Your NCS Admin Access',
-    from_email: 'NCS Admin <webmaster@northridgecommunityschool.com>',
-    html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-      <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Logo" style="height:100px;width:auto;display:block;margin:0 auto 24px;">
-      <h2 style="color:#C8102E;text-align:center;">Your NCS Admin Access</h2>
-      <p style="color:#3A2E2A;font-size:16px;">Hi${firstName ? ' ' + firstName : ''},</p>
-      <p style="color:#3A2E2A;font-size:16px;">You've been granted <strong>${roleLabels}</strong> access to the Northridge Community School admin site. ${accessDesc}</p>
-      <p style="color:#3A2E2A;font-size:16px;">To sign in, visit the link below and click "Sign in with Google" using this email address. After signing in, a 6-digit verification code will be sent to your email — enter it to complete login.</p>
-      <div style="text-align:center;margin:32px 0;">
-        <a href="https://admin.northridgecommunityschool.com" style="background:#C8102E;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;font-size:16px;">Sign In to Admin Site</a>
-      </div>
-      <p style="color:#3A2E2A;font-size:16px;">If you have any questions, please reach out to the office directly at <a href="mailto:office@northridgecommunityschool.com" style="color:#B07D4F;">office@northridgecommunityschool.com</a> or by phone at 818-360-1111.</p>
-      <p style="color:#3A2E2A;font-size:16px;">God bless,<br>Northridge Community School</p>
-      <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
-        Northridge Community School · Where Godly Character meets Great Academics
-      </p>
-    </div>`
+  await sb.rpc('send_staff_access_email', {
+    p_to_email:    email,
+    p_first_name:  firstName || '',
+    p_role_labels: roleLabels,
+    p_access_desc: accessDesc
   });
 
   btn.disabled = false;
@@ -2617,14 +2602,15 @@ async function sendNewsletterEmail(title, date, fileUrl) {
       </p>
     </div>`;
 
-  // Send via Supabase database function (avoids CORS issues)
+  // Send via secure server-side RPC — browser never touches send_email_via_resend
   const emailPromises = families.map(async family => {
-    const result = await sb.rpc('send_email_via_resend', {
-      to_email: family.email,
-      subject: `NCS Newsletter — ${title}`,
-      html_body: htmlBody(family.name)
+    const result = await sb.rpc('send_newsletter_email', {
+      p_to_email: family.email,
+      p_name:     family.name,
+      p_title:    title,
+      p_date:     date || '',
+      p_file_url: fileUrl
     });
-    console.log(`Email to ${family.email}:`, result);
     return result;
   });
 
