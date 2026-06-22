@@ -263,6 +263,15 @@
   .nl-item{ display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--grey-line); gap:10px; flex-wrap:wrap; }
   .nl-item:last-child{ border-bottom:none; }
   @media(max-width:600px){ .form-row{ grid-template-columns:1fr; } .admin-tabs{ grid-template-columns:1fr 1fr; } .event-row{ flex-direction:column; align-items:flex-start; } }
+  /* Board file download button: text on tablet+, icon only on mobile */
+  .board-dl-btn{ padding:7px 14px; font-size:0.82rem; white-space:nowrap; }
+  .board-dl-icon{ display:none; font-size:1.1rem; font-weight:700; }
+  .board-dl-label{ display:inline; }
+  @media(max-width:600px){
+    .board-dl-btn{ padding:7px 10px; }
+    .board-dl-label{ display:none; }
+    .board-dl-icon{ display:inline; }
+  }
 </style>
 </head>
 <body>
@@ -301,14 +310,14 @@
   <p>Choose how you'd like to verify your sign-in.</p>
   <div style="display:flex;flex-direction:column;gap:14px;max-width:320px;margin:28px auto 0;">
     <button class="mfa-choice-btn" id="chooseTotpBtn">
-      <span style="font-size:1.6rem;">📱</span>
+      <span style="font-size:1.6rem;"></span>
       <span>
         <strong>Authenticator App</strong>
         <small>Use a code from an app on your phone</small>
       </span>
     </button>
     <button class="mfa-choice-btn" id="chooseEmailBtn">
-      <span style="font-size:1.6rem;">📧</span>
+      <span style="font-size:1.6rem;"></span>
       <span>
         <strong>Email Me a Code</strong>
         <small>We'll send a 6-digit code to your email</small>
@@ -392,8 +401,8 @@
       <div id="moreActionsMenu" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--grey-line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:10px;z-index:60;width:230px;max-width:80vw;box-sizing:border-box;">
         <button id="signOutBtn" style="display:block;width:100%;text-align:left;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">Sign Out</button>
         <div style="border-top:1px solid var(--grey-line);margin:4px 0 8px;"></div>
-        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">🔄 Reset Authenticator</button>
-        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">🎓 Start New School Year</button>
+        <button id="resetAuthenticatorBtn" style="display:block;width:100%;text-align:left;background:transparent;color:#a8865f;border:1.5px dashed #c9a876;border-radius:8px;padding:10px 14px;font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:8px;">Reset Authenticator</button>
+        <button class="reset-btn" id="resetYearBtn" style="display:none;width:100%;text-align:left;">Start New School Year</button>
       </div>
     </div>
     <div style="position:relative;">
@@ -401,7 +410,7 @@
       <div id="sectionMenuDropdown" class="section-menu-dropdown" style="display:none;top:calc(100% + 8px);">
         <div class="app-menu-category" data-category="family">
           <button class="app-menu-category-header" data-category="family">
-            <span>👨‍👩‍👧 Family &amp; Community</span>
+            <span>Family &amp; Community</span>
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="family">
@@ -414,7 +423,7 @@
         </div>
         <div class="app-menu-category" data-category="academics">
           <button class="app-menu-category-header" data-category="academics">
-            <span>🎓 Academics</span>
+            <span>Academics</span>
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="academics">
@@ -423,7 +432,7 @@
         </div>
         <div class="app-menu-category" data-category="admin">
           <button class="app-menu-category-header" data-category="admin">
-            <span>🔐 Admin &amp; Governance</span>
+            <span>Admin &amp; Governance</span>
             <span class="app-menu-category-arrow">▾</span>
           </button>
           <div class="app-menu-category-items" data-category-items="admin">
@@ -559,7 +568,7 @@
       <!-- FATHER -->
       <div class="person-section" id="father-section">
         <div class="person-section-header" onclick="togglePersonSection('father-section')">
-          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 👨 Father</span>
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> Father</span>
         </div>
         <div class="person-section-body">
           <div class="form-row">
@@ -588,7 +597,7 @@
       <!-- HOME ADDRESS -->
       <div class="person-section collapsed" id="homeaddress-section">
         <div class="person-section-header" onclick="togglePersonSection('homeaddress-section')">
-          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 🏠 Home Address <span style="font-weight:400;color:#9a8b84;">(optional)</span></span>
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> Home Address <span style="font-weight:400;color:#9a8b84;">(optional)</span></span>
         </div>
         <div class="person-section-body">
           <div class="form-row">
@@ -619,7 +628,7 @@
       <!-- MOTHER -->
       <div class="person-section collapsed" id="mother-section">
         <div class="person-section-header" onclick="togglePersonSection('mother-section')">
-          <span class="person-section-title"><span class="person-toggle-icon">▾</span> 👩 Mother</span>
+          <span class="person-section-title"><span class="person-toggle-icon">▾</span> Mother</span>
         </div>
         <div class="person-section-body">
           <div class="form-row">
@@ -726,7 +735,7 @@
         </div>
         <div class="form-group">
           <label>Emoji</label>
-          <input type="text" id="y-emoji" placeholder="e.g. 📸 🎄 🏫 🌸">
+          <input type="text" id="y-emoji" placeholder="e.g.    ">
         </div>
       </div>
       <button class="save-btn" id="saveYearly">Add Date</button>
@@ -868,7 +877,7 @@
   <!-- GRADEBOOK PANEL (teacher — quarterly report cards) -->
   <div class="admin-panel" id="panel-gradebook">
     <div class="admin-form">
-      <h3 style="margin-bottom:16px;">📝 Report Cards</h3>
+      <h3 style="margin-bottom:16px;">Report Cards</h3>
       <div class="form-row">
         <div class="form-group">
           <label>School Year</label>
@@ -910,25 +919,10 @@
     </div>
   </div>
 
-  <!-- BOARD MEMBER PANEL (placeholder — Google Drive integration coming) -->
+  <!-- BOARD MEMBER PANEL -->
   <div class="admin-panel" id="panel-boardmember">
     <div id="boardMemberContent" style="display:none;">
-      <div class="admin-form">
-        <h3 style="margin-bottom:24px;">Board Resources</h3>
-        <p style="color:#6b5e58;margin-bottom:20px;font-size:0.95rem;line-height:1.6;">
-          Access shared board documents and resources from our Google Drive folder.
-        </p>
-        <a href="https://drive.google.com/drive/folders/15890EGxKPz8gZVfJALkc-1oAx01xv7z8" 
-           target="_blank" 
-           rel="noopener"
-           style="display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:8px;font-family:'Trebuchet MS',sans-serif;font-weight:700;text-decoration:none;transition:opacity 0.2s;font-size:0.95rem;"
-           onmouseover="this.style.opacity='0.9'"
-           onmouseout="this.style.opacity='1'">
-          Open NCS Board Folder on Google Drive
-        </a>
-      </div>
-
-      <div class="admin-form" style="margin-top:24px;box-sizing:border-box;overflow:hidden;">
+      <div class="admin-form" style="box-sizing:border-box;overflow:hidden;">
         <h3 style="margin:0 0 14px 0;">Board Minutes &amp; Documents</h3>
         <div style="display:flex;gap:10px;margin-bottom:20px;">
           <button class="save-btn" id="boardNewFolderBtn" style="padding:10px 16px;font-size:0.85rem;flex:1;">+ New Folder</button>
@@ -937,10 +931,6 @@
         </div>
         <div id="boardBreadcrumb" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;color:#6b5e58;margin-bottom:14px;"></div>
         <div id="boardFileManagerStatus" style="font-size:0.85rem;color:#aaa;font-family:'Trebuchet MS',sans-serif;margin-bottom:10px;"></div>
-        <div id="boardBulkDeleteBar" style="display:none;align-items:center;justify-content:space-between;background:#fdf6f2;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:12px;">
-          <span id="boardBulkDeleteCount" style="font-family:'Trebuchet MS',sans-serif;font-size:0.85rem;font-weight:700;color:var(--ink);"></span>
-          <button class="delete-btn" style="padding:7px 16px;font-size:0.82rem;" onclick="boardDeleteSelected()">Delete Selected</button>
-        </div>
         <div id="boardFileManagerList" style="display:grid;gap:10px;width:100%;box-sizing:border-box;min-width:0;overflow:hidden;"></div>
       </div>
     </div>
@@ -1045,7 +1035,7 @@
     <polyline points="28,52 44,68 72,34" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="60" stroke-dashoffset="60" style="animation:drawCheck 0.5s ease 0.3s forwards;"/>
   </svg>
   <div class="summer-text">New school year is ready!</div>
-  <div class="summer-sub">Have a wonderful Summer! ☀️</div>
+  <div class="summer-sub">Have a wonderful Summer! </div>
 </div>
 
 <script src="shared.js"></script>
@@ -1998,7 +1988,7 @@ async function loadBoardFileManager() {
   });
 
   if (error) {
-    list.innerHTML = `<p class="empty-state" style="color:var(--red);">⚠️ ${esc(error.message)}</p>`;
+    list.innerHTML = `<p class="empty-state" style="color:var(--red);">${esc(error.message)}</p>`;
     status.textContent = '';
     return;
   }
@@ -2068,8 +2058,7 @@ async function loadBoardFileManager() {
             <div style="font-family:'Trebuchet MS',sans-serif;font-weight:600;color:var(--ink);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(file.name)}">${esc(file.name)}</div>
             ${sizeKB ? `<div style="font-size:0.75rem;color:#aaa;margin-top:2px;">${sizeKB}</div>` : ''}
           </div>
-          <button class="view-btn" style="padding:7px 14px;font-size:0.82rem;white-space:nowrap;flex-shrink:0;" data-path="${esc(fullPath)}" data-name="${esc(file.name)}" onclick="boardDownloadFile(this.dataset.path, this.dataset.name)">Download</button>
-          <button class="delete-btn" style="padding:7px 14px;font-size:0.82rem;flex-shrink:0;" data-path="${esc(fullPath)}" onclick="boardDeleteFile(this.dataset.path)">Remove</button>
+          <button class="view-btn board-dl-btn" data-path="${esc(fullPath)}" data-name="${esc(file.name)}" onclick="boardDownloadFile(this.dataset.path, this.dataset.name)" style="flex-shrink:0;"><span class="board-dl-label">Download</span><span class="board-dl-icon" aria-hidden="true">&#8595;</span></button>
         </div>`;
     });
     html += `<div id="boardFilesSortable">${filesHtml}</div>`;
@@ -2336,18 +2325,9 @@ function appMenuCategoryStorageKey(categoryName) {
 }
 
 function expandActiveAppMenuCategory() {
-  const activeBtn = document.querySelector('.admin-tab.active');
-  const activeCategory = activeBtn ? activeBtn.closest('.app-menu-category') : null;
+  // Always start fully collapsed — user opens as needed
   document.querySelectorAll('.app-menu-category').forEach(cat => {
-    let saved;
-    try { saved = sessionStorage.getItem(appMenuCategoryStorageKey(cat.dataset.category)); } catch (e) {}
-    if (saved === 'true') {
-      cat.classList.add('collapsed');
-    } else if (saved === 'false') {
-      cat.classList.remove('collapsed');
-    } else {
-      cat.classList.toggle('collapsed', cat !== activeCategory);
-    }
+    cat.classList.add('collapsed');
   });
 }
 
@@ -2355,8 +2335,13 @@ document.querySelectorAll('.app-menu-category-header').forEach(header => {
   header.addEventListener('click', (e) => {
     e.stopPropagation();
     const cat = header.closest('.app-menu-category');
-    cat.classList.toggle('collapsed');
-    try { sessionStorage.setItem(appMenuCategoryStorageKey(cat.dataset.category), cat.classList.contains('collapsed')); } catch (e) {}
+    const isCollapsed = cat.classList.contains('collapsed');
+    // Close all first
+    document.querySelectorAll('.app-menu-category').forEach(c => c.classList.add('collapsed'));
+    // If it was collapsed, open it; if it was open, leave it closed (toggle)
+    if (isCollapsed) {
+      cat.classList.remove('collapsed');
+    }
   });
 });
 
@@ -2512,7 +2497,7 @@ async function uploadNewsletter(sendEmail) {
   if (sendEmail) {
     showSuccessCheckmark('Sent to all families!');
   }
-  showToast(sendEmail ? '✅ Newsletter uploaded and sent to all families!' : '✅ Newsletter uploaded successfully!', 4000);
+  showToast(sendEmail ? 'Newsletter uploaded and sent to all families!' : 'Newsletter uploaded successfully!', 4000);
   loadNewsletters();
 }
 
@@ -2531,7 +2516,7 @@ async function sendNewsletterEmail(title, date, fileUrl) {
       <p style="color:#3A2E2A;font-size:16px;">Dear ${name},</p>
       <p style="color:#3A2E2A;font-size:16px;">The <strong>${title}</strong> newsletter is now available. Click the button below to read it.</p>
       <div style="text-align:center;margin:32px 0;">
-        <a href="${fileUrl}" style="background:#C8102E;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;font-size:16px;">📄 Read Newsletter</a>
+        <a href="${fileUrl}" style="background:#C8102E;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;font-size:16px;">Read Newsletter</a>
       </div>
       <p style="color:#9a8b84;font-size:13px;border-top:1px solid #E6E1DC;padding-top:16px;margin-top:24px;">
         Northridge Community School · Where Godly Character meets Great Academics<br>
@@ -2725,7 +2710,7 @@ function addStudentRow(startCollapsed) {
   div.innerHTML = `
     <div class="student-row-header" onclick="toggleStudentRow(${id}, event)">
       <span class="student-row-title"><span class="student-toggle-icon">▾</span> Student</span>
-      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id}, event)">✕ Remove</button>
+      <button type="button" class="student-row-remove" onclick="removeStudentRow(${id}, event)">Remove</button>
     </div>
     <div class="student-row-body">
       <div class="form-row">
@@ -3038,7 +3023,7 @@ async function loadInfoNights() {
   list.innerHTML = data.map(n => `
     <div class="event-row">
       <div class="event-row-info">
-        <strong>📣 ${esc(n.date)} at ${esc(n.time)}</strong>
+        <strong>${esc(n.date)} at ${esc(n.time)}</strong>
         <span>${esc(n.location)}${n.notes ? ' · ' + esc(n.notes) : ''}</span>
       </div>
       <div class="event-row-actions">
@@ -3185,9 +3170,9 @@ async function loadVolSignups() {
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;width:100%;">
         <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Email:</strong> ${esc(s.parent_email)}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">🙋 Role:</strong> ${esc(s.volunteer_slots.role || s.role || '—')}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📅 Date:</strong> ${esc(s.volunteer_slots.date)} at ${esc(s.volunteer_slots.time)}</span>
-        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">📍 Location:</strong> ${esc(s.volunteer_slots.classroom)}${s.volunteer_slots.teacher ? ' · ' + esc(s.volunteer_slots.teacher) : ''}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Role:</strong> ${esc(s.volunteer_slots.role || s.role || '—')}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Date:</strong> ${esc(s.volunteer_slots.date)} at ${esc(s.volunteer_slots.time)}</span>
+        <span style="font-size:0.82rem;color:#888;"><strong style="color:var(--bronze);">Location:</strong> ${esc(s.volunteer_slots.classroom)}${s.volunteer_slots.teacher ? ' · ' + esc(s.volunteer_slots.teacher) : ''}</span>
       </div>
     </div>`).join('');
 }
@@ -3368,12 +3353,12 @@ async function printVolunteers() {
   const slotsHTML = slots.map(slot => {
     const slotSignups = signupsBySlot[slot.id] || [];
     const signupRows = slotSignups.length > 0
-      ? slotSignups.map(s => `<div class="print-slot-signup">👤 ${s.parent_name} &nbsp;·&nbsp; ${s.parent_email}</div>`).join('')
+      ? slotSignups.map(s => `<div class="print-slot-signup">${s.parent_name} &nbsp;·&nbsp; ${s.parent_email}</div>`).join('')
       : `<div class="print-slot-signup" style="color:#aaa;font-style:italic;">No signups yet</div>`;
     return `
       <div class="print-slot">
         <div class="print-slot-header">
-          📅 ${slot.date} at ${slot.time} &nbsp;·&nbsp; 📍 ${slot.classroom}${slot.teacher ? ' · ' + slot.teacher : ''} &nbsp;·&nbsp; 🙋 ${slot.role || 'Volunteer'} <span class="badge">${slot.spots_filled}/${slot.spots_total} filled</span>
+          ${slot.date} at ${slot.time} &nbsp;·&nbsp; ${slot.classroom}${slot.teacher ? ' · ' + slot.teacher : ''} &nbsp;·&nbsp; ${slot.role || 'Volunteer'} <span class="badge">${slot.spots_filled}/${slot.spots_total} filled</span>
         </div>
         ${signupRows}
       </div>`;
@@ -3466,7 +3451,7 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
   let html = '';
   if (mappedSlots.length > 0) {
     html += `<div style="margin-bottom:16px;">
-      <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:#22c55e;margin-bottom:10px;">✅ Ready to Copy (${mappedSlots.length} slots)</div>
+      <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:#22c55e;margin-bottom:10px;">Ready to Copy (${mappedSlots.length} slots)</div>
       ${mappedSlots.map(s => `
         <div style="padding:8px 12px;border-bottom:1px solid #E6E1DC;font-size:0.82rem;color:#3A2E2A;">
           <strong>${s.newDateFormatted}</strong> · ${esc(s.time)} · ${esc(s.classroom)}${s.teacher ? ' · ' + esc(s.teacher) : ''} · ${esc(s.role || 'Volunteer')}
@@ -3475,11 +3460,11 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
   }
   if (flaggedSlots.length > 0) {
     html += `<div>
-      <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:var(--red);margin-bottom:10px;">⚠️ Needs Review (${flaggedSlots.length} slots)</div>
+      <div style="font-family:'Trebuchet MS',sans-serif;font-weight:700;font-size:0.9rem;color:var(--red);margin-bottom:10px;">Needs Review (${flaggedSlots.length} slots)</div>
       ${flaggedSlots.map((f, i) => `
         <div style="padding:10px 12px;border-bottom:1px solid #E6E1DC;font-size:0.82rem;">
           <div style="color:#3A2E2A;margin-bottom:6px;"><strong>${esc(f.slot.date)}</strong> · ${esc(f.slot.time)} · ${esc(f.slot.classroom)} · ${esc(f.slot.role || 'Volunteer')}</div>
-          <div style="color:var(--red);margin-bottom:6px;">⚠️ ${esc(f.reason)}</div>
+          <div style="color:var(--red);margin-bottom:6px;">${esc(f.reason)}</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <input type="date" id="flag-${i}" style="padding:4px 8px;border:1px solid #E6E1DC;border-radius:4px;font-size:0.8rem;">
             <button onclick="useFlagDate(${i})" style="background:var(--bronze);color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:0.78rem;cursor:pointer;">Use This Date</button>
@@ -3857,7 +3842,7 @@ async function loadMyStudents() {
     }).join('');
 
     const reviewNoteHTML = (status === 'draft' && rc && rc.review_note)
-      ? `<div class="gb-review-note">🔁 Sent back for changes: ${esc(rc.review_note)}</div>` : '';
+      ? `<div class="gb-review-note">Sent back for changes: ${esc(rc.review_note)}</div>` : '';
 
     const actionsHTML = locked ? '' : `
       <div class="gb-actions">
@@ -4224,7 +4209,7 @@ async function loadReviewQueue() {
         <div><span class="gb-mark-label">Effort</span>${esc(g.effort_mark || '—')}</div>
         <div><span class="gb-mark-label">Conduct</span>${esc(g.conduct_mark || '—')}</div>
       </div>
-      ${g.comment ? `<div class="gb-student-meta" style="margin:-4px 0 10px;">💬 ${esc(g.comment)}</div>` : ''}
+      ${g.comment ? `<div class="gb-student-meta" style="margin:-4px 0 10px;">${esc(g.comment)}</div>` : ''}
     `).join('');
 
     const submittedDate = rc.submitted_at ? new Date(rc.submitted_at).toLocaleDateString() : '—';
@@ -4334,7 +4319,7 @@ async function loadSentReportCards() {
         <div><span class="gb-mark-label">Effort</span>${esc(g.effort_mark || '—')}</div>
         <div><span class="gb-mark-label">Conduct</span>${esc(g.conduct_mark || '—')}</div>
       </div>
-      ${g.comment ? `<div class="gb-student-meta" style="margin:-4px 0 10px;">💬 ${esc(g.comment)}</div>` : ''}
+      ${g.comment ? `<div class="gb-student-meta" style="margin:-4px 0 10px;">${esc(g.comment)}</div>` : ''}
     `).join('');
 
     return `
