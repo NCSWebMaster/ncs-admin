@@ -325,10 +325,10 @@
 <body>
 
 <header class="oneplace-header">
-  <a href="https://ncswebmaster.github.io/NCS/index.html" class="oneplace-brand">
+  <div class="oneplace-brand">
     <img src="https://ncswebmaster.github.io/NCS/logo.png" alt="NCS Crest">
     <span class="oneplace-brand-name">NCS OnePlace</span>
-  </a>
+  </div>
   <button class="nav-hamburger" id="navDrawerOpen" aria-label="Open navigation">
     <span></span><span></span><span></span>
   </button>
@@ -433,9 +433,7 @@
   <!-- GREETING & VERSE -->
   <div class="admin-greeting" id="adminGreeting">
     <div class="greeting-text">
-      <div id="adminRoleBadge" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <h2 id="greetingTitle">Good morning!</h2>
-      <p class="admin-user">Signed in as <span id="adminUserEmail"></span></p>
     </div>
   </div>
 
@@ -454,6 +452,7 @@
       <div class="nav-drawer-user">
         <div class="nav-drawer-user-name" id="drawerUserName">OnePlace</div>
         <div class="nav-drawer-user-email" id="drawerUserEmail"></div>
+        <div id="adminRoleBadge" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;"></div>
       </div>
     </div>
 
@@ -1491,7 +1490,7 @@ const ROLE_BADGE_ORDER = ['super_admin','leader','board_member','teacher','staff
 
 function enterDashboard() {
   showOnly('adminDashboard');
-  document.getElementById('adminUserEmail').textContent = currentSession.user.email;
+  // adminUserEmail removed from dashboard
   document.getElementById('drawerUserEmail').textContent = currentSession.user.email;
   const drawerName = document.getElementById('drawerUserName');
   if (drawerName) {
@@ -1505,7 +1504,7 @@ function enterDashboard() {
   const badgeContainer = document.getElementById('adminRoleBadge');
   const orderedRoles = ROLE_BADGE_ORDER.filter(r => hasRole(r));
   badgeContainer.innerHTML = orderedRoles.map(r =>
-    `<span class="role-badge ${r}" style="margin-left:0;font-size:0.8rem;padding:5px 16px;">${getRoleLabel(r)}</span>`
+    `<span class="role-badge ${r}" style="margin-left:0;font-size:0.72rem;padding:4px 12px;">${getRoleLabel(r)}</span>`
   ).join('');
   applyRolePermissions();
   applyPersonalTabOrder();
