@@ -264,7 +264,7 @@
   /* ── STUDENT PROFILE CARDS ────────────────────────────────── */
   .profile-grade-group{ margin-bottom:20px; }
   .profile-grade-header{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; color:#9a8b84; padding:8px 4px; border-bottom:1px solid var(--grey-line); margin-bottom:10px; }
-  .profile-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .profile-card{ background:#fff; border:1px solid var(--grey-line); border-radius:10px; margin-bottom:10px; overflow:visible; }
   .profile-card-header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; }
   .profile-card-name{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.95rem; color:var(--ink); }
   .profile-card-meta{ font-size:0.8rem; color:#9a8b84; margin-top:2px; }
@@ -272,6 +272,7 @@
   .profile-card.collapsed .profile-card-arrow{ transform:rotate(-90deg); }
   .profile-card-body{ padding:0 16px 16px; display:grid; gap:12px; }
   .profile-card.collapsed .profile-card-body{ display:none; }
+  .profile-card-body{ overflow:visible; }
   .profile-section-title{ font-family:'Trebuchet MS',sans-serif; font-weight:700; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--bronze); margin:8px 0 6px; }
   .profile-field{ display:grid; gap:4px; }
   .profile-field label{ font-size:0.78rem; font-weight:700; color:#9a8b84; font-family:'Trebuchet MS',sans-serif; }
@@ -626,16 +627,23 @@
           <button class="nav-drawer-item admin-tab" data-tab="staffaccess" id="staffAccessTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Staff Access</span></button>
           <button class="nav-drawer-item admin-tab" data-tab="boardmember" id="boardMemberTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Board Member</span></button>
           <button class="nav-drawer-item admin-tab" data-tab="trash" id="trashTabBtn" style="display:none;"><span class="nav-drag-handle tab-drag-handle">⋮⋮</span><span class="tab-label">Trash</span></button>
-          <div class="nav-drawer-divider"></div>
-          <button class="nav-drawer-item reset-btn" id="resetYearBtn" style="display:none;"><span class="nav-drag-handle" style="opacity:0;width:24px;">⋮⋮</span><span>Start New School Year</span></button>
-          <button class="nav-drawer-item" id="resetAuthenticatorBtn" style="display:none;"><span class="nav-drag-handle" style="opacity:0;width:24px;">⋮⋮</span><span>Reset Authenticator</span></button>
+
         </div>
       </div>
     </div>
 
     <!-- Bottom actions -->
     <div class="nav-drawer-bottom">
-      <button class="nav-drawer-action danger" id="signOutBtn">Sign Out</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="nav-drawer-action danger" id="signOutBtn" style="flex:1;">Sign Out</button>
+        <div class="dot-menu-wrap" id="drawerAdminMenuWrap" style="display:none;">
+          <button class="dot-menu-btn" onclick="toggleDotMenu('drawerAdminMenu')" title="Admin actions" style="padding:8px 10px;border:1px solid var(--grey-line);border-radius:8px;">&#8942;</button>
+          <div id="drawerAdminMenu" class="dot-menu-dropdown" style="display:none;bottom:calc(100% + 4px);top:auto;right:0;">
+            <button class="dot-menu-item" id="resetYearBtn">Start New School Year</button>
+            <button class="dot-menu-item" id="resetAuthenticatorBtn">Reset Authenticator</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1567,8 +1575,7 @@ function applyRolePermissions() {
   const isAdmissions = hasRole('admissions_committee');
   const isTeacher = hasRole('teacher');
 
-  document.getElementById('resetYearBtn').style.display = isSuperAdmin ? 'flex' : 'none';
-  document.getElementById('resetAuthenticatorBtn').style.display = isSuperAdmin ? 'flex' : 'none';
+  document.getElementById('drawerAdminMenuWrap').style.display = isSuperAdmin ? 'block' : 'none';
 
   // Leader can VIEW Staff Access but cannot grant/edit/remove access — only Super Admin can manage staff
   const grantAccessForm = document.getElementById('grantAccessFormWrap');
@@ -1776,6 +1783,7 @@ document.getElementById('emailMfaResendBtn').addEventListener('click', async () 
 // moreActionsBtn removed — actions now live in nav drawer bottom
 
 document.getElementById('resetAuthenticatorBtn').addEventListener('click', async () => {
+  toggleDotMenu('drawerAdminMenu');
   closeNavDrawer();
   if (!confirm('This will remove your current authenticator and ask you to set up a new one right now. Continue?')) return;
   const { data: factorsData } = await sb.auth.mfa.listFactors();
@@ -4134,6 +4142,7 @@ function formatDateNice(dateStr) {
 }
 
 document.getElementById('resetYearBtn').addEventListener('click', () => {
+  toggleDotMenu('drawerAdminMenu');
   closeNavDrawer();
   holidayDates = [];
   mappedSlots = [];
