@@ -972,7 +972,10 @@
               <input type="checkbox" class="role-checkbox" value="admissions_committee"> Admissions Committee
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
-              <input type="checkbox" class="role-checkbox" value="teacher"> Teacher
+              <input type="checkbox" class="role-checkbox" value="teacher" id="newStaffTeacherCb" onchange="toggleJrHighOption('newStaffJrHigh', this.checked)"> Teacher
+            </label>
+            <label id="newStaffJrHigh" style="display:none;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0 0 0 24px;font-size:0.88rem;color:#6b5e58;">
+              <input type="checkbox" id="newStaffIsJrHigh"> Jr. High Team
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0;">
               <input type="checkbox" class="role-checkbox" value="board_member"> Board Member
@@ -1684,10 +1687,19 @@ async function loadStaffAccess() {
     const roles = s.roles || [];
     const badgesHTML = ROLE_BADGE_ORDER.filter(r => roles.includes(r))
       .map(r => `<span class="role-badge ${r}" style="margin-left:0;margin-right:6px;display:inline-block;margin-bottom:8px;">${getRoleLabel(r)}</span>`).join('');
-    const checkboxesHTML = ALL_KNOWN_ROLES.map(r => `
+    const checkboxesHTML = ALL_KNOWN_ROLES.map(r => {
+      const isTeacher = r === 'teacher';
+      const jrHighRow = isTeacher ? `
+        <label id="jrHighRow-${s.id}" style="${roles.includes('teacher') ? 'display:flex' : 'display:none'};align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0 0 8px 24px;font-size:0.85rem;color:#6b5e58;">
+          <input type="checkbox" id="edit-jr-high-${s.id}" ${s.is_jr_high ? 'checked' : ''}> Jr. High Team
+        </label>` : '';
+      return `
       <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin:0 0 8px;font-size:0.9rem;">
-        <input type="checkbox" class="edit-role-checkbox-${s.id}" value="${r}" ${roles.includes(r) ? 'checked' : ''}> ${getRoleLabel(r)}
-      </label>`).join('');
+        <input type="checkbox" class="edit-role-checkbox-${s.id}" value="${r}" ${roles.includes(r) ? 'checked' : ''}
+          ${isTeacher ? `onchange="toggleJrHighOption('jrHighRow-${s.id}', this.checked)"` : ''}>
+        ${getRoleLabel(r)}
+      </label>${jrHighRow}`;
+    }).join('');
 
     return `
     <div style="background:#fff;border:1px solid var(--grey-line);border-radius:10px;padding:16px 20px;margin-bottom:10px;" id="staff-card-${s.id}">
@@ -1834,6 +1846,7 @@ window.saveStaffName = async (id) => {
   const firstName = document.getElementById(`edit-first-${id}`).value.trim();
   const lastName = document.getElementById(`edit-last-${id}`).value.trim();
   const roles = Array.from(document.querySelectorAll(`.edit-role-checkbox-${id}:checked`)).map(cb => cb.value);
+  const isJrHigh = roles.includes('teacher') && document.getElementById(`edit-jr-high-${id}`)?.checked === true;
   if (roles.length === 0) { showToast('Select at least one role'); return; }
 
   // Block demoting the last remaining Super Admin
@@ -1860,7 +1873,8 @@ window.saveStaffName = async (id) => {
   const { error } = await sb.from('staff_roles').update({
     first_name: firstName || null,
     last_name: lastName || null,
-    roles
+    roles,
+    is_jr_high: isJrHigh
   }).eq('id', id);
   if (error) { showToast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Save'; return; }
 
@@ -1890,6 +1904,7 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
   const lastName = document.getElementById('staff-last').value.trim();
   const email = document.getElementById('staff-email').value.trim().toLowerCase();
   const roles = Array.from(document.querySelectorAll('#staff-roles-checkboxes .role-checkbox:checked')).map(cb => cb.value);
+  const isJrHigh = roles.includes('teacher') && document.getElementById('newStaffIsJrHigh')?.checked === true;
   if (!email) { showToast('Please enter an email'); return; }
   if (roles.length === 0) { showToast('Select at least one role'); return; }
   const btn = document.getElementById('saveStaffRole');
@@ -1897,7 +1912,7 @@ document.getElementById('saveStaffRole').addEventListener('click', async () => {
   btn.textContent = 'Saving...';
 
   const { error } = await sb.from('staff_roles').upsert(
-    { email, roles, first_name: firstName || null, last_name: lastName || null },
+    { email, roles, first_name: firstName || null, last_name: lastName || null, is_jr_high: isJrHigh },
     { onConflict: 'email' }
   );
   if (error) { btn.disabled = false; btn.textContent = 'Grant Access'; showToast('Error: ' + error.message); return; }
@@ -2785,9 +2800,12 @@ async function loadStudentProfiles() {
     .is('deleted_at', null)
     .order('last_name');
 
-  const { data: teachers } = await sb.from('staff_roles').select('email,first_name,last_name').order('last_name');
-  const teacherOptions = `<option value="">— Not Assigned —</option>` +
-    (teachers || []).map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('');
+  const { data: teachers } = await sb.from('staff_roles').select('email,first_name,last_name,is_jr_high').order('last_name');
+  const jrHighT = (teachers||[]).filter(t => t.is_jr_high);
+  const classT  = (teachers||[]).filter(t => !t.is_jr_high);
+  const teacherOptions = '<option value="">— Not Assigned —</option>' +
+    (jrHighT.length ? `<optgroup label="Jr. High Team">${jrHighT.map(t=>`<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '') +
+    (classT.length  ? `<optgroup label="Classroom Teachers">${classT.map(t=>`<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ')||t.email)}</option>`).join('')}</optgroup>` : '');
 
   const familyOptions = `<option value="">— No Family —</option>` +
     (families || []).map(f => `<option value="${f.id}">${esc(f.name || 'Family #' + f.id)}</option>`).join('');
@@ -2941,7 +2959,7 @@ document.getElementById('famNewInfoBtn').addEventListener('click', () => {
   showToast('Unchecked = returning family. This changes the wording of the welcome email they receive.', 5500);
 });
 
-let teacherOptionsCache = '<option value="">— Not Assigned —</option><option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>';
+let teacherOptionsCache = '<option value="">— Not Assigned —</option><optgroup label="Jr. High Team"></optgroup>';
 const GRADE_OPTIONS = ['TK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade'];
 
 // NCS's school year starts the first Tuesday after Labor Day. Labor Day is
@@ -2984,10 +3002,20 @@ const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorad
 })();
 
 async function loadTeacherOptions() {
-  const { data } = await sb.from('staff_roles').select('email, first_name, last_name').contains('roles', ['teacher']).order('first_name');
-  teacherOptionsCache = '<option value="">— Not Assigned —</option>' +
-    '<option value="jr_high_team">Jr. High Team (Mae Branda, Jodi Elliott, Bible Teacher)</option>' +
-    (data || []).map(t => `<option value="${esc(t.email)}">${esc([t.first_name, t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('');
+  const { data } = await sb.from('staff_roles').select('email, first_name, last_name, is_jr_high').contains('roles', ['teacher']).order('first_name');
+  const allTeachers = data || [];
+  const jrHighTeachers = allTeachers.filter(t => t.is_jr_high);
+  const classroomTeachers = allTeachers.filter(t => !t.is_jr_high);
+
+  const jrHighOptions = jrHighTeachers.length
+    ? `<optgroup label="Jr. High Team">${jrHighTeachers.map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
+    : '';
+
+  const classroomOptions = classroomTeachers.length
+    ? `<optgroup label="Classroom Teachers">${classroomTeachers.map(t => `<option value="${esc(t.email)}">${esc([t.first_name,t.last_name].filter(Boolean).join(' ') || t.email)}</option>`).join('')}</optgroup>`
+    : '';
+
+  teacherOptionsCache = '<option value="">— Not Assigned —</option>' + jrHighOptions + classroomOptions;
   // Refresh any rows already on screen
   document.querySelectorAll('.student-teacher-select').forEach(sel => {
     const current = sel.value;
@@ -3365,6 +3393,15 @@ function saveVolRequired() {
   localStorage.setItem('ncs_vol_required', val);
   showToast(`Requirement set to ${val} slot${val > 1 ? 's' : ''} per family`);
   loadVolSlots();
+}
+
+function toggleJrHighOption(rowId, show) {
+  const row = document.getElementById(rowId);
+  if (row) row.style.display = show ? 'flex' : 'none';
+  if (!show) {
+    const cb = row ? row.querySelector('input[type="checkbox"]') : null;
+    if (cb) cb.checked = false;
+  }
 }
 
 function toggleVolCat(header) {
