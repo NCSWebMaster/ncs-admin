@@ -598,20 +598,20 @@
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div>
+          <div style="min-width:0;">
             <label style="font-size:0.78rem;font-weight:700;color:var(--bronze);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px;">Date of Birth</label>
-            <input type="date" id="astf-dob" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;">
+            <input type="date" id="astf-dob" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;background:#fff;">
           </div>
-          <div>
+          <div style="min-width:0;">
             <label style="font-size:0.78rem;font-weight:700;color:var(--bronze);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px;">Grade</label>
-            <select id="astf-grade" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;">
+            <select id="astf-grade" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;background:#fff;-webkit-appearance:auto;">
               <option value="">— Select Grade —</option>
             </select>
           </div>
         </div>
         <div>
           <label style="font-size:0.78rem;font-weight:700;color:var(--bronze);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px;">Assigned Teacher</label>
-          <select id="astf-teacher" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;"></select>
+          <select id="astf-teacher" style="width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.92rem;box-sizing:border-box;background:#fff;-webkit-appearance:auto;"></select>
         </div>
         <div style="display:flex;gap:10px;margin-top:4px;">
           <button onclick="saveAddStudentToFamily()" id="astf-save-btn" class="save-btn" style="flex:1;">Add Student</button>
@@ -3007,7 +3007,7 @@ async function loadFamilies() {
             <button class="dot-menu-btn" onclick="toggleDotMenu('fam-menu-${f.id}')" title="Actions">&#8942;</button>
             <div id="fam-menu-${f.id}" class="dot-menu-dropdown" style="display:none;">
               <button class="dot-menu-item" onclick="openEditFamilyModal(${f.id});toggleDotMenu('fam-menu-${f.id}')">Edit Family Profile</button>
-              ${(hasRole('super_admin') || hasRole('staff') || hasRole('leader')) ? `<button class="dot-menu-item" onclick="openAddStudentToFamilyModal(${f.id}, '${esc(displayFamName)}');toggleDotMenu('fam-menu-${f.id}')">+ Add Student</button>` : ''}
+              ${(hasRole('super_admin') || hasRole('staff') || hasRole('leader')) ? '<button class="dot-menu-item" onclick="openAddStudentToFamilyModal(' + f.id + ');toggleDotMenu(\'fam-menu-' + f.id + '\')">+ Add Student</button>' : ''}
               <button class="dot-menu-item" onclick="regenerateAccessCode(${f.id});toggleDotMenu('fam-menu-${f.id}')">Regenerate Access Code</button>
               <button class="dot-menu-item danger" onclick="deleteFamily(${f.id});toggleDotMenu('fam-menu-${f.id}')">Unenroll Family</button>
             </div>
@@ -3347,12 +3347,30 @@ document.getElementById('editFamilyModal').addEventListener('click', (e) => {
 // ── ADD STUDENT TO EXISTING FAMILY ──────────────────────────
 let addStudentToFamilyId = null;
 
-window.openAddStudentToFamilyModal = (familyId, familyName) => {
+window.openAddStudentToFamilyModal = async (familyId) => {
   addStudentToFamilyId = familyId;
-  document.getElementById('astf-family-label').textContent = familyName || '';
+  document.getElementById('astf-family-label').textContent = '';
   document.getElementById('astf-first').value = '';
   document.getElementById('astf-last').value = '';
   document.getElementById('astf-dob').value = '';
+
+  // Look up family name
+  const { data: fam } = await sb.from('family_emails').select('name, father_name, mother_name').eq('id', familyId).maybeSingle();
+  if (fam) {
+    const fn = (fam.father_name || '').trim(), mn = (fam.mother_name || '').trim();
+    let label = fam.name || '';
+    if (fn || mn) {
+      const fp = fn.split(' '), mp = mn.split(' ');
+      const fF = fp[0], fL = fp.length > 1 ? fp[fp.length-1] : '';
+      const mF = mp[0], mL = mp.length > 1 ? mp[mp.length-1] : '';
+      if (fn && mn) {
+        label = (fL && mL && fL.toLowerCase() === mL.toLowerCase()) ? `${fF} & ${mF} ${fL}` : `${fn} & ${mF}`;
+      } else {
+        label = fn || mn;
+      }
+    }
+    document.getElementById('astf-family-label').textContent = label;
+  }
 
   // Populate grade dropdown
   const gradeSelect = document.getElementById('astf-grade');
