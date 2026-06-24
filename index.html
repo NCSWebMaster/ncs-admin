@@ -2250,7 +2250,7 @@ async function loadFamilies() {
         <strong style="font-family:'Trebuchet MS',sans-serif;font-size:0.95rem;color:var(--ink);">${f.name}</strong>
         <div class="event-row-actions">
           ${resendButtons}
-          <button class="resend-btn" style="background:#fdf6f2;color:var(--bronze);border-color:var(--bronze);" onclick="openAddStudentModal(${f.id}, '${f.name.replace(/'/g, "&#39;")}')">+ Student</button>
+          <button class="resend-btn" style="background:#fdf6f2;color:var(--bronze);border-color:var(--bronze);" onclick="openAddStudentModal(${f.id}, this.dataset.name)" data-name="${f.name.replace(/"/g, '&quot;')}">+ Student</button>
           <button class="delete-btn" onclick="deleteFamily(${f.id})">Remove</button>
         </div>
       </div>
