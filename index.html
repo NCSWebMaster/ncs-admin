@@ -717,7 +717,7 @@
     </div>
     <div class="stat-box" id="statBoxNewsletters">
       <div class="stat-box-number" id="statNewsletters">—</div>
-      <div class="stat-box-label">Newsletters Sent</div>
+      <div class="stat-box-label">Enrolled Students</div>
     </div>
     <div class="stat-box highlight" id="statBoxNextNight">
       <div class="stat-box-number" id="statNextNight">—</div>
@@ -2267,9 +2267,9 @@ async function loadGreetingAndStats() {
   document.getElementById('verseRef').textContent = verse.ref;
 
   // Stats
-  const [families, newsletters, volSlots, infoNights] = await Promise.all([
+  const [families, students, volSlots, infoNights] = await Promise.all([
     sb.from('family_emails').select('id, student_count', { count: 'exact' }),
-    sb.from('newsletters').select('id', { count: 'exact', head: true }),
+    sb.from('students').select('id', { count: 'exact', head: true }),
     sb.from('volunteer_slots').select('spots_total, spots_filled'),
     sb.from('info_nights').select('date').order('id')
   ]);
@@ -2277,7 +2277,7 @@ async function loadGreetingAndStats() {
   document.getElementById('statFamilies').textContent = families.count ?? '—';
   const totalStudents = (families.data || []).reduce((sum, f) => sum + (f.student_count || 1), 0);
   document.getElementById('statStudents').textContent = families.data && families.data.length ? `${totalStudents} students total` : '';
-  document.getElementById('statNewsletters').textContent = newsletters.count ?? '—';
+  document.getElementById('statNewsletters').textContent = students.count ?? '—';
 
   // Open volunteer spots
   const openSlots = (volSlots.data || []).reduce((sum, s) => sum + (s.spots_total - s.spots_filled), 0);
