@@ -498,6 +498,7 @@
             <div><label style="font-size:0.75rem;color:#9a8b84;display:block;margin-bottom:4px;">Grade</label><select id="esm-grade" style="width:100%;padding:9px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;box-sizing:border-box;"></select></div>
             <div><label style="font-size:0.75rem;color:#9a8b84;display:block;margin-bottom:4px;">Assigned Teacher</label><select id="esm-teacher" style="width:100%;padding:9px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;box-sizing:border-box;"></select></div>
           </div>
+          <div style="margin-top:10px;"><label style="font-size:0.75rem;color:#9a8b84;display:block;margin-bottom:4px;">Academic Year</label><select id="esm-school-year" style="width:100%;padding:9px 12px;border:1px solid var(--grey-line);border-radius:7px;font-family:'Trebuchet MS',sans-serif;font-size:0.88rem;box-sizing:border-box;background:#fff;-webkit-appearance:auto;"></select></div>
         </div>
         <div style="border-top:1px solid var(--grey-line);padding-top:14px;">
           <label style="font-size:0.78rem;font-weight:700;color:var(--bronze);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px;">Medical</label>
@@ -709,7 +710,6 @@
     <div class="stat-box" id="statBoxFamilies">
       <div class="stat-box-number" id="statFamilies">—</div>
       <div class="stat-box-label">Enrolled Families</div>
-      <div class="stat-box-sub" id="statStudents" style="font-size:0.75rem;color:#9a8b84;margin-top:4px;"></div>
     </div>
     <div class="stat-box" id="statBoxVolSlots">
       <div class="stat-box-number" id="statVolSlots">—</div>
@@ -2268,15 +2268,13 @@ async function loadGreetingAndStats() {
 
   // Stats
   const [families, students, volSlots, infoNights] = await Promise.all([
-    sb.from('family_emails').select('id, student_count', { count: 'exact' }),
+    sb.from('family_emails').select('id', { count: 'exact', head: true }),
     sb.from('students').select('id', { count: 'exact', head: true }),
     sb.from('volunteer_slots').select('spots_total, spots_filled'),
     sb.from('info_nights').select('date').order('id')
   ]);
 
   document.getElementById('statFamilies').textContent = families.count ?? '—';
-  const totalStudents = (families.data || []).reduce((sum, f) => sum + (f.student_count || 1), 0);
-  document.getElementById('statStudents').textContent = families.data && families.data.length ? `${totalStudents} students total` : '';
   document.getElementById('statNewsletters').textContent = students.count ?? '—';
 
   // Open volunteer spots
@@ -3243,6 +3241,14 @@ window.openEditStudentModal = async (id) => {
   teacherSelect.innerHTML = teacherOptionsCache;
   teacherSelect.value = s.assigned_teacher_email || '';
 
+  // Populate academic year dropdown
+  const def = computeDefaultSchoolYear();
+  const startY = parseInt(def.split('-')[0], 10);
+  const years = [startY - 2, startY - 1, startY, startY + 1].map(y => `${y}-${y + 1}`);
+  const currentYear = s.school_year || def;
+  document.getElementById('esm-school-year').innerHTML =
+    years.map(y => `<option value="${y}"${y === currentYear ? ' selected' : ''}>${y}</option>`).join('');
+
   document.getElementById('editStudentModal').style.display = 'flex';
 };
 
@@ -3264,6 +3270,7 @@ window.saveEditStudentModal = async () => {
     emergency_contact_name: g('esm-ec-name'),
     emergency_contact_relation: g('esm-ec-rel'),
     emergency_contact_phone: g('esm-ec-phone'),
+    school_year: g('esm-school-year') || computeDefaultSchoolYear(),
   };
   const { error } = await sb.from('students').update(updates).eq('id', editStudentModalId);
   if (error) { showToast('Error: ' + error.message); return; }
